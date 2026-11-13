@@ -1,6 +1,7 @@
 package com.jdz.vmd.common.tileentities;
 
 import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
+
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.VoltageIndex;

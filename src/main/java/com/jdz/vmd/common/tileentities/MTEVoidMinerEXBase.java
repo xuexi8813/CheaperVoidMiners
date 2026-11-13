@@ -1,31 +1,35 @@
 package com.jdz.vmd.common.tileentities;
 
-import bwcrossmod.galacticgreg.MTEVoidMinerBase;
-import com.google.common.collect.ImmutableList;
-import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
-import com.gtnewhorizon.structurelib.structure.ISurvivalBuildEnvironment;
-import com.gtnewhorizon.structurelib.structure.StructureDefinition;
-import gregtech.api.enums.GTValues;
-import gregtech.api.enums.ItemList;
-import gregtech.api.enums.Materials;
-import gregtech.api.enums.OrePrefixes;
-import gregtech.api.interfaces.IHatchElement;
-import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
-import gregtech.api.util.GTOreDictUnificator;
-import gregtech.api.util.GTUtility;
-import gregtech.api.util.MultiblockTooltipBuilder;
-import gregtech.common.tileentities.machines.multi.MTEDrillerBase;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumChatFormatting;
-
-import java.util.List;
-
 import static com.gtnewhorizon.structurelib.structure.StructureUtility.ofBlock;
 import static com.gtnewhorizon.structurelib.structure.StructureUtility.transpose;
 import static gregtech.api.enums.GTValues.VN;
 import static gregtech.api.enums.HatchElement.*;
 import static gregtech.api.util.GTStructureUtility.buildHatchAdder;
 import static gregtech.api.util.GTStructureUtility.ofFrame;
+
+import java.util.List;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
+
+import com.google.common.collect.ImmutableList;
+import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
+import com.gtnewhorizon.structurelib.structure.ISurvivalBuildEnvironment;
+import com.gtnewhorizon.structurelib.structure.StructureDefinition;
+
+import bwcrossmod.galacticgreg.MTEVoidMinerBase;
+import gregtech.api.enums.GTValues;
+import gregtech.api.enums.ItemList;
+import gregtech.api.enums.Materials;
+import gregtech.api.enums.OrePrefixes;
+import gregtech.api.interfaces.IHatchElement;
+import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
+import gregtech.api.structure.error.StructureError;
+import gregtech.api.structure.error.StructureErrors;
+import gregtech.api.util.GTOreDictUnificator;
+import gregtech.api.util.GTUtility;
+import gregtech.api.util.MultiblockTooltipBuilder;
+import gregtech.common.tileentities.machines.multi.MTEDrillerBase;
 
 public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extends MTEVoidMinerBase<T> {
 
@@ -47,29 +51,25 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
             .addShape(
                 "main",
                 transpose(
-                    new String[][]{
-                        {"   ", " G ", "   "},
-                        {"   ", " G ", "   "},
-                        {"   ", " G ", "   "},
-                        {" G ", "GFG", " G "},
-                        {" G ", "GFG", " G "},
-                        {" G ", "GFG", " G "},
-                        {"H~H", "HHH", "HHH"}}))
+                    new String[][] { { "   ", " G ", "   " }, { "   ", " G ", "   " }, { "   ", " G ", "   " },
+                        { " G ", "GFG", " G " }, { " G ", "GFG", " G " }, { " G ", "GFG", " G " },
+                        { "H~H", "HHH", "HHH" } }))
             .addElement(
                 'F',
                 ofBlock(
                     getItemList().getBlock(),
-                    getItemList().get(0).getItemDamage())
-            )
+                    getItemList().get(0)
+                        .getItemDamage()))
             .addElement('G', ofFrame(getMaterials()))
             .addElement(
                 'H',
                 buildHatchAdder(clazz).atLeast(InputHatch, OutputBus, InputBus, Maintenance, Energy)
-                    .dot(1)
+                    .hint(1)
                     .casingIndex(getControllerTextureIndex())
                     .buildAndChain(
                         getItemList().getBlock(),
-                        getItemList().get(0).getItemDamage()))
+                        getItemList().get(0)
+                            .getItemDamage()))
             .build();
     }
 
@@ -101,9 +101,17 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
                     + ".")
             .beginStructureBlock(3, 7, 3, false)
             .addStructureInfo(
-                EnumChatFormatting.GOLD + "5x" + EnumChatFormatting.GRAY + " " + GTOreDictUnificator.get(OrePrefixes.itemCasing, getMaterials(), 1).getDisplayName())
+                EnumChatFormatting.GOLD + "5x"
+                    + EnumChatFormatting.GRAY
+                    + " "
+                    + GTOreDictUnificator.get(OrePrefixes.itemCasing, getMaterials(), 1)
+                        .getDisplayName())
             .addStructureInfo(
-                EnumChatFormatting.GOLD + "20x" + EnumChatFormatting.GRAY + " " + GTOreDictUnificator.get(OrePrefixes.frameGt, getMaterials(), 1).getDisplayName())
+                EnumChatFormatting.GOLD + "20x"
+                    + EnumChatFormatting.GRAY
+                    + " "
+                    + GTOreDictUnificator.get(OrePrefixes.frameGt, getMaterials(), 1)
+                        .getDisplayName())
             .addEnergyHatch(VN[this.getMinTier()] + "+, Any base casing")
             .addMaintenanceHatch("Any base casing")
             .addInputBus("Mining Pipes or Ores, optional, any base casing")
@@ -125,15 +133,31 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
     }
 
     @Override
-    public boolean checkMachine(IGregTechTileEntity aBaseMetaTileEntity, ItemStack aStack) {
-        return checkPiece("main", 1, 6, 0)
-            && checkHatches()
-            && GTUtility.getTier(getMaxInputVoltage()) >= getMinTier()
-            && mMaintenanceHatches.size() == 1;
+    public void checkMachine(IGregTechTileEntity aBaseMetaTileEntity, ItemStack aStack, List<StructureError> errors) {
+        if (!checkPiece("main", 1, 6, 0, errors)) return;
+        checkHatches(errors);
+        if (GTUtility.getTier(getMaxInputVoltage()) < getMinTier()) {
+            errors.add(StructureErrors.energyHatchTierTooLow(getMinTier()));
+        }
     }
 
     @Override
     protected List<IHatchElement<? super MTEDrillerBase>> getAllowedHatches() {
         return ImmutableList.of(InputBus, OutputBus, Maintenance, Energy);
+    }
+
+    /**
+     * Replaces the gas tooltip line builder removed from GT5u's MTEVoidMinerBase in 5.09.55.x; the format is kept
+     * identical to the implementation shipped in 5.09.51.x.
+     */
+    private String createGasString(EnumChatFormatting color, String gas, int boost) {
+        return String.format(
+            "%s%s%s : %s%dx%s",
+            color,
+            gas,
+            EnumChatFormatting.GRAY,
+            EnumChatFormatting.GOLD,
+            boost,
+            EnumChatFormatting.GRAY);
     }
 }
