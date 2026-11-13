@@ -4,8 +4,11 @@ import static com.jdz.vmd.api.enums.MetaTileEntityIDs.VoidMinerEX1Controller;
 import static com.jdz.vmd.api.enums.MetaTileEntityIDs.VoidMinerEX2Controller;
 import static com.jdz.vmd.api.enums.MetaTileEntityIDs.VoidMinerEX3Controller;
 
+import java.util.function.Supplier;
+
 import net.minecraft.item.ItemStack;
 
+import com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler;
 import com.jdz.vmd.api.enums.MetaTileEntityIDs;
 import com.jdz.vmd.common.tileentities.MTEVoidExcavatorWooden;
 import com.jdz.vmd.common.tileentities.MTEVoidExcavators;
@@ -14,7 +17,13 @@ import com.jdz.vmd.common.tileentities.MTEVoidFluidPumpWooden;
 import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
 import com.jdz.vmd.common.tileentities.MTEVoidMiners;
 
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
+
 public class ItemRegistry {
+
+    /** Fallback display name for the ownership tooltip line, should the active mod container be absent. */
+    private static final String FALLBACK_MOD_DISPLAY_NAME = "CheaperVoidMiners";
 
     public static ItemStack VoidMinerEX1;
     public static ItemStack VoidMinerEX2;
@@ -102,5 +111,33 @@ public class ItemRegistry {
             MetaTileEntityIDs.VoidExcavatorInfinity.ID,
             "VoidExcavatorInfinity",
             "Void Excavator (Infinity)").getStackForm(1L);
+
+        registerOwnershipTooltips();
+    }
+
+    /**
+     * Appends an "Added by CheaperVoidMiners" line to the tooltip of every machine of this mod, following
+     * the Twist Space Technology pattern of a mod credit line appended through GTNHLib's
+     * {@link AnimatedTooltipHandler} (these machines are registered on the GregTech block, so the generic
+     * mod attribution would show GregTech instead).
+     * <p>
+     * The displayed name is the mcmod.info name of the active mod container, read while {@link #run()} is
+     * called from {@code init} where this mod is still the active container.
+     */
+    private static void registerOwnershipTooltips() {
+        final ModContainer container = Loader.instance()
+            .activeModContainer();
+        final String modDisplayName = container != null ? container.getName() : FALLBACK_MOD_DISPLAY_NAME;
+        final Supplier<String> creditLine = AnimatedTooltipHandler
+            .translatedText("vmd.credit.added_by", modDisplayName);
+
+        for (ItemStack stack : new ItemStack[] { VoidMinerEX1, VoidMinerEX2, VoidMinerEX3, VoidFluidDrillerIron,
+            VoidFluidDrillerSteel, VoidFluidDrillerTitanium, VoidFluidDrillerNaquadah, VoidFluidDrillerInfinity,
+            VoidFluidPumpWooden, VoidMinerWooden, VoidExcavatorWooden, VoidExcavatorIron, VoidExcavatorSteel,
+            VoidExcavatorTitanium, VoidExcavatorNaquadah, VoidExcavatorInfinity }) {
+            AnimatedTooltipHandler.addItemTooltip(
+                stack,
+                AnimatedTooltipHandler.chain(AnimatedTooltipHandler.text(AnimatedTooltipHandler.BLUE), creditLine));
+        }
     }
 }

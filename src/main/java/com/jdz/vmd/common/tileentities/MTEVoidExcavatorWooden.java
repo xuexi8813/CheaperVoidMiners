@@ -36,6 +36,9 @@ import gregtech.api.util.GTUtility;
  * Textures reuse existing GT assets: the wooden casing as body and the ore drill overlay on the front face;
  * no new textures are shipped with this mod.
  */
+// Skips the GT regional-name registration; the display name comes from the standard lang keys
+// (the annotation is not inherited, so the concrete class carries it explicitly).
+@IMetaTileEntity.SkipGenerateName
 public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
 
     /**

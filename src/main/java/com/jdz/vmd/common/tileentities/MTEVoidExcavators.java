@@ -22,10 +22,15 @@ import gregtech.api.util.GTUtility;
  * <p>
  * The Naquadah and Infinity stages reuse existing high tier casings because GT does not ship dedicated
  * Naquadah/Infinity machine casings (same substitution as the Void Fluid Driller family).
+ * Naming: every concrete machine class carries {@link IMetaTileEntity.SkipGenerateName} so the
+ * display name comes from the standard lang keys instead of the GT regional-name registration.
  */
 public class MTEVoidExcavators {
 
     /** Iron stage: LV machine, 1 resource block per cycle. */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorIron extends MTEVoidExcavatorBase<VoidExcavatorIron> {
 
         public VoidExcavatorIron(int aID, String aName, String aNameRegional) {
@@ -76,6 +81,9 @@ public class MTEVoidExcavators {
     }
 
     /** Steel stage: MV machine, 4 resource blocks per cycle. */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorSteel extends MTEVoidExcavatorBase<VoidExcavatorSteel> {
 
         public VoidExcavatorSteel(int aID, String aName, String aNameRegional) {
@@ -126,6 +134,9 @@ public class MTEVoidExcavators {
     }
 
     /** Titanium stage: HV machine, 16 resource blocks per cycle. */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorTitanium extends MTEVoidExcavatorBase<VoidExcavatorTitanium> {
 
         public VoidExcavatorTitanium(int aID, String aName, String aNameRegional) {
@@ -179,6 +190,9 @@ public class MTEVoidExcavators {
      * Naquadah stage: LuV machine, 64 resource blocks per cycle. Uses the tungstensteel drilling casing as a
      * stand-in because no Naquadah machine casing exists; the frame stays Naquadah.
      */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorNaquadah extends MTEVoidExcavatorBase<VoidExcavatorNaquadah> {
 
         public VoidExcavatorNaquadah(int aID, String aName, String aNameRegional) {
@@ -236,6 +250,9 @@ public class MTEVoidExcavators {
      * parallel = 8^(input tier - UV), so UHV runs 8 cycles, UEV 64, ... and MAX tier 262144 cycles at once,
      * with the EU/t draw multiplied accordingly (multi-amp drain).
      */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorInfinity extends MTEVoidExcavatorBase<VoidExcavatorInfinity> {
 
         public VoidExcavatorInfinity(int aID, String aName, String aNameRegional) {

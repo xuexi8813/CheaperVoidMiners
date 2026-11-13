@@ -1,4 +1,7 @@
 # Machine display names (keys follow the GT5u mechanism: gt.blockmachines.<aName>.name)
+gt.blockmachines.VoidMinerEX1.name=Void Miner EX I
+gt.blockmachines.VoidMinerEX2.name=Void Miner EX II
+gt.blockmachines.VoidMinerEX3.name=Void Miner EX III
 gt.blockmachines.VoidFluidDrillerIron.name=Void Fluid Driller (Iron)
 gt.blockmachines.VoidFluidDrillerSteel.name=Void Fluid Driller (Steel)
 gt.blockmachines.VoidFluidDrillerTitanium.name=Void Fluid Driller (Titanium)
@@ -34,6 +37,9 @@ vmd.gui.weighted_random=Weighted Random
 vmd.gui.planet.unknown=Unknown
 vmd.gui.drill.none=None
 vmd.gui.resource=Resource: %s
+
+# Tooltip ownership line
+vmd.credit.added_by=Added by %s
 
 # NEI output recipe maps (tab names)
 vmd.recipe.voidfluiddriller=Void Fluid Driller

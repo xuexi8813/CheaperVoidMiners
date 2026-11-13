@@ -41,6 +41,9 @@ import gtneioreplugin.util.DimensionHelper;
  * Determinism: veins are iterated in {@code sList} registration order and the stone type expansion follows
  * {@link DimensionHelper#getStoneTypes}, exactly like the vanilla void miner drop map construction.
  */
+// Skips the GT regional-name registration; the display name comes from the standard lang keys
+// (the annotation is not inherited, so the concrete class carries it explicitly).
+@IMetaTileEntity.SkipGenerateName
 public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
 
     /** Ticks between two production attempts; the wooden miner works twice as fast as the wooden pump. */

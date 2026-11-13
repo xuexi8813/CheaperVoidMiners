@@ -22,10 +22,15 @@ import gregtech.api.util.GTUtility;
  * <p>
  * The Naquadah and Infinity stages reuse existing high tier casings because GT does not ship dedicated
  * Naquadah/Infinity machine casings (see the module report for the substitution rationale).
+ * Naming: every concrete machine class carries {@link IMetaTileEntity.SkipGenerateName} so the
+ * display name comes from the standard lang keys instead of the GT regional-name registration.
  */
 public class MTEVoidFluidDrillers {
 
     /** Iron stage: LV machine, x1 output factor. */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerIron extends MTEVoidFluidDrillerBase<VoidFluidDrillerIron> {
 
         public VoidFluidDrillerIron(int aID, String aName, String aNameRegional) {
@@ -76,6 +81,9 @@ public class MTEVoidFluidDrillers {
     }
 
     /** Steel stage: MV machine, x4 output factor. */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerSteel extends MTEVoidFluidDrillerBase<VoidFluidDrillerSteel> {
 
         public VoidFluidDrillerSteel(int aID, String aName, String aNameRegional) {
@@ -126,6 +134,9 @@ public class MTEVoidFluidDrillers {
     }
 
     /** Titanium stage: HV machine, x16 output factor. */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerTitanium extends MTEVoidFluidDrillerBase<VoidFluidDrillerTitanium> {
 
         public VoidFluidDrillerTitanium(int aID, String aName, String aNameRegional) {
@@ -179,6 +190,9 @@ public class MTEVoidFluidDrillers {
      * Naquadah stage: LuV machine, x64 output factor. Uses the tungstensteel drilling casing as a stand-in
      * because no Naquadah machine casing exists; the frame stays Naquadah.
      */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerNaquadah extends MTEVoidFluidDrillerBase<VoidFluidDrillerNaquadah> {
 
         public VoidFluidDrillerNaquadah(int aID, String aName, String aNameRegional) {
@@ -236,6 +250,9 @@ public class MTEVoidFluidDrillers {
      * parallel = 8^(input tier - UV), so UHV runs 8 cycles, UEV 64, ... and MAX tier 262144 cycles at once,
      * with the EU/t draw multiplied accordingly (multi-amp drain).
      */
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerInfinity extends MTEVoidFluidDrillerBase<VoidFluidDrillerInfinity> {
 
         public VoidFluidDrillerInfinity(int aID, String aName, String aNameRegional) {

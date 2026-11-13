@@ -9,8 +9,18 @@ import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.util.GTUtility;
 
+/**
+ * The three EX Void Miner stages (EX I/II/III), built on the GT void miner multiblock.
+ * <p>
+ * Naming: every concrete machine class carries {@link IMetaTileEntity.SkipGenerateName} so the display
+ * name comes from the standard lang keys instead of the GT regional-name registration (the annotation is
+ * not inherited, so each concrete class carries it explicitly).
+ */
 public class MTEVoidMiners {
 
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VMLV extends MTEVoidMinerEXBase<VMLV> {
 
         public VMLV(int aID, String aName, String aNameRegional) {
@@ -53,6 +63,9 @@ public class MTEVoidMiners {
 
     }
 
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VMHV extends MTEVoidMinerEXBase<VMHV> {
 
         public VMHV(int aID, String aName, String aNameRegional) {
@@ -95,6 +108,9 @@ public class MTEVoidMiners {
 
     }
 
+    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
+    // so every concrete class carries it explicitly.
+    @IMetaTileEntity.SkipGenerateName
     public static class VMIV extends MTEVoidMinerEXBase<VMIV> {
 
         public VMIV(int aID, String aName, String aNameRegional) {

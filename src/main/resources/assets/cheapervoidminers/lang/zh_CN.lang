@@ -1,4 +1,7 @@
 # 机器显示名（键位遵循 GT5u 机制：gt.blockmachines.<aName>.name）
+gt.blockmachines.VoidMinerEX1.name=虚空矿机 EX I
+gt.blockmachines.VoidMinerEX2.name=虚空矿机 EX II
+gt.blockmachines.VoidMinerEX3.name=虚空矿机 EX III
 gt.blockmachines.VoidFluidDrillerIron.name=虚空液体钻机（铁）
 gt.blockmachines.VoidFluidDrillerSteel.name=虚空液体钻机（钢）
 gt.blockmachines.VoidFluidDrillerTitanium.name=虚空液体钻机（钛）
@@ -34,6 +37,9 @@ vmd.gui.weighted_random=加权随机
 vmd.gui.planet.unknown=未知
 vmd.gui.drill.none=无
 vmd.gui.resource=资源：%s
+
+# 物品归属行
+vmd.credit.added_by=由 %s 添加
 
 # NEI 产出配方 map（标签页名）
 vmd.recipe.voidfluiddriller=虚空液体钻机
