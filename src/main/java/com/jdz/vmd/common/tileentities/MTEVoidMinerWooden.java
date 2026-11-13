@@ -4,18 +4,14 @@ import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_FRONT_ORE_DRILL;
 import static gregtech.api.objects.XSTR.XSTR_INSTANCE;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.bsideup.jabel.Desugar;
 
-import bartworks.common.configs.Configuration;
-import cpw.mods.fml.common.registry.GameRegistry;
 import galacticgreg.api.enums.DimensionDef;
 import gregtech.api.enums.StoneType;
 import gregtech.api.interfaces.IOreMaterial;
@@ -27,8 +23,6 @@ import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GTUtility;
 import gregtech.common.WorldgenGTOreLayer;
 import gregtech.common.WorldgenGTOreSmallPieces;
-import gregtech.common.ores.OreInfo;
-import gregtech.common.ores.OreManager;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
@@ -37,10 +31,10 @@ import gtneioreplugin.util.DimensionHelper;
  * <p>
  * The ore data is rebuilt from the same GT5u sources the void miner uses, see
  * {@code bwcrossmod.galacticgreg.VoidMinerUtility#generateDropMaps}: enabled {@link WorldgenGTOreLayer} ore
- * veins restricted to the Overworld, plus enabled {@link WorldgenGTOreSmallPieces} entries. Selection
- * follows the shared wooden rules: a programmed circuit (configuration 1..N) picks the N-th vein, N+1
- * picks the poor (small) ore pool, configuration 0 or no circuit mixes everything into one weighted pool,
- * anything beyond N+1 idles.
+ * veins restricted to the Overworld, plus enabled {@link WorldgenGTOreSmallPieces} entries (poor ore drops
+ * resolved by {@link VoidOreTableHelper}). Selection follows the shared wooden rules: a programmed circuit
+ * (configuration 1..N) picks the N-th vein, N+1 picks the poor (small) ore pool, configuration 0 or no
+ * circuit mixes everything into one weighted pool, anything beyond N+1 idles.
  * <p>
  * Determinism: veins are iterated in {@code sList} registration order and the stone type expansion follows
  * {@link DimensionHelper#getStoneTypes}, exactly like the vanilla void miner drop map construction.
@@ -181,7 +175,11 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
             if (!piece.getAllowedDimensions()
                 .contains(OVERWORLD_DIM_NAME)) continue;
 
-            addSmallOreDrops(piece, stones);
+            VoidOreTableHelper.forEachSmallOreDrop(piece, stones, (stack, weight) -> {
+                final WeightedOre drop = new WeightedOre(stack, weight);
+                smallOrePool.add(drop);
+                mixedPool.add(drop);
+            });
         }
     }
 
@@ -189,58 +187,14 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     private void addMaterialDrops(OreVein vein, IOreMaterial material, List<StoneType> stones, float weight) {
         if (material == null) return;
         for (IStoneType stone : stones) {
-            final ItemStack stack = resolveOreStack(material, stone, false);
+            final ItemStack stack = VoidOreTableHelper.resolveOreStack(material, stone, false);
             if (stack == null) {
                 // Mirrors VoidMinerUtility: an unresolvable (material, stone) pair stops the expansion.
                 break;
             }
-            if (isVoidMinerBlacklisted(stack)) continue;
+            if (VoidOreTableHelper.isVoidMinerBlacklisted(stack)) continue;
             vein.drops.add(new WeightedOre(stack, weight));
         }
-    }
-
-    /**
-     * Expands the poor ore drop of one small pieces entry over the stone types, weighted by its generation
-     * amount; same expansion rules as the vein materials ({@link #addMaterialDrops}).
-     */
-    private void addSmallOreDrops(WorldgenGTOreSmallPieces piece, List<StoneType> stones) {
-        final IOreMaterial material = piece.getMaterial();
-        if (material == null) return;
-        for (IStoneType stone : stones) {
-            final ItemStack stack = resolveOreStack(material, stone, true);
-            if (stack == null) {
-                // Mirrors VoidMinerUtility: an unresolvable (material, stone) pair stops the expansion.
-                break;
-            }
-            if (isVoidMinerBlacklisted(stack)) continue;
-            final WeightedOre drop = new WeightedOre(stack, piece.mAmount);
-            smallOrePool.add(drop);
-            mixedPool.add(drop);
-        }
-    }
-
-    private ItemStack resolveOreStack(IOreMaterial material, IStoneType stone, boolean small) {
-        try (OreInfo<IOreMaterial> info = OreInfo.getNewInfo()) {
-            info.material = material;
-            info.stoneType = stone;
-            info.isSmall = small;
-            final ItemStack stack = OreManager.getStack(info, 1);
-            if (stack == null) {
-                log().warn("Could not resolve ore stack for {} on stone {}", material, stone);
-            }
-            return stack;
-        }
-    }
-
-    /** Same identifier format as the void miner drop map blacklist ({@code VoidMinerUtility.DropMap}). */
-    private static boolean isVoidMinerBlacklisted(ItemStack stack) {
-        final String identifier = String.format(
-            "%s:%d",
-            GameRegistry.findUniqueIdentifierFor(Block.getBlockFromItem(stack.getItem()))
-                .toString(),
-            stack.getItemDamage());
-        return Arrays.asList(Configuration.multiblocks.voidMinerBlacklist)
-            .contains(identifier);
     }
 
     /**************************************************************************

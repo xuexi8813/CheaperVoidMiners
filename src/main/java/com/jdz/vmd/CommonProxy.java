@@ -2,6 +2,7 @@ package com.jdz.vmd;
 
 import com.jdz.vmd.common.loaders.ItemRegistry;
 import com.jdz.vmd.common.loaders.RecipeLoader;
+import com.jdz.vmd.common.tileentities.VoidOreTableHelper;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -25,5 +26,10 @@ public class CommonProxy {
     }
 
     // register server commands in this event handler (Remove if not needed)
-    public void serverStarting(FMLServerStartingEvent event) {}
+    public void serverStarting(FMLServerStartingEvent event) {
+        // Runs after GT generated the void miner drop maps (BartWorks builds them on FMLLoadCompleteEvent)
+        // and before any void miner machine computes its distribution cache on its first tick, so the
+        // appended poor ores survive; the append itself is idempotent across repeated server starts.
+        VoidOreTableHelper.appendPoorOresToVoidMinerDropMaps();
+    }
 }
