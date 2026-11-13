@@ -33,12 +33,17 @@ vmd.gui.drill=钻头：%s
 vmd.gui.weighted_random=加权随机
 vmd.gui.planet.unknown=未知
 vmd.gui.drill.none=无
+vmd.gui.resource=资源：%s
 
 # 配方检查结果消息（SimpleCheckRecipeResult 键）
 GT5U.gui.text.recipe_result.vmd_drilling=正在抽取地下流体
 GT5U.gui.text.recipe_result.vmd_no_fluid_data=该维度没有地下流体数据
 GT5U.gui.text.recipe_result.vmd_circuit_out_of_range=电路配置超出该维度的流体数量
 GT5U.gui.text.recipe_result.vmd_output_full=流体输出已满
+GT5U.gui.text.recipe_result.vmd_excavator_digging=正在从虚空挖取资源
+GT5U.gui.text.recipe_result.vmd_excavator_no_resources=该维度没有资源配置
+GT5U.gui.text.recipe_result.vmd_excavator_circuit_out_of_range=电路配置超出该维度的资源数量
+GT5U.gui.text.recipe_result.vmd_excavator_output_full=物品输出已满
 
 # 木质虚空流体泵 tooltip
 vmd.pump.desc.1=无需电力的木质泵，抽取主世界地下流体。
@@ -61,3 +66,31 @@ vmd.miner.desc.5=电路配置超出 N+1 时机器静默待机；电路槽仅接�
 vmd.miner.desc.selection=当前选择：%s
 vmd.miner.selection.poor=贫瘠矿池
 vmd.miner.selection.mixed=全部矿物（加权随机）
+
+# Void Excavator 机器名
+gt.blockmachines.VoidExcavatorWooden.name=木质虚空挖土机
+gt.blockmachines.VoidExcavatorIron.name=虚空挖土机（铁）
+gt.blockmachines.VoidExcavatorSteel.name=虚空挖土机（钢）
+gt.blockmachines.VoidExcavatorTitanium.name=虚空挖土机（钛）
+gt.blockmachines.VoidExcavatorNaquadah.name=虚空挖土机（硅岩）
+gt.blockmachines.VoidExcavatorInfinity.name=虚空挖土机（无尽）
+
+# 木质虚空挖土机 tooltip
+vmd.excavator.desc.1=无需电力的木质挖土机，从虚空挖取所选维度的非矿物资源方块；资源表由配置文件驱动。
+vmd.excavator.desc.2=GUI 中的维度显示方块槽选择维度（不消耗）；空槽表示主世界默认资源。
+vmd.excavator.desc.3=每 200 tick 产出 1 个资源方块进入输出槽，并从正面推入相邻容器。
+vmd.excavator.desc.4=电路槽中的编程电路（配置 1..N）选择该维度资源表第 N 项；配置 0 或无电路 = 加权随机（权重 = 表中权重）。
+vmd.excavator.desc.5=电路配置超出资源数量时机器静默待机；资源表在 cheapervoidminers.cfg 的 excavator_resources 分类中配置。
+vmd.excavator.desc.selection=当前选择：%s
+vmd.excavator.gui.dimension_slot=维度显示方块：选择维度；空 = 主世界
+
+# 虚空挖土机 tooltip（多方块）
+vmd.mbe.machine_type=虚空挖土机
+vmd.mbe.info.1=从虚空挖取所选维度的非矿物资源方块；资源表由配置文件驱动（cheapervoidminers.cfg 的 excavator_resources 分类）。
+vmd.mbe.info.2=控制器槽位中的维度显示方块选择维度；留空则使用机器所在的维度。
+vmd.mbe.info.3=输入总线中的编程电路（配置 1..N）选择该维度资源表第 N 项资源；配置 0 或无电路时按表中权重加权随机。
+vmd.mbe.info.4=电路配置超出该维度的资源数量时，本周期失败并给出错误提示。
+vmd.mbe.info.5=输入总线中的钻头提升产量：铁 x1.25、钢 x1.5、钛 x1.75、硅岩 x2.0、无尽 x3.0（取存在的最高档）。每完成一个周期有 0.1% 概率消耗 1 个钻头。
+vmd.mbe.info.6=每 100 tick 产出 %s 个资源方块 × 并行数 × 钻头加成。
+vmd.mbe.structure.input_bus=输入总线（维度显示方块、钻头与编程电路）
+vmd.mbe.structure.output_bus=输出总线（资源输出，必需）

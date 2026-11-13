@@ -3,6 +3,7 @@ package com.jdz.vmd.common.loaders;
 import static gregtech.api.enums.GTValues.RA;
 import static gregtech.api.recipe.RecipeMaps.assemblerRecipes;
 
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
@@ -26,6 +27,8 @@ public class RecipeLoader {
         registerDrillerAssemblerRecipes();
         registerWoodenPumpCraftingRecipe();
         registerWoodenMinerCraftingRecipe();
+        registerWoodenExcavatorCraftingRecipe();
+        registerExcavatorAssemblerRecipes();
     }
 
     private static void registerVoidMinerConversionRecipes() {
@@ -197,6 +200,116 @@ public class RecipeLoader {
             GTModHandler.RecipeBits.BUFFERED | GTModHandler.RecipeBits.DO_NOT_CHECK_FOR_COLLISIONS,
             new Object[] { "LFL", "LSL", "LFL", 'L', OrePrefixes.log.get(Materials.Wood), 'F',
                 new ItemStack(Items.flint, 1, 32767), 'S', "stickWood" });
+    }
+
+    /**
+     * Shaped crafting recipe of the Wooden Void Excavator:
+     *
+     * <pre>
+     * log    flint    log
+     * log    dirt     log
+     * log    flint    log
+     * </pre>
+     *
+     * Same spellings as the Wooden Void Fluid Pump and Miner recipes; the dirt is the vanilla block item
+     * (the spelling GT itself uses for dirt stacks, e.g. the scrapbox drop table).
+     */
+    private static void registerWoodenExcavatorCraftingRecipe() {
+        GTModHandler.addCraftingRecipe(
+            ItemRegistry.VoidExcavatorWooden,
+            GTModHandler.RecipeBits.BUFFERED | GTModHandler.RecipeBits.DO_NOT_CHECK_FOR_COLLISIONS,
+            new Object[] { "LFL", "LDL", "LFL", 'L', OrePrefixes.log.get(Materials.Wood), 'F',
+                new ItemStack(Items.flint, 1, 32767), 'D', new ItemStack(Blocks.dirt, 1, 0) });
+    }
+
+    /**
+     * Assembler recipes of the five Void Excavator stages, one flat pattern each:
+     * casing x4 + frameGt x4 (Naquadah/Infinity x8) + drill head x1 + conveyor module x2 + circuit 12 x1.
+     * <p>
+     * The conveyor module of a stage uses the conveyor tier matching the machine voltage
+     * ({@code ItemList.Conveyor_Module_*}, the spelling GT's own assembler recipes use for conveyor
+     * modules, e.g. the Drone Centre recipe). All input stacks are validated before registration; a missing
+     * GT item aborts that machine's recipe with an error log instead of silently producing a broken recipe.
+     */
+    private static void registerExcavatorAssemblerRecipes() {
+        addExcavatorAssemblerRecipe(
+            ItemRegistry.VoidExcavatorIron,
+            ItemList.Casing_ULV,
+            Materials.Iron,
+            4,
+            ItemList.Conveyor_Module_LV,
+            TierEU.RECIPE_LV,
+            100);
+        addExcavatorAssemblerRecipe(
+            ItemRegistry.VoidExcavatorSteel,
+            ItemList.Casing_SolidSteel,
+            Materials.Steel,
+            4,
+            ItemList.Conveyor_Module_MV,
+            TierEU.RECIPE_MV,
+            200);
+        addExcavatorAssemblerRecipe(
+            ItemRegistry.VoidExcavatorTitanium,
+            ItemList.Casing_StableTitanium,
+            Materials.Titanium,
+            4,
+            ItemList.Conveyor_Module_HV,
+            TierEU.RECIPE_HV,
+            400);
+        addExcavatorAssemblerRecipe(
+            ItemRegistry.VoidExcavatorNaquadah,
+            // No dedicated Naquadah machine casing exists; the tungstensteel drilling casing stands in.
+            ItemList.Casing_RobustTungstenSteel,
+            Materials.Naquadah,
+            8,
+            ItemList.Conveyor_Module_LuV,
+            TierEU.RECIPE_LuV,
+            800);
+        addExcavatorAssemblerRecipe(
+            ItemRegistry.VoidExcavatorInfinity,
+            // No dedicated Infinity machine casing exists; the neutronium mining casing stands in.
+            ItemList.Casing_MiningNeutronium,
+            Materials.Infinity,
+            8,
+            ItemList.Conveyor_Module_UV,
+            TierEU.RECIPE_UV,
+            1600);
+    }
+
+    /**
+     * Registers one excavator assembler recipe; shared drill heads are validated by
+     * {@link #validateDrillHeads()}. The drill head material follows the stage ladder, which is identical to
+     * the frame material (Iron/Steel/Titanium/Naquadah/Infinity).
+     */
+    private static void addExcavatorAssemblerRecipe(ItemStack output, ItemList casing, Materials frameMaterial,
+        int frameCount, ItemList conveyor, long euTier, int durationTicks) {
+        final ItemStack casingStack = casing.get(4);
+        final ItemStack frameStack = GTOreDictUnificator.get(OrePrefixes.frameGt, frameMaterial, frameCount);
+        final ItemStack conveyorStack = conveyor.get(2);
+        final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, frameMaterial, 1);
+        final ItemStack circuitStack = ItemList.Circuit_Integrated.getWithDamage(1L, 12L);
+
+        if (casingStack == null || frameStack == null
+            || conveyorStack == null
+            || drillStack == null
+            || circuitStack == null) {
+            LOG.error(
+                "Cannot register assembler recipe for {}: a required GT item stack is missing (casing={}, frame={}, conveyor={}, drill={}, circuit={})",
+                output.getDisplayName(),
+                casingStack != null,
+                frameStack != null,
+                conveyorStack != null,
+                drillStack != null,
+                circuitStack != null);
+            return;
+        }
+
+        RA.stdBuilder()
+            .itemInputs(casingStack, frameStack, conveyorStack, drillStack, circuitStack)
+            .itemOutputs(output)
+            .duration(durationTicks)
+            .eut(euTier)
+            .addTo(assemblerRecipes);
     }
 
     /** The fired clay bucket, following the same lookup as GT's own container registration. */
