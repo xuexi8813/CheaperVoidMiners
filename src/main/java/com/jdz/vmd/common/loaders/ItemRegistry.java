@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import com.jdz.vmd.api.enums.MetaTileEntityIDs;
 import com.jdz.vmd.common.tileentities.MTEVoidFluidDrillers;
 import com.jdz.vmd.common.tileentities.MTEVoidFluidPumpWooden;
+import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
 import com.jdz.vmd.common.tileentities.MTEVoidMiners;
 
 public class ItemRegistry {
@@ -23,6 +24,7 @@ public class ItemRegistry {
     public static ItemStack VoidFluidDrillerNaquadah;
     public static ItemStack VoidFluidDrillerInfinity;
     public static ItemStack VoidFluidPumpWooden;
+    public static ItemStack VoidMinerWooden;
 
     public static void run() {
         ItemRegistry.VoidMinerEX1 = new MTEVoidMiners.VMLV(VoidMinerEX1Controller.ID, "VoidMinerEX1", "Void Miner EX I")
@@ -61,5 +63,10 @@ public class ItemRegistry {
             MetaTileEntityIDs.VoidFluidPumpWooden.ID,
             "VoidFluidPumpWooden",
             "Wooden Void Fluid Pump").getStackForm(1L);
+
+        ItemRegistry.VoidMinerWooden = new MTEVoidMinerWooden(
+            MetaTileEntityIDs.VoidMinerWooden.ID,
+            "VoidMinerWooden",
+            "Wooden Void Miner").getStackForm(1L);
     }
 }

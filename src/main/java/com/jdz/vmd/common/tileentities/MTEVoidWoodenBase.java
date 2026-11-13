@@ -19,6 +19,7 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.implementations.MTEBasicTank;
 import gregtech.api.objects.GTUODimension;
 import gregtech.api.objects.GTUOFluid;
+import gregtech.api.util.GTItemTransfer;
 import gregtech.api.util.GTUtility;
 
 /**
@@ -141,8 +142,19 @@ public abstract class MTEVoidWoodenBase extends MTEBasicTank implements IConfigu
         super.onPostTick(aBaseMetaTileEntity, aTick);
         if (!aBaseMetaTileEntity.isServerSide()) return;
 
-        if (aTick % PRODUCTION_CYCLE_TICKS == 0) tryProduce();
-        if (aTick % AUTO_OUTPUT_INTERVAL_TICKS == 0) tryAutoOutput();
+        if (aTick % getProductionCycleTicks() == 0) tryProduce();
+        if (aTick % AUTO_OUTPUT_INTERVAL_TICKS == 0) {
+            tryAutoOutput();
+            tryAutoOutputItems();
+        }
+    }
+
+    /**
+     * Ticks between two production attempts. Overridable so machines of the family can run at their own
+     * pace; the default matches the wooden pump.
+     */
+    protected int getProductionCycleTicks() {
+        return PRODUCTION_CYCLE_TICKS;
     }
 
     /**
@@ -192,6 +204,23 @@ public abstract class MTEVoidWoodenBase extends MTEBasicTank implements IConfigu
         final IFluidHandler target = base.getITankContainerAtSide(side);
         if (target == null) return;
         GTUtility.moveFluid(this, target, side, mFluid.amount, null);
+    }
+
+    /**
+     * Pushes the content of the item output slot into the inventory neighbor at the front face, following
+     * the GT singleblock output convention ({@code MTEHatchOutputBus}). The circuit slot is excluded from
+     * the transfer and from the cleanup below (the configured circuit is a zero-size stack), and the wooden
+     * fluid pump never fills the output slot, so this is a cheap emptiness check there.
+     */
+    protected void tryAutoOutputItems() {
+        if (mInventory[getOutputSlot()] == null) return;
+        final IGregTechTileEntity base = getBaseMetaTileEntity();
+        final GTItemTransfer transfer = new GTItemTransfer();
+        transfer.push(base, base.getFrontFacing());
+        transfer.setSourceSlots(getOutputSlot());
+        if (transfer.transfer() > 0) {
+            GTUtility.cleanInventory(this, getOutputSlot(), getOutputSlot() + 1);
+        }
     }
 
     /** Configuration value of the inserted integrated circuit, or 0 when the slot holds none. */

@@ -11,7 +11,8 @@ public enum MetaTileEntityIDs {
     VoidFluidDrillerTitanium(26769),
     VoidFluidDrillerNaquadah(26770),
     VoidFluidDrillerInfinity(26771),
-    VoidFluidPumpWooden(26772);
+    VoidFluidPumpWooden(26772),
+    VoidMinerWooden(26773);
 
     public final int ID;
 

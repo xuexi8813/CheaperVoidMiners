@@ -3,6 +3,7 @@ package com.jdz.vmd.common.loaders;
 import static gregtech.api.enums.GTValues.RA;
 import static gregtech.api.recipe.RecipeMaps.assemblerRecipes;
 
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +25,7 @@ public class RecipeLoader {
         registerVoidMinerConversionRecipes();
         registerDrillerAssemblerRecipes();
         registerWoodenPumpCraftingRecipe();
+        registerWoodenMinerCraftingRecipe();
     }
 
     private static void registerVoidMinerConversionRecipes() {
@@ -172,6 +174,29 @@ public class RecipeLoader {
             GTModHandler.RecipeBits.BUFFERED | GTModHandler.RecipeBits.DO_NOT_CHECK_FOR_COLLISIONS,
             new Object[] { "LPL", "LBL", "LLL", 'L', OrePrefixes.log.get(Materials.Wood), 'P',
                 OrePrefixes.pipeMedium.get(Materials.Bronze), 'B', clayBucket });
+    }
+
+    /**
+     * Shaped crafting recipe of the Wooden Void Miner:
+     *
+     * <pre>
+     * log    flint    log
+     * log    stick    log
+     * log    flint    log
+     * </pre>
+     *
+     * The log uses the {@code logWood} ore dictionary entry (via {@link OrePrefixes#log} of Wood, the same
+     * spelling as the Wooden Void Fluid Pump recipe), the flint is the vanilla item (with wildcard damage,
+     * the same spelling as the GT5u crafting recipe loader) and the stick is the {@code stickWood} ore
+     * dictionary entry (GT's recipe handler resolves plain strings against the ore dictionary, the same
+     * spelling as the BartWorks crafting recipes).
+     */
+    private static void registerWoodenMinerCraftingRecipe() {
+        GTModHandler.addCraftingRecipe(
+            ItemRegistry.VoidMinerWooden,
+            GTModHandler.RecipeBits.BUFFERED | GTModHandler.RecipeBits.DO_NOT_CHECK_FOR_COLLISIONS,
+            new Object[] { "LFL", "LSL", "LFL", 'L', OrePrefixes.log.get(Materials.Wood), 'F',
+                new ItemStack(Items.flint, 1, 32767), 'S', "stickWood" });
     }
 
     /** The fired clay bucket, following the same lookup as GT's own container registration. */

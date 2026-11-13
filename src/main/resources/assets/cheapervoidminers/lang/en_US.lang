@@ -48,3 +48,16 @@ vmd.pump.desc.4=The internal buffer never mixes fluids; switch the circuit only 
 vmd.pump.desc.5=The circuit slot only accepts programmed circuits from automation.
 vmd.pump.desc.selection=Current selection: %s
 vmd.pump.selection.invalid=Invalid circuit configuration
+
+# Wooden Void Miner
+gt.blockmachines.VoidMinerWooden.name=Wooden Void Miner
+
+# Wooden Void Miner tooltip
+vmd.miner.desc.1=Non-electric wooden miner that pulls ore items from the Overworld ore generation tables without breaking blocks.
+vmd.miner.desc.2=Produces 1 ore item every 100 ticks into its output slot and pushes it into the inventory at its front face.
+vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein; configuration N+1 selects the poor (small) ore pool.
+vmd.miner.desc.4=Configuration 0 or no circuit mixes all veins and poor ores into one weighted pool (weights = generation weights).
+vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the circuit slot only accepts programmed circuits from automation.
+vmd.miner.desc.selection=Current selection: %s
+vmd.miner.selection.poor=Poor ore pool
+vmd.miner.selection.mixed=All ores (weighted)
