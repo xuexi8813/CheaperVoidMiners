@@ -35,6 +35,11 @@ vmd.gui.planet.unknown=Unknown
 vmd.gui.drill.none=None
 vmd.gui.resource=Resource: %s
 
+# NEI output recipe maps (tab names)
+vmd.recipe.voidfluiddriller=Void Fluid Driller
+vmd.recipe.voidexcavator=Void Excavator
+vmd.recipe.woodenminer=Wooden Void Miner
+
 # Recipe check result messages (SimpleCheckRecipeResult keys)
 GT5U.gui.text.recipe_result.vmd_drilling=Extracting underground fluids
 GT5U.gui.text.recipe_result.vmd_no_fluid_data=No underground fluid data for this dimension

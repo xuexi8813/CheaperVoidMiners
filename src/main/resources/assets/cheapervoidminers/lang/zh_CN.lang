@@ -35,6 +35,11 @@ vmd.gui.planet.unknown=未知
 vmd.gui.drill.none=无
 vmd.gui.resource=资源：%s
 
+# NEI 产出配方 map（标签页名）
+vmd.recipe.voidfluiddriller=虚空液体钻机
+vmd.recipe.voidexcavator=虚空挖土机
+vmd.recipe.woodenminer=木质虚空矿机
+
 # 配方检查结果消息（SimpleCheckRecipeResult 键）
 GT5U.gui.text.recipe_result.vmd_drilling=正在抽取地下流体
 GT5U.gui.text.recipe_result.vmd_no_fluid_data=该维度没有地下流体数据

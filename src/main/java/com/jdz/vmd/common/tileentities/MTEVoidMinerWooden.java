@@ -11,6 +11,7 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.bsideup.jabel.Desugar;
+import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 
 import galacticgreg.api.enums.DimensionDef;
 import gregtech.api.enums.StoneType;
@@ -19,6 +20,7 @@ import gregtech.api.interfaces.IStoneType;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GTUtility;
 import gregtech.common.WorldgenGTOreLayer;
@@ -52,17 +54,28 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
 
     /** A weighted entry of an ore pool. */
     @Desugar
-    private record WeightedOre(ItemStack stack, float weight) {}
+    public record WeightedOre(ItemStack stack, float weight) {}
 
     /** One ore vein: the four vein materials expanded over the Overworld stone types. */
-    private static final class OreVein {
+    public static final class OreVein {
 
-        private final String name;
-        private final List<WeightedOre> drops = new ArrayList<>();
+        public final String name;
+        public final List<WeightedOre> drops = new ArrayList<>();
 
-        private OreVein(String name) {
+        public OreVein(String name) {
             this.name = name;
         }
+    }
+
+    /**
+     * The three Overworld ore pools built by {@link #buildOverworldPools()}; shared between machine
+     * instances and the NEI output recipe registration, so both sides see identical data.
+     */
+    public static final class OverworldPools {
+
+        public final List<OreVein> veins = new ArrayList<>();
+        public final List<WeightedOre> smallOres = new ArrayList<>();
+        public final List<WeightedOre> mixed = new ArrayList<>();
     }
 
     /** Session wide flag so empty ore tables are reported once instead of every cycle. */
@@ -70,9 +83,9 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
 
     // Ore pools, built lazily once per machine instance (server and client both need them).
     private boolean poolsBuilt = false;
-    private final List<OreVein> veinPool = new ArrayList<>();
-    private final List<WeightedOre> smallOrePool = new ArrayList<>();
-    private final List<WeightedOre> mixedPool = new ArrayList<>();
+    private List<OreVein> veinPool = new ArrayList<>();
+    private List<WeightedOre> smallOrePool = new ArrayList<>();
+    private List<WeightedOre> mixedPool = new ArrayList<>();
 
     public MTEVoidMinerWooden(int aID, String aName, String aNameRegional) {
         super(aID, aName, aNameRegional, "");
@@ -85,6 +98,11 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     @Override
     public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
         return new MTEVoidMinerWooden(this.mName, this.mTextures);
+    }
+
+    @Override
+    public RecipeMap<?> getRecipeMap() {
+        return VmdRecipeMaps.woodenMinerRecipes;
     }
 
     /**************************************************************************
@@ -151,6 +169,18 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
 
     private void buildOrePools() {
         poolsBuilt = true;
+        final OverworldPools pools = buildOverworldPools();
+        this.veinPool = pools.veins;
+        this.smallOrePool = pools.smallOres;
+        this.mixedPool = pools.mixed;
+    }
+
+    /**
+     * Builds the three Overworld ore pools from the GT5u worldgen tables; the same data source, expansion
+     * rules and ordering the machine itself uses, exposed for the NEI output recipe registration.
+     */
+    public static OverworldPools buildOverworldPools() {
+        final OverworldPools pools = new OverworldPools();
 
         final List<StoneType> stones = DimensionHelper.getStoneTypes(OVERWORLD_DIM_NAME);
 
@@ -166,8 +196,8 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
             addMaterialDrops(vein, layer.mSporadic, stones, layer.mWeight / SPORADIC_WEIGHT_DIVISOR);
             addMaterialDrops(vein, layer.mBetween, stones, layer.mWeight / SPORADIC_WEIGHT_DIVISOR);
             if (vein.drops.isEmpty()) continue;
-            veinPool.add(vein);
-            mixedPool.addAll(vein.drops);
+            pools.veins.add(vein);
+            pools.mixed.addAll(vein.drops);
         }
 
         for (WorldgenGTOreSmallPieces piece : WorldgenGTOreSmallPieces.sList) {
@@ -177,14 +207,15 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
 
             VoidOreTableHelper.forEachSmallOreDrop(piece, stones, (stack, weight) -> {
                 final WeightedOre drop = new WeightedOre(stack, weight);
-                smallOrePool.add(drop);
-                mixedPool.add(drop);
+                pools.smallOres.add(drop);
+                pools.mixed.add(drop);
             });
         }
+        return pools;
     }
 
     /** Expands one vein material over the stone types; a missing adapter stops the expansion early. */
-    private void addMaterialDrops(OreVein vein, IOreMaterial material, List<StoneType> stones, float weight) {
+    private static void addMaterialDrops(OreVein vein, IOreMaterial material, List<StoneType> stones, float weight) {
         if (material == null) return;
         for (IStoneType stone : stones) {
             final ItemStack stack = VoidOreTableHelper.resolveOreStack(material, stone, false);

@@ -5,10 +5,13 @@ import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_FRONT_WATER_PUMP;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.jdz.vmd.api.recipe.VmdRecipeMaps;
+
 import gregtech.api.enums.ItemList;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.render.TextureFactory;
 
 /**
@@ -35,6 +38,11 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
     @Override
     public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
         return new MTEVoidFluidPumpWooden(this.mName, this.mTextures);
+    }
+
+    @Override
+    public RecipeMap<?> getRecipeMap() {
+        return VmdRecipeMaps.voidFluidDrillerRecipes;
     }
 
     /**************************************************************************

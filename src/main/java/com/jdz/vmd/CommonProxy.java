@@ -1,13 +1,15 @@
 package com.jdz.vmd;
 
+import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 import com.jdz.vmd.common.loaders.ItemRegistry;
 import com.jdz.vmd.common.loaders.RecipeLoader;
+import com.jdz.vmd.common.loaders.VmdOutputRecipeLoader;
 import com.jdz.vmd.common.tileentities.VoidOreTableHelper;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 public class CommonProxy {
 
@@ -18,6 +20,10 @@ public class CommonProxy {
     // load "Do your mod setup. Build whatever data structures you care about. Register recipes." (Remove if not needed)
     public void init(FMLInitializationEvent event) {
         ItemRegistry.run();
+        // Load the NEI output recipe maps early: NEI builds its handler list from every registered recipe
+        // category while it processes its config load, which can happen during postInit - before
+        // LoadComplete would first touch the class.
+        VmdRecipeMaps.register();
     }
 
     // postInit "Handle interaction with other mods, complete your setup based on this." (Remove if not needed)
@@ -25,11 +31,14 @@ public class CommonProxy {
         RecipeLoader.run();
     }
 
-    // register server commands in this event handler (Remove if not needed)
-    public void serverStarting(FMLServerStartingEvent event) {
-        // Runs after GT generated the void miner drop maps (BartWorks builds them on FMLLoadCompleteEvent)
-        // and before any void miner machine computes its distribution cache on its first tick, so the
-        // appended poor ores survive; the append itself is idempotent across repeated server starts.
+    /**
+     * End of mod loading. FMLLoadCompleteEvent is dispatched in mod id order, so BartWorks
+     * ("bartworks" < "cheapervoidminers") has already run {@code VoidMinerUtility.generateDropMaps()}
+     * including its own output recipes when this handler runs. Appending the poor ores afterwards is
+     * therefore safe, and the NEI output recipes registered right after include them.
+     */
+    public void loadComplete(FMLLoadCompleteEvent event) {
         VoidOreTableHelper.appendPoorOresToVoidMinerDropMaps();
+        VmdOutputRecipeLoader.register();
     }
 }

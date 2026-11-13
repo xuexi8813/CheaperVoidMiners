@@ -32,6 +32,7 @@ import com.gtnewhorizons.modularui.common.widget.DynamicPositionedColumn;
 import com.gtnewhorizons.modularui.common.widget.FakeSyncWidget;
 import com.gtnewhorizons.modularui.common.widget.SlotWidget;
 import com.gtnewhorizons.modularui.common.widget.TextWidget;
+import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 
 import galacticgreg.api.ModDimensionDef;
 import galacticgreg.api.enums.DimensionDef;
@@ -44,6 +45,7 @@ import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.implementations.MTEEnhancedMultiBlockBase;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.check.CheckRecipeResult;
 import gregtech.api.recipe.check.SimpleCheckRecipeResult;
 import gregtech.api.render.TextureFactory;
@@ -538,6 +540,11 @@ public abstract class MTEVoidExcavatorBase<T extends MTEVoidExcavatorBase<T>> ex
     /**************************************************************************
      * Boilerplate required by the multiblock base.
      *************************************************************************/
+
+    @Override
+    public RecipeMap<?> getRecipeMap() {
+        return VmdRecipeMaps.voidExcavatorRecipes;
+    }
 
     @Override
     public int getMaxEfficiency(ItemStack aStack) {

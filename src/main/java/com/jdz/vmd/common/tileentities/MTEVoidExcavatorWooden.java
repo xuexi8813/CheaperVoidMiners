@@ -13,11 +13,13 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.gtnewhorizons.modularui.api.screen.ModularWindow;
 import com.gtnewhorizons.modularui.api.screen.UIBuildContext;
 import com.gtnewhorizons.modularui.common.widget.SlotWidget;
+import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 
 import gregtech.api.enums.ItemList;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GTUtility;
 
@@ -57,6 +59,11 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
     @Override
     public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
         return new MTEVoidExcavatorWooden(this.mName, this.mTextures);
+    }
+
+    @Override
+    public RecipeMap<?> getRecipeMap() {
+        return VmdRecipeMaps.voidExcavatorRecipes;
     }
 
     /** Slot of the dimension display block; the block is configuration, not a consumable. */

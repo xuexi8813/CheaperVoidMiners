@@ -3,9 +3,9 @@ package com.jdz.vmd;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 @Mod(
     modid = CheaperVoidMiners.MODID,
@@ -42,8 +42,8 @@ public class CheaperVoidMiners {
     }
 
     @Mod.EventHandler
-    // register server commands in this event handler (Remove if not needed)
-    public void serverStarting(FMLServerStartingEvent event) {
-        proxy.serverStarting(event);
+    // loadComplete: late cross-mod hooks that must run after every mod finished its own loading.
+    public void loadComplete(FMLLoadCompleteEvent event) {
+        proxy.loadComplete(event);
     }
 }

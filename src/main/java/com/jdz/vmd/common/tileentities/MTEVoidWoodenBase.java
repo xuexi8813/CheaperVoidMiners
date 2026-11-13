@@ -16,9 +16,11 @@ import gregtech.api.enums.ItemList;
 import gregtech.api.interfaces.IConfigurationCircuitSupport;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
+import gregtech.api.interfaces.tileentity.RecipeMapWorkable;
 import gregtech.api.metatileentity.implementations.MTEBasicTank;
 import gregtech.api.objects.GTUODimension;
 import gregtech.api.objects.GTUOFluid;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.util.GTItemTransfer;
 import gregtech.api.util.GTUtility;
 
@@ -35,7 +37,8 @@ import gregtech.api.util.GTUtility;
  * accepts integrated circuits from automation and the machine only reads circuits from it), the fluid slot
  * shows the internal buffer.
  */
-public abstract class MTEVoidWoodenBase extends MTEBasicTank implements IConfigurationCircuitSupport {
+public abstract class MTEVoidWoodenBase extends MTEBasicTank
+    implements IConfigurationCircuitSupport, RecipeMapWorkable {
 
     /** Ticks between two production attempts. */
     public static final int PRODUCTION_CYCLE_TICKS = 200;
@@ -231,6 +234,13 @@ public abstract class MTEVoidWoodenBase extends MTEBasicTank implements IConfigu
         }
         return 0;
     }
+
+    /**
+     * NEI output recipe map of this machine; every wooden family member reports the map its outputs are
+     * documented in (see {@link RecipeMapWorkable} for the NEI catalyst registration contract).
+     */
+    @Override
+    public abstract RecipeMap<?> getRecipeMap();
 
     /**
      * Localized description of the fluid the machine would currently select, or the weighted random label;
