@@ -8,7 +8,6 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.bsideup.jabel.Desugar;
 import com.jdz.vmd.api.recipe.VmdRecipeMaps;
@@ -22,7 +21,6 @@ import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.render.TextureFactory;
-import gregtech.api.util.GTUtility;
 import gregtech.common.WorldgenGTOreLayer;
 import gregtech.common.WorldgenGTOreSmallPieces;
 import gtneioreplugin.util.DimensionHelper;
@@ -91,11 +89,11 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     private List<WeightedOre> mixedPool = new ArrayList<>();
 
     public MTEVoidMinerWooden(int aID, String aName, String aNameRegional) {
-        super(aID, aName, aNameRegional, "");
+        super(aID, aName, aNameRegional, "", 1, 1);
     }
 
     public MTEVoidMinerWooden(String aName, ITexture[][][] aTextures) {
-        super(aName, new String[] { "" }, aTextures);
+        super(aName, new String[] { "" }, aTextures, 1, 1);
     }
 
     @Override
@@ -108,24 +106,24 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         return VmdRecipeMaps.woodenMinerRecipes;
     }
 
-    /**************************************************************************
-     * Production.
-     *************************************************************************/
-
     @Override
     protected int getProductionCycleTicks() {
         return MINER_PRODUCTION_CYCLE_TICKS;
     }
 
+    /**************************************************************************
+     * Production.
+     *************************************************************************/
+
     @Override
-    protected void tryProduce() {
+    public int checkRecipe() {
         if (!poolsBuilt) buildOrePools();
         if (mixedPool.isEmpty()) {
             if (!warnedEmptyOverworldPools) {
                 warnedEmptyOverworldPools = true;
                 log().warn("Overworld ore vein and small ore tables are empty, Wooden Void Miner idles");
             }
-            return;
+            return DID_NOT_FIND_RECIPE;
         }
 
         final int config = readCircuitConfig();
@@ -138,16 +136,17 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         } else if (config == veinPool.size() + 1) {
             pool = smallOrePool;
         } else {
-            return; // Beyond the pool count: idle, mirroring the wooden pump behavior.
+            return DID_NOT_FIND_RECIPE; // Beyond the pool count: idle, mirroring the wooden machine family.
         }
-        if (pool.isEmpty()) return;
+        if (pool.isEmpty()) return DID_NOT_FIND_RECIPE;
 
-        final WeightedOre pick = weightedPick(pool);
-        // addStackToSlot merges into a same stack up to its max size; a blocked slot (different ore and no
-        // ejection space) simply skips the cycle until the output slot drains through the front face.
-        if (getBaseMetaTileEntity().addStackToSlot(getOutputSlot(), GTUtility.copyAmount(1, pick.stack()))) {
-            markDirty();
-        }
+        final ItemStack output = singleOutput(weightedPick(pool).stack());
+        // A full output slot or a different ore still inside stalls the machine until the slot drains.
+        if (!canOutput(output)) return DID_NOT_FIND_RECIPE;
+
+        mOutputItems[0] = output;
+        mMaxProgresstime = getProductionCycleTicks();
+        return FOUND_AND_SUCCESSFULLY_USED_RECIPE;
     }
 
     /** Weighted random pick over a pool; the roll partitions [0, total) exactly like the fluid helper. */
@@ -236,30 +235,11 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
      *************************************************************************/
 
     @Override
-    public ITexture[][][] getTextureSet(ITexture[] aTextures) {
-        final ITexture body = TextureFactory.of(ItemListWoodenCasingBlock(), ItemListWoodenCasingMeta());
-        final ITexture front = TextureFactory.builder()
+    protected ITexture getFrontOverlay() {
+        return TextureFactory.builder()
             .addIcon(OVERLAY_FRONT_ORE_DRILL)
             .extFacing()
             .build();
-
-        final ITexture[][][] rTextures = new ITexture[2][17][];
-        for (byte c = -1; c < 16; c++) {
-            rTextures[0][c + 1] = new ITexture[] { body };
-            rTextures[1][c + 1] = new ITexture[] { body, front };
-        }
-        return rTextures;
-    }
-
-    @Override
-    public ITexture[] getTexture(IGregTechTileEntity aBaseMetaTileEntity, ForgeDirection side, ForgeDirection aFacing,
-        int colorIndex, boolean aActive, boolean redstoneLevel) {
-        return mTextures[side == aFacing ? 1 : 0][colorIndex + 1];
-    }
-
-    @Override
-    public boolean isFacingValid(ForgeDirection facing) {
-        return true;
     }
 
     /**************************************************************************
@@ -275,7 +255,6 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     }
 
     /** Human readable name of what the inserted circuit currently selects. */
-    @Override
     protected String describeCurrentSelection() {
         if (!poolsBuilt) buildOrePools();
 
@@ -290,15 +269,5 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
             return StatCollector.translateToLocal("vmd.miner.selection.mixed");
         }
         return StatCollector.translateToLocal("vmd.pump.selection.invalid");
-    }
-
-    /** Resolves lazily so the class can be loaded before GT registers its blocks. */
-    private static net.minecraft.block.Block ItemListWoodenCasingBlock() {
-        return gregtech.api.enums.ItemList.WoodenCasing.getBlock();
-    }
-
-    private static int ItemListWoodenCasingMeta() {
-        return gregtech.api.enums.ItemList.WoodenCasing.get(0)
-            .getItemDamage();
     }
 }

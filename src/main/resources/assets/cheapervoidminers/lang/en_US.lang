@@ -58,10 +58,10 @@ GT5U.gui.text.recipe_result.vmd_excavator_output_full=Item output full
 
 # Wooden Void Fluid Pump tooltip
 vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground fluids.
-vmd.pump.desc.2=Produces 100mB every 200 ticks into its internal buffer and pushes it into the fluid handler at its front face.
+vmd.pump.desc.2=Produces 100mB every 200 ticks into its internal output tank; a full or incompatible tank stalls the machine, draw the fluid out with pipes from any non-main face.
 vmd.pump.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld fluid; configuration 0 or no circuit = weighted random.
-vmd.pump.desc.4=The internal buffer never mixes fluids; switch the circuit only after it is drained.
-vmd.pump.desc.5=The circuit slot only accepts programmed circuits from automation.
+vmd.pump.desc.4=The internal tank never mixes fluids; switch the circuit only after it is drained.
+vmd.pump.desc.5=The circuit slot (first input slot) only accepts programmed circuits.
 vmd.pump.desc.selection=Current selection: %s
 vmd.pump.selection.invalid=Invalid circuit configuration
 
@@ -70,10 +70,10 @@ gt.blockmachines.VoidMinerWooden.name=Wooden Void Miner
 
 # Wooden Void Miner tooltip
 vmd.miner.desc.1=Non-electric wooden miner that pulls ore items from the Overworld ore generation tables without breaking blocks.
-vmd.miner.desc.2=Produces 1 ore item every 100 ticks into its output slot and pushes it into the inventory at its front face.
+vmd.miner.desc.2=Produces 1 ore item every 100 ticks into its output slot; a full slot stalls the machine, take the output out manually or with a conveyor.
 vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein; configuration N+1 selects the poor (small) ore pool.
 vmd.miner.desc.4=Configuration 0 or no circuit mixes all veins and poor ores into one weighted pool (weights = generation weights).
-vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the circuit slot only accepts programmed circuits from automation.
+vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the circuit slot (first input slot) only accepts programmed circuits.
 vmd.miner.desc.selection=Current selection: %s
 vmd.miner.selection.poor=Poor ore pool
 vmd.miner.selection.mixed=All ores (weighted)
@@ -88,12 +88,11 @@ gt.blockmachines.VoidExcavatorInfinity.name=Void Excavator (Infinity)
 
 # Wooden Void Excavator tooltip
 vmd.excavator.desc.1=Non-electric wooden excavator that digs plain (non ore) resource blocks of a chosen dimension out of the void; the resource tables are config driven.
-vmd.excavator.desc.2=The dimension display block in the GUI display slot selects the dimension (not consumed); an empty slot means the Overworld default resources.
-vmd.excavator.desc.3=Produces 1 resource block every 200 ticks into its output slot and pushes it into the inventory at its front face.
-vmd.excavator.desc.4=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th resource of that dimension's table; configuration 0 or no circuit = weighted random (weights = table weights).
+vmd.excavator.desc.2=The second input slot takes a dimension display block to select the dimension (not consumed); an empty slot means the Overworld default resources.
+vmd.excavator.desc.3=Produces 1 resource block every 200 ticks into its output slot; a full slot stalls the machine, take the output out manually or with a conveyor.
+vmd.excavator.desc.4=Programmed circuit (configuration 1..N) in the circuit slot (first input slot) selects the N-th resource of that dimension's table; configuration 0 or no circuit = weighted random (weights = table weights).
 vmd.excavator.desc.5=A circuit configuration beyond the resource count idles the machine; resource tables are configured in cheapervoidminers.cfg, category excavator_resources.
 vmd.excavator.desc.selection=Current selection: %s
-vmd.excavator.gui.dimension_slot=Dimension Display block: selects the dimension; empty = Overworld
 
 # Void Excavator tooltip (multiblock)
 vmd.mbe.machine_type=Void Excavator

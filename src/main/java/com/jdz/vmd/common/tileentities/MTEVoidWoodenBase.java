@@ -1,229 +1,332 @@
 package com.jdz.vmd.common.tileentities;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidHandler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.cleanroommc.modularui.factory.PosGuiData;
+import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.UISettings;
+import com.cleanroommc.modularui.value.sync.PanelSyncManager;
+import com.jdz.vmd.common.gui.MTEVoidWoodenBaseGui;
+
 import gregtech.api.enums.ItemList;
-import gregtech.api.interfaces.IConfigurationCircuitSupport;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
-import gregtech.api.interfaces.tileentity.RecipeMapWorkable;
-import gregtech.api.metatileentity.implementations.MTEBasicTank;
-import gregtech.api.objects.GTUODimension;
-import gregtech.api.objects.GTUOFluid;
-import gregtech.api.recipe.RecipeMap;
-import gregtech.api.util.GTItemTransfer;
+import gregtech.api.metatileentity.implementations.MTEBasicMachine;
+import gregtech.api.recipe.BasicUIProperties;
+import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GTUtility;
+import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 
 /**
- * Shared base of the wooden, non-electric void machines (currently the Wooden Void Fluid Pump; upcoming
- * wooden miners will extend this as well).
+ * Shared base of the wooden, non-electric void machines (Wooden Void Fluid Pump, Wooden Void Miner,
+ * Wooden Void Excavator), built on the GT standard small machine family
+ * ({@link MTEBasicMachine}, the same base as the bronze machines but without the steam part).
  * <p>
- * Motivation: the wooden family runs without any energy hatch and works on a pure tick timer, so
- * {@link MTEBasicTank} (tank plumbing + standard singleblock ModularUI, no power logic) is the closest GT5u
- * base. This class adds the dedicated programmed-circuit slot, the production cycle and the fluid auto
- * output; concrete machines only implement the per-cycle production.
+ * Motivation: the wooden family runs without any energy source on a pure production cycle, so it uses the
+ * standard machine base with tier 0 / amperage 0 and its recipe cycle, gaining the classic machine GUI
+ * (input slot with progress bar and output slot), wrench rotation with the standard main/output facing
+ * split, redstone working control and the 14 face texture system. The production itself is implemented per
+ * machine in {@link #checkRecipe()}: it selects the output (circuit configuration or weighted random),
+ * checks that the internal output has room, and lets the standard cycle place the output into the internal
+ * output slot / output tank when the cycle finishes. Nothing is pushed to neighbors - outputs stay inside
+ * until taken out (pipes, conveyors, manual) and a full internal output stalls the machine.
  * <p>
- * GUI: the standard MTEBasicTank GUI is reused; the tank input slot doubles as the circuit slot (it only
- * accepts integrated circuits from automation and the machine only reads circuits from it), the fluid slot
- * shows the internal buffer.
+ * Slot layout follows the {@link MTEBasicMachine} convention: the first input slot doubles as the
+ * programmed circuit slot (a real circuit item, no ghost slot), the wooden excavator adds a second input
+ * slot for the dimension display block. The internal tank of the tank base remains available as the pump's
+ * fluid output tank.
  */
-public abstract class MTEVoidWoodenBase extends MTEBasicTank
-    implements IConfigurationCircuitSupport, RecipeMapWorkable {
+public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
 
     /** Ticks between two production attempts. */
     public static final int PRODUCTION_CYCLE_TICKS = 200;
     /** Fluid produced per successful production cycle, in mB. */
     public static final int PRODUCTION_AMOUNT_MB = 100;
-    /** Ticks between two auto output attempts against the front neighbor. */
-    public static final int AUTO_OUTPUT_INTERVAL_TICKS = 20;
-    /** Internal fluid buffer capacity, in mB. */
+    /** Internal fluid output tank capacity, in mB. */
     public static final int TANK_CAPACITY_MB = 8000;
 
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
 
-    /** Session wide flag so a broken Overworld table is reported once instead of every cycle. */
-    private static boolean warnedNoOverworldTable = false;
-
-    public MTEVoidWoodenBase(int aID, String aName, String aNameRegional, String aDescription) {
-        super(aID, aName, aNameRegional, 0, 3, aDescription);
+    public MTEVoidWoodenBase(int aID, String aName, String aNameRegional, String aDescription, int aInputSlotCount,
+        int aOutputSlotCount) {
+        super(aID, aName, aNameRegional, 0, 0, aDescription, aInputSlotCount, aOutputSlotCount);
     }
 
-    public MTEVoidWoodenBase(String aName, String[] aDescription, ITexture[][][] aTextures) {
-        super(aName, 0, 3, aDescription, aTextures);
+    public MTEVoidWoodenBase(String aName, String[] aDescription, ITexture[][][] aTextures, int aInputSlotCount,
+        int aOutputSlotCount) {
+        super(aName, 0, 0, aDescription, aTextures, aInputSlotCount, aOutputSlotCount);
     }
 
     /**************************************************************************
-     * Tank and slot configuration.
+     * Slot configuration.
      *************************************************************************/
 
-    @Override
-    public boolean doesFillContainers() {
-        return false;
-    }
-
-    @Override
-    public boolean doesEmptyContainers() {
-        return false;
-    }
-
-    @Override
-    public boolean canTankBeFilled() {
-        // Output-only buffer: neighbors may drain it, nothing may push into it.
-        return false;
-    }
-
-    @Override
-    public boolean canTankBeEmptied() {
-        return true;
-    }
-
-    @Override
-    public int getCapacity() {
-        return TANK_CAPACITY_MB;
-    }
-
-    @Override
-    public boolean willExplodeInRain() {
-        // Wooden non-steam machine, rain proof like the vanilla tanks it imitates.
-        return false;
-    }
-
-    /** The tank input slot doubles as the programmed circuit slot. */
-    @Override
-    public int getInputSlot() {
-        return 0;
-    }
-
+    /**
+     * The first input slot doubles as the programmed circuit slot, keeping the circuit semantics of the
+     * previous GUI (a real circuit item, not a ghost slot).
+     */
     @Override
     public int getCircuitSlot() {
         return getInputSlot();
     }
 
+    /**
+     * The circuit is a real item placed into the input slot; no ghost circuit slot is offered in the GUI.
+     */
     @Override
     public boolean allowSelectCircuit() {
-        return true;
+        return false;
     }
 
-    @Override
-    public int getCircuitSlotX() {
-        return 79;
+    /**
+     * Slot of the dimension display block, relative to {@link #getInputSlot()}; -1 when the machine has
+     * none (pump and miner). The excavator uses offset 1 (second input slot).
+     */
+    protected int getDimensionDisplaySlotOffset() {
+        return -1;
     }
 
-    @Override
-    public int getCircuitSlotY() {
-        return 16;
+    /** Absolute slot of the dimension display block, or -1 when the machine has none. */
+    public int getDimensionDisplaySlot() {
+        final int offset = getDimensionDisplaySlotOffset();
+        return offset >= 0 ? getInputSlot() + offset : -1;
+    }
+
+    /** Whether the stack is a GTNEI dimension display block; used to filter the dimension display slot. */
+    protected static boolean isDimensionDisplayItem(@Nullable ItemStack stack) {
+        return ItemDimensionDisplay.getDimension(stack) != null;
     }
 
     @Override
     public boolean allowPutStack(IGregTechTileEntity aBaseMetaTileEntity, int aIndex, ForgeDirection side,
         ItemStack aStack) {
-        return aIndex == getCircuitSlot() && ItemList.Circuit_Integrated.isStackEqual(aStack, true, true);
-    }
-
-    @Override
-    public boolean allowPullStack(IGregTechTileEntity aBaseMetaTileEntity, int aIndex, ForgeDirection side,
-        ItemStack aStack) {
-        return aIndex == getCircuitSlot() || aIndex == getOutputSlot();
+        // Slot specific content filters, applied on top of the standard facing/filter logic.
+        if (aIndex == getCircuitSlot() && !ItemList.Circuit_Integrated.isStackEqual(aStack, true, true)) return false;
+        final int dimensionSlot = getDimensionDisplaySlot();
+        if (dimensionSlot >= 0 && aIndex == dimensionSlot && !isDimensionDisplayItem(aStack)) return false;
+        return super.allowPutStack(aBaseMetaTileEntity, aIndex, side, aStack);
     }
 
     /**************************************************************************
-     * Tick driven production and output.
+     * Non-electric machine configuration (bronze machine pattern).
      *************************************************************************/
 
     @Override
-    public void onPostTick(IGregTechTileEntity aBaseMetaTileEntity, long aTick) {
-        super.onPostTick(aBaseMetaTileEntity, aTick);
-        if (!aBaseMetaTileEntity.isServerSide()) return;
+    public boolean isElectric() {
+        return false;
+    }
 
-        if (aTick % getProductionCycleTicks() == 0) tryProduce();
-        if (aTick % AUTO_OUTPUT_INTERVAL_TICKS == 0) {
-            tryAutoOutput();
-            tryAutoOutputItems();
-        }
+    @Override
+    public boolean isEnetInput() {
+        return false;
+    }
+
+    @Override
+    public boolean isInputFacing(ForgeDirection side) {
+        return false;
+    }
+
+    @Override
+    public long maxEUStore() {
+        return 0;
+    }
+
+    @Override
+    public long maxEUInput() {
+        return 0;
+    }
+
+    @Override
+    public int rechargerSlotCount() {
+        return 0;
+    }
+
+    @Override
+    public int dechargerSlotCount() {
+        return 0;
     }
 
     /**
-     * Ticks between two production attempts. Overridable so machines of the family can run at their own
-     * pace; the default matches the wooden pump.
+     * Outputs stay inside the machine until taken out manually or by external pipes/conveyors; no auto
+     * output in any direction, so a full internal output stalls the machine visibly.
      */
+    @Override
+    public boolean doesAutoOutput() {
+        return false;
+    }
+
+    @Override
+    public boolean doesAutoOutputFluids() {
+        return false;
+    }
+
+    @Override
+    public boolean canHaveInsufficientEnergy() {
+        return false;
+    }
+
+    /** Non-electric machine: recipe checks are never blocked by a missing energy supply. */
+    @Override
+    public boolean hasEnoughEnergyToCheckRecipe() {
+        return true;
+    }
+
+    @Override
+    protected boolean drainEnergyForProcess(long aEUt) {
+        // mEUt is always 0 for the wooden family, nothing is drained to progress a cycle.
+        return true;
+    }
+
+    @Override
+    public boolean willExplodeInRain() {
+        // Wooden machine, rain proof like the vanilla tanks it imitates.
+        return false;
+    }
+
+    /**************************************************************************
+     * Textures: wooden casing body on every face, the machine specific overlay on the front face. The 14
+     * face system is handled by the standard machine base, which fixes the previous mismatch between the
+     * front overlay and the output facing.
+     *************************************************************************/
+
+    /** Front face overlay icon of the concrete machine (water pump / ore drill). */
+    protected abstract ITexture getFrontOverlay();
+
+    private ITexture[] getBodyTexture() {
+        return new ITexture[] { TextureFactory.of(woodenCasingBlock(), woodenCasingMeta()) };
+    }
+
+    private ITexture[] getFrontTexture() {
+        return new ITexture[] { TextureFactory.of(woodenCasingBlock(), woodenCasingMeta()), getFrontOverlay() };
+    }
+
+    private static net.minecraft.block.Block woodenCasingBlock() {
+        return ItemList.WoodenCasing.getBlock();
+    }
+
+    private static int woodenCasingMeta() {
+        return ItemList.WoodenCasing.get(0)
+            .getItemDamage();
+    }
+
+    @Override
+    public ITexture[] getSideFacingActive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getSideFacingInactive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getFrontFacingActive(byte aColor) {
+        return getFrontTexture();
+    }
+
+    @Override
+    public ITexture[] getFrontFacingInactive(byte aColor) {
+        return getFrontTexture();
+    }
+
+    @Override
+    public ITexture[] getTopFacingActive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getTopFacingInactive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getBottomFacingActive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getBottomFacingInactive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getBottomFacingPipeActive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getBottomFacingPipeInactive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getTopFacingPipeActive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getTopFacingPipeInactive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getSideFacingPipeActive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    @Override
+    public ITexture[] getSideFacingPipeInactive(byte aColor) {
+        return getBodyTexture();
+    }
+
+    /**************************************************************************
+     * GUI (MUI2, same window family as the bronze machines).
+     *************************************************************************/
+
+    /** Number of fluid output slots shown in the GUI; 0 for the item machines, 1 for the pump. */
+    protected int getFluidOutputSlotCount() {
+        return 0;
+    }
+
+    @Override
+    protected BasicUIProperties getUIProperties() {
+        // Built from scratch instead of the recipemap frontend: the NEI output maps use the scrolling
+        // void miner frontend whose UI properties do not fit a singleblock machine window.
+        return BasicUIProperties.builder()
+            .maxItemInputs(mInputSlotCount)
+            .maxItemOutputs(mOutputItems.length)
+            .maxFluidInputs(0)
+            .maxFluidOutputs(getFluidOutputSlotCount())
+            .build();
+    }
+
+    @Override
+    public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager syncManager, UISettings uiSettings) {
+        return new MTEVoidWoodenBaseGui(this, getUIProperties()).build(guiData, syncManager, uiSettings);
+    }
+
+    /**************************************************************************
+     * Production (driven by the standard machine cycle).
+     *************************************************************************/
+
+    /**
+     * Selects the next output and schedules one production cycle; the standard machine base runs the
+     * progress bar and places the output into the internal output slot / output tank afterwards.
+     *
+     * @return one of the {@code FOUND_*} constants of {@link MTEBasicMachine}
+     */
+    @Override
+    public abstract int checkRecipe();
+
+    /** Ticks between two production attempts; the miner works twice as fast as the pump. */
     protected int getProductionCycleTicks() {
         return PRODUCTION_CYCLE_TICKS;
-    }
-
-    /**
-     * Produces the next batch of fluid into the internal buffer. The dimension table is fixed to the
-     * Overworld entry; a circuit configuration selects the table entry, anything else is weighted random.
-     */
-    protected void tryProduce() {
-        if (mFluid != null && mFluid.amount >= getCapacity()) return;
-
-        final GTUODimension overworld = VoidFluidTableHelper.getOverworldDimension();
-        final List<GTUOFluid> candidates = VoidFluidTableHelper.getFluidCandidates(overworld);
-        if (candidates.isEmpty()) {
-            if (!warnedNoOverworldTable) {
-                warnedNoOverworldTable = true;
-                LOG.warn("Underground fluid table has no usable Overworld entry, wooden void machines idle");
-            }
-            return;
-        }
-
-        final int config = readCircuitConfig();
-        final GTUOFluid pick;
-        if (config >= 1) {
-            if (config > candidates.size()) return; // Out of range configuration: idle, do not randomize.
-            pick = candidates.get(config - 1);
-        } else {
-            pick = VoidFluidTableHelper.weightedRandom(candidates);
-        }
-        final Fluid fluid = pick.getFluid();
-        if (fluid == null) return;
-
-        // Never mix fluids in the buffer; wait until it is drained before switching fluids.
-        if (mFluid != null && !mFluid.isFluidEqual(new FluidStack(fluid, 1))) return;
-        if (mFluid == null) mFluid = new FluidStack(fluid, 0);
-
-        mFluid.amount += Math.min(PRODUCTION_AMOUNT_MB, getCapacity() - mFluid.amount);
-        markDirty();
-    }
-
-    /**
-     * Pushes buffer contents into the IFluidHandler neighbor at the front face, following the GT singleblock
-     * output convention ({@code MTEHatchOutput}).
-     */
-    protected void tryAutoOutput() {
-        if (mFluid == null || mFluid.amount <= 0) return;
-        final IGregTechTileEntity base = getBaseMetaTileEntity();
-        final ForgeDirection side = base.getFrontFacing();
-        final IFluidHandler target = base.getITankContainerAtSide(side);
-        if (target == null) return;
-        GTUtility.moveFluid(this, target, side, mFluid.amount, null);
-    }
-
-    /**
-     * Pushes the content of the item output slot into the inventory neighbor at the front face, following
-     * the GT singleblock output convention ({@code MTEHatchOutputBus}). The circuit slot is excluded from
-     * the transfer and from the cleanup below (the configured circuit is a zero-size stack), and the wooden
-     * fluid pump never fills the output slot, so this is a cheap emptiness check there.
-     */
-    protected void tryAutoOutputItems() {
-        if (mInventory[getOutputSlot()] == null) return;
-        final IGregTechTileEntity base = getBaseMetaTileEntity();
-        final GTItemTransfer transfer = new GTItemTransfer();
-        transfer.push(base, base.getFrontFacing());
-        transfer.setSourceSlots(getOutputSlot());
-        if (transfer.transfer() > 0) {
-            GTUtility.cleanInventory(this, getOutputSlot(), getOutputSlot() + 1);
-        }
     }
 
     /** Configuration value of the inserted integrated circuit, or 0 when the slot holds none. */
@@ -235,30 +338,9 @@ public abstract class MTEVoidWoodenBase extends MTEBasicTank
         return 0;
     }
 
-    /**
-     * NEI output recipe map of this machine; every wooden family member reports the map its outputs are
-     * documented in (see {@link RecipeMapWorkable} for the NEI catalyst registration contract).
-     */
-    @Override
-    public abstract RecipeMap<?> getRecipeMap();
-
-    /**
-     * Localized description of the fluid the machine would currently select, or the weighted random label;
-     * used by subclasses for status lines in tooltips and GUI.
-     */
-    protected String describeCurrentSelection() {
-        final int config = readCircuitConfig();
-        if (config >= 1) {
-            final List<GTUOFluid> candidates = VoidFluidTableHelper
-                .getFluidCandidates(VoidFluidTableHelper.getOverworldDimension());
-            if (config <= candidates.size()) {
-                final Fluid fluid = candidates.get(config - 1)
-                    .getFluid();
-                if (fluid != null) return StatCollector.translateToLocal(fluid.getUnlocalizedName());
-            }
-            return StatCollector.translateToLocal("vmd.pump.selection.invalid");
-        }
-        return StatCollector.translateToLocal("vmd.gui.weighted_random");
+    /** Copies one item into a fresh single-item stack for the output slots. */
+    protected static ItemStack singleOutput(ItemStack stack) {
+        return GTUtility.copyAmount(1, stack);
     }
 
     /** Logger facade of the module; the wooden machines report data problems here instead of crashing. */
