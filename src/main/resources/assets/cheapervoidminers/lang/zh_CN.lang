@@ -1,0 +1,50 @@
+# 机器显示名（键位遵循 GT5u 机制：gt.blockmachines.<aName>.name）
+gt.blockmachines.VoidFluidDrillerIron.name=虚空液体钻机（铁）
+gt.blockmachines.VoidFluidDrillerSteel.name=虚空液体钻机（钢）
+gt.blockmachines.VoidFluidDrillerTitanium.name=虚空液体钻机（钛）
+gt.blockmachines.VoidFluidDrillerNaquadah.name=虚空液体钻机（硅岩）
+gt.blockmachines.VoidFluidDrillerInfinity.name=虚空液体钻机（无尽）
+gt.blockmachines.VoidFluidPumpWooden.name=木质虚空流体泵
+
+# 虚空液体钻机 tooltip
+vmd.mbtt.machine_type=虚空液体钻机
+vmd.mbtt.info.1=无需钻杆、也不会耗尽区块矿脉，直接抽取所选维度的地下流体。
+vmd.mbtt.info.2=在控制器槽位放入维度显示方块以选择星球；留空则使用机器所在维度。
+vmd.mbtt.info.3=输入总线中的编程电路（配置 1..N）选择该维度流体表的第 N 项流体；配置 0 或无电路时按生成权重加权随机。
+vmd.mbtt.info.4=电路配置超出该维度流体数量时，本周期失败并给出错误提示。
+vmd.mbtt.info.5=输入总线中的钻头提升产量：铁 x1.25、钢 x1.5、钛 x1.75、硅岩 x2.0、无尽 x3.0（取存在的最高档）。每完成一个周期有 0.1% 概率消耗 1 个钻头。
+vmd.mbtt.info.6=每 100 tick 产出 1000mB × 电压系数 × 钻头加成 × 并行数。
+vmd.mbtt.info.7=无尽版并行数随输入电压增长：8^(电压档 - UV)，即 UHV=8、UEV=64、UIV=512、UMV=4096、UXV=32768、MAX=262144；总能耗按并行数成倍增加。
+vmd.mbtt.structure.front_bottom_center=控制器，前下方中心
+vmd.mbtt.structure.center_shaft_frame=框架方块（控制器正下方立柱）
+vmd.mbtt.structure.frame=%s个框架方块（中部十字层）
+vmd.mbtt.structure.any_bottom_casing_min_tier=任意机壳，最低 %s 电压档
+vmd.mbtt.structure.any_bottom_casing=任意机壳
+vmd.mbtt.structure.input_bus=输入总线（钻头与编程电路）
+vmd.mbtt.structure.input_hatch=输入仓（可选）
+vmd.mbtt.structure.output_bus=输出总线（可选）
+vmd.mbtt.structure.output_hatch=输出仓（流体输出，必需）
+
+# 虚空液体钻机 GUI
+vmd.gui.planet=星球：%s
+vmd.gui.fluid=流体：%s
+vmd.gui.parallel=并行：%s
+vmd.gui.drill=钻头：%s
+vmd.gui.weighted_random=加权随机
+vmd.gui.planet.unknown=未知
+vmd.gui.drill.none=无
+
+# 配方检查结果消息（SimpleCheckRecipeResult 键）
+GT5U.gui.text.recipe_result.vmd_drilling=正在抽取地下流体
+GT5U.gui.text.recipe_result.vmd_no_fluid_data=该维度没有地下流体数据
+GT5U.gui.text.recipe_result.vmd_circuit_out_of_range=电路配置超出该维度的流体数量
+GT5U.gui.text.recipe_result.vmd_output_full=流体输出已满
+
+# 木质虚空流体泵 tooltip
+vmd.pump.desc.1=无需电力的木质泵，抽取主世界地下流体。
+vmd.pump.desc.2=每 200 tick 产出 100mB 进入内部流体仓，并从正面推入相邻的流体容器或仓。
+vmd.pump.desc.3=电路槽中的编程电路（配置 1..N）选择主世界流体表第 N 项；配置 0 或无电路 = 加权随机。
+vmd.pump.desc.4=内部流体仓不混装流体；请在仓排空后再更换电路。
+vmd.pump.desc.5=电路槽仅接受自动化放入的编程电路。
+vmd.pump.desc.selection=当前选择：%s
+vmd.pump.selection.invalid=无效电路配置

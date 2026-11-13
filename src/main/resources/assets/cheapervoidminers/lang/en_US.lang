@@ -1,0 +1,50 @@
+# Machine display names (keys follow the GT5u mechanism: gt.blockmachines.<aName>.name)
+gt.blockmachines.VoidFluidDrillerIron.name=Void Fluid Driller (Iron)
+gt.blockmachines.VoidFluidDrillerSteel.name=Void Fluid Driller (Steel)
+gt.blockmachines.VoidFluidDrillerTitanium.name=Void Fluid Driller (Titanium)
+gt.blockmachines.VoidFluidDrillerNaquadah.name=Void Fluid Driller (Naquadah)
+gt.blockmachines.VoidFluidDrillerInfinity.name=Void Fluid Driller (Infinity)
+gt.blockmachines.VoidFluidPumpWooden.name=Wooden Void Fluid Pump
+
+# Void Fluid Driller tooltip
+vmd.mbtt.machine_type=Void Fluid Driller
+vmd.mbtt.info.1=Taps the underground fluids of a chosen dimension without drilling pipes and without depleting chunk veins.
+vmd.mbtt.info.2=Put a Dimension Display block into the controller slot to select the dimension; leave the slot empty to use the dimension the machine is built in.
+vmd.mbtt.info.3=A programmed circuit (configuration 1..N) in the input bus selects the N-th fluid of that dimension's fluid table; configuration 0 or no circuit picks a fluid by weighted random (weights = generation chance).
+vmd.mbtt.info.4=A circuit configuration beyond the fluid count of the dimension fails the cycle with an error message.
+vmd.mbtt.info.5=Drill heads in the input bus boost the output: Iron x1.25, Steel x1.5, Titanium x1.75, Naquadah x2.0, Infinity x3.0 (highest present applies). Each finished cycle consumes one drill head with a 0.1% chance.
+vmd.mbtt.info.6=Produces 1000mB x voltage factor x drill bonus x parallel count per 100 tick cycle.
+vmd.mbtt.info.7=The Infinity stage scales its parallel count with the input voltage: 8^(tier - UV), i.e. UHV=8, UEV=64, UIV=512, UMV=4096, UXV=32768, MAX=262144; the EU/t draw is multiplied by the parallel count.
+vmd.mbtt.structure.front_bottom_center=Controller, front bottom center
+vmd.mbtt.structure.center_shaft_frame=Frame Blocks (shaft below the controller)
+vmd.mbtt.structure.frame=%s Frame Blocks (plus-shaped middle layers)
+vmd.mbtt.structure.any_bottom_casing_min_tier=Any casing, min tier %s
+vmd.mbtt.structure.any_bottom_casing=Any casing
+vmd.mbtt.structure.input_bus=Input Bus (drill head and programmed circuit)
+vmd.mbtt.structure.input_hatch=Input Hatch (optional)
+vmd.mbtt.structure.output_bus=Output Bus (optional)
+vmd.mbtt.structure.output_hatch=Output Hatch (fluid output, required)
+
+# Void Fluid Driller GUI
+vmd.gui.planet=Planet: %s
+vmd.gui.fluid=Fluid: %s
+vmd.gui.parallel=Parallel: %s
+vmd.gui.drill=Drill: %s
+vmd.gui.weighted_random=Weighted Random
+vmd.gui.planet.unknown=Unknown
+vmd.gui.drill.none=None
+
+# Recipe check result messages (SimpleCheckRecipeResult keys)
+GT5U.gui.text.recipe_result.vmd_drilling=Extracting underground fluids
+GT5U.gui.text.recipe_result.vmd_no_fluid_data=No underground fluid data for this dimension
+GT5U.gui.text.recipe_result.vmd_circuit_out_of_range=Circuit configuration exceeds the fluid count of this dimension
+GT5U.gui.text.recipe_result.vmd_output_full=Fluid output full
+
+# Wooden Void Fluid Pump tooltip
+vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground fluids.
+vmd.pump.desc.2=Produces 100mB every 200 ticks into its internal buffer and pushes it into the fluid handler at its front face.
+vmd.pump.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld fluid; configuration 0 or no circuit = weighted random.
+vmd.pump.desc.4=The internal buffer never mixes fluids; switch the circuit only after it is drained.
+vmd.pump.desc.5=The circuit slot only accepts programmed circuits from automation.
+vmd.pump.desc.selection=Current selection: %s
+vmd.pump.selection.invalid=Invalid circuit configuration
