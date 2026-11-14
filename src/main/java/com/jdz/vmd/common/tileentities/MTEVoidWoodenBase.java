@@ -51,12 +51,14 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
 
     public MTEVoidWoodenBase(int aID, String aName, String aNameRegional, String aDescription, int aInputSlotCount,
         int aOutputSlotCount) {
-        super(aID, aName, aNameRegional, 0, 0, aDescription, aInputSlotCount, aOutputSlotCount);
+        // amperage 必须为 1：GT5u 5.09.54.x 的 EUNoOverclockDescriber 会校验 amperage >= 1（青铜机器
+        // 靠覆写 createOverclockDescriber 规避，而我们机器 mEUt 恒 0，传 1 即可安全通过）。
+        super(aID, aName, aNameRegional, 0, 1, aDescription, aInputSlotCount, aOutputSlotCount);
     }
 
     public MTEVoidWoodenBase(String aName, String[] aDescription, ITexture[][][] aTextures, int aInputSlotCount,
         int aOutputSlotCount) {
-        super(aName, 0, 0, aDescription, aTextures, aInputSlotCount, aOutputSlotCount);
+        super(aName, 0, 1, aDescription, aTextures, aInputSlotCount, aOutputSlotCount);
     }
 
     /**************************************************************************
