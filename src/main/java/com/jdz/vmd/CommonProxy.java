@@ -1,11 +1,14 @@
 package com.jdz.vmd;
 
+import org.apache.logging.log4j.Level;
+
 import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 import com.jdz.vmd.common.loaders.ItemRegistry;
 import com.jdz.vmd.common.loaders.RecipeLoader;
 import com.jdz.vmd.common.loaders.VmdOutputRecipeLoader;
 import com.jdz.vmd.common.tileentities.VoidOreTableHelper;
 
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -38,7 +41,17 @@ public class CommonProxy {
      * therefore safe, and the NEI output recipes registered right after include them.
      */
     public void loadComplete(FMLLoadCompleteEvent event) {
+        // Diagnostic probes on the FML logger: the mod-owned logger has proven unreliable in HMCL pack
+        // environments (FalsePatternLib re-routes unknown loggers to a log file that never appears).
+        FMLLog.log(
+            "CheaperVoidMiners",
+            Level.INFO,
+            "LoadComplete fired: appending poor ores to the void miner drop maps");
         VoidOreTableHelper.appendPoorOresToVoidMinerDropMaps();
         VmdOutputRecipeLoader.register();
+        FMLLog.log(
+            "CheaperVoidMiners",
+            Level.INFO,
+            "LoadComplete finished: poor ores appended and NEI output recipes registered");
     }
 }
