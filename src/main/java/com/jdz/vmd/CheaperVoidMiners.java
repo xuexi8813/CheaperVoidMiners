@@ -3,9 +3,9 @@ package com.jdz.vmd;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 @Mod(
     modid = CheaperVoidMiners.MODID,
@@ -42,8 +42,9 @@ public class CheaperVoidMiners {
     }
 
     @Mod.EventHandler
-    // loadComplete: late cross-mod hooks that must run after every mod finished its own loading.
-    public void loadComplete(FMLLoadCompleteEvent event) {
-        proxy.loadComplete(event);
+    // serverStarting: late data hooks (poor ore append, NEI output recipes) that must run after BartWorks built
+    // the void miner drop maps, in a phase that safely loads gameplay classes in RFB/HMCL pack environments.
+    public void serverStarting(FMLServerStartingEvent event) {
+        proxy.serverStarting(event);
     }
 }

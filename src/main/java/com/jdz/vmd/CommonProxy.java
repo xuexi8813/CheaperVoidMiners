@@ -10,9 +10,9 @@ import com.jdz.vmd.common.tileentities.VoidOreTableHelper;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 public class CommonProxy {
 
@@ -24,8 +24,8 @@ public class CommonProxy {
     public void init(FMLInitializationEvent event) {
         ItemRegistry.run();
         // Load the NEI output recipe maps early: NEI builds its handler list from every registered recipe
-        // category while it processes its config load, which can happen during postInit - before
-        // LoadComplete would first touch the class.
+        // category while it processes its config load, which can happen during postInit - before a server
+        // start would first touch the class.
         VmdRecipeMaps.register();
     }
 
@@ -35,23 +35,23 @@ public class CommonProxy {
     }
 
     /**
-     * End of mod loading. FMLLoadCompleteEvent is dispatched in mod id order, so BartWorks
-     * ("bartworks" < "cheapervoidminers") has already run {@code VoidMinerUtility.generateDropMaps()}
-     * including its own output recipes when this handler runs. Appending the poor ores afterwards is
-     * therefore safe, and the NEI output recipes registered right after include them.
+     * Server start: late data hooks that must run after every mod finished its own loading. BartWorks generates
+     * the void miner drop maps ({@code VoidMinerUtility.generateDropMaps()}) during its load-complete phase,
+     * which always precedes the first server start, so appending the poor ores here is safe and the NEI output
+     * recipes registered right after include them.
+     * <p>
+     * Deliberately NOT done in FMLLoadCompleteEvent: first-loading gameplay classes (wooden miner pools, fluid
+     * tables, resource tables) during initializeMods crashes RFB/HMCL pack environments with
+     * {@code ClassNotFoundException: Class bytes are null for net.minecraft.inventory.ISidedInventory} (verified
+     * in user pack crash reports 23:06/23:08); the server-start phase loads classes safely, as verified in game.
      */
-    public void loadComplete(FMLLoadCompleteEvent event) {
-        // Diagnostic probes on the FML logger: the mod-owned logger has proven unreliable in HMCL pack
-        // environments (FalsePatternLib re-routes unknown loggers to a log file that never appears).
-        FMLLog.log(
-            "CheaperVoidMiners",
-            Level.INFO,
-            "LoadComplete fired: appending poor ores to the void miner drop maps");
+    public void serverStarting(FMLServerStartingEvent event) {
+        FMLLog.log("CheaperVoidMiners", Level.INFO, "ServerStarting: appending poor ores to the void miner drop maps");
         VoidOreTableHelper.appendPoorOresToVoidMinerDropMaps();
         VmdOutputRecipeLoader.register();
         FMLLog.log(
             "CheaperVoidMiners",
             Level.INFO,
-            "LoadComplete finished: poor ores appended and NEI output recipes registered");
+            "ServerStarting: poor ores appended and NEI output recipes registered");
     }
 }
