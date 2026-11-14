@@ -10,15 +10,11 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.util.GTUtility;
 
 /**
- * 三个 EX 虚空采矿机阶段（EX I/II/III），构建在 GT 虚空采矿机多方块结构之上。
- * <p>
- * 命名：每个具体机器类都带有 {@link IMetaTileEntity.SkipGenerateName}，使显示名称来自标准 lang 键，
- * 而不是 GT 的区域名称注册（该注解不会被继承，因此每个具体类都显式携带）。
+ * 三个 EX 虚空采矿机阶段（EX I/II/III），构建在 GT 虚空采矿机多方块（{@link MTEVoidMinerEXBase}）之上。
+ * 每个具体类须显式携带 {@link IMetaTileEntity.SkipGenerateName}（注解不继承），显示名来自 lang 键。
  */
 public class MTEVoidMiners {
 
-    // 跳过 GT 的区域名称注册（参见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VMLV extends MTEVoidMinerEXBase<VMLV> {
 
@@ -42,7 +38,7 @@ public class MTEVoidMiners {
 
         @Override
         protected int getMinTier() {
-            return VoltageIndex.LV; // LV 电压等级
+            return VoltageIndex.LV;
         }
 
         @Override
@@ -62,8 +58,6 @@ public class MTEVoidMiners {
 
     }
 
-    // 跳过 GT 的区域名称注册（参见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VMHV extends MTEVoidMinerEXBase<VMHV> {
 
@@ -107,8 +101,6 @@ public class MTEVoidMiners {
 
     }
 
-    // 跳过 GT 的区域名称注册（参见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VMIV extends MTEVoidMinerEXBase<VMIV> {
 

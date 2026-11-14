@@ -62,16 +62,9 @@ import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * Void Fluid Driller（虚空流体钻机）的基类：多方块控制器，无需钻井管道、也不会耗尽区块矿脉，
- * 即可抽取任意已配置维度的地下流体。
- * <p>
- * 动机：原版 {@link gregtech.common.tileentities.machines.multi.MTEOilDrillBase} 会抽干每个区块有限的
- * 矿脉，而本家族以固定 EU 成本"从虚空"开采同一数据源，门槛由机器阶段（机壳/框架/钻头材料）
- * 决定，而不是区块储量。
- * <p>
- * 结构形状是 {@link gregtech.common.tileentities.machines.multi.MTEDrillerBase} 的 1:1 复刻
- * （3x3x7，控制器下方的框架竖轴，三层十字形框架/机壳层，3x3 机壳顶层，控制器位于前侧底部中央）。
- * 星球选择、流体选择与钻头处理见 {@link #createTooltip()} 的说明。
+ * Void Fluid Driller（虚空流体钻机）基类：多方块控制器，无需钻井管道、不耗尽区块矿脉，
+ * 以固定 EU 成本从 GT 地下流体表抽取已配置维度的流体（对比 {@link gregtech.common.tileentities.machines.multi.MTEOilDrillBase}）。
+ * 结构为 {@code MTEDrillerBase} 的 1:1 复刻（3x3x7）；星球/流体/钻头选择见 {@link #createTooltip()}。
  *
  * @param <T> 泛型多方块基类的自身类型
  */
@@ -79,16 +72,12 @@ import gtneioreplugin.util.DimensionHelper;
 public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<T>> extends MTEEnhancedMultiBlockBase<T>
     implements ISurvivalConstructable {
 
-    /** 单个生产周期的时长（tick）。 */
     public static final int CYCLE_TICKS = 100;
-    /** 电压系数、钻头加成与并行生效前，每周期的基础流体产出（mB）。 */
     public static final int BASE_OUTPUT_MB = 1000;
-    /** 每个完成的周期结束时消耗一个钻头的概率。 */
     public static final double DRILL_CONSUMPTION_CHANCE = 0.001;
 
     protected static final String STRUCTURE_PIECE_MAIN = "main";
 
-    /** 一个钻头等级：哪种材料的钻头物品堆对应哪一档产出倍率。 */
     protected static final class DrillTier {
 
         public final Materials material;
@@ -100,10 +89,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         }
     }
 
-    /**
-     * 家族全部阶段共享的钻头阶梯；五种物品堆在五台机器中均有效。
-     * 顺序仅影响显示，实际选择取输入总线中存在的最高加成。
-     */
+    /** 全阶段共享的钻头阶梯；顺序仅影响显示，实际取输入总线中加成最高者。 */
     private static final ImmutableList<DrillTier> DRILL_TIERS = ImmutableList.of(
         new DrillTier(Materials.Iron, 1.25),
         new DrillTier(Materials.Steel, 1.5),
@@ -111,7 +97,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         new DrillTier(Materials.Naquadah, 2.0),
         new DrillTier(Materials.Infinity, 3.0));
 
-    /** 当前周期解析出的最优钻头。 */
     private static final class DrillSelection {
 
         public final ItemStack stack;
@@ -153,39 +138,27 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         casingTextureIndex = getControllerTextureIndex();
     }
 
-    /**************************************************************************
-     * 阶段配置，由五台具体机器各自实现。
-     *************************************************************************/
+    // ==== 阶段配置，由五台具体机器各自实现 ====
 
-    /** 本阶段的机器机壳方块，用于结构的机壳槽位。 */
     public abstract ItemList getCasingBlock();
 
-    /** 本阶段的框架材料，用于结构的 frameGt 槽位。 */
     public abstract Materials getFrameMaterial();
 
-    /** 允许的最低能源仓等级；同时决定每周期消耗的 EU/t 与输出电压系数档位。 */
+    /** 最低能源仓等级；同时决定每周期 EU/t 与输出电压系数档位。 */
     protected abstract int getMinTier();
 
-    /**
-     * 本阶段的电压系数，乘到基础产出上。遵循阶段阶梯
-     * （LV=1、MV=4、HV=16、LuV=64、UV=256），保持为常量以便各阶段可独立调整。
-     */
+    /** 电压系数，乘到基础产出（LV=1、MV=4、HV=16、LuV=64、UV=256）。 */
     public abstract int getVoltageFactor();
 
-    /** 控制器正面使用的贴图索引，同时作为仓体槽位的基础机壳贴图。 */
+    /** 控制器正面贴图索引，兼作仓体基础机壳贴图。 */
     protected abstract int getControllerTextureIndex();
 
-    /**
-     * 给定输入电压等级下的并行数。默认为 1；Infinity 阶段用指数规则覆盖
-     * （见 {@code MTEVoidFluidDrillers.VoidFluidDrillerInf}）。
-     */
+    /** 输入电压等级下的并行数，默认 1；Infinity 阶段以指数规则覆盖。 */
     protected int calculateParallel(int inputTier) {
         return 1;
     }
 
-    /**************************************************************************
-     * 结构：MTEDrillerBase 的 1:1 复刻，机壳/框架随阶段变化。
-     *************************************************************************/
+    // ==== 结构：MTEDrillerBase 1:1 复刻，机壳/框架随阶段变化 ====
 
     protected IStructureDefinition<T> buildBaseStructureDefinition(Class<T> clazz) {
         return StructureDefinition.<T>builder()
@@ -234,7 +207,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         }
     }
 
-    /** 仓体要求：能源仓与维护仓必需，输出仓（流体）与输入总线必需。 */
     protected void checkHatches(List<StructureError> errors) {
         checkHasEnergyHatch(errors);
         checkOneMaintenanceHatch(errors);
@@ -242,14 +214,13 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         checkHasInputBus(errors);
     }
 
-    /** 'b' 槽位接受的仓体元素；由结构定义构建器消费。 */
     protected List<IHatchElement<? super T>> getAllowedHatches() {
         return ImmutableList.of(InputHatch, OutputHatch, InputBus, OutputBus, Maintenance, Energy);
     }
 
     @Override
     protected IAlignmentLimits getInitialAlignmentLimits() {
-        // 钻机不可旋转，且不得朝上或朝下，与 MTEDrillerBase 一致。
+        // 不可旋转、不得朝上/朝下，与 MTEDrillerBase 一致。
         return (d, r, f) -> (d.flag & (ForgeDirection.UP.flag | ForgeDirection.DOWN.flag)) == 0 && r.isNotRotated()
             && !f.isVerticallyFliped();
     }
@@ -280,16 +251,13 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return new ITexture[] { getCasingTextureForId(casingTextureIndex) };
     }
 
-    /**************************************************************************
-     * 配方逻辑。
-     *************************************************************************/
+    // ==== 配方逻辑 ====
 
     @Override
     public @NotNull CheckRecipeResult checkProcessing() {
         final int inputTier = GTUtility.getTier(getMaxInputVoltage());
         cachedParallel = calculateParallel(inputTier);
 
-        // 1. 解析目标维度及其可抽取的流体。
         final GTUODimension dimension = resolveTargetDimension();
         final List<GTUOFluid> candidates = VoidFluidTableHelper.getFluidCandidates(dimension);
         if (candidates.isEmpty()) {
@@ -299,7 +267,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
             return SimpleCheckRecipeResult.ofFailurePersistOnShutdown("vmd_no_fluid_data");
         }
 
-        // 2. 解析流体：编程电路配置 1..N 选择第 N 项，其他情况按权重随机。
+        // 编程电路配置 1..N 选择第 N 项流体，其他情况按权重随机。
         final int circuitConfig = readCircuitConfig();
         final GTUOFluid selectedFluid;
         if (circuitConfig >= 1) {
@@ -317,11 +285,9 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         final Fluid fluid = selectedFluid.getFluid();
         cachedFluid = fluid;
 
-        // 3. 解析输入总线中存在的最优钻头（可选，缺失时加成为 1.0）。
         final DrillSelection drill = findBestDrill();
         cachedDrillBonus = drill == null ? 1.0 : drill.bonus;
 
-        // 4. 计算产出，并在启用虚空保护时检查输出空间。
         final long outputAmount = computeOutputAmount(cachedParallel, cachedDrillBonus);
         final FluidStack output = new FluidStack(fluid, (int) Math.min(outputAmount, Integer.MAX_VALUE));
         if (protectsExcessFluid() && !canOutputAll(new FluidStack[] { output })) {
@@ -330,9 +296,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
             return SimpleCheckRecipeResult.ofFailure("vmd_output_full");
         }
 
-        // 5. 应用周期参数：每份并行消耗一份该阶段的固定电压，周期 100 tick。
-        // GT 2.9 多方块中 mEUt 为 int，因此多安培消耗会在 Integer.MAX_VALUE 处饱和
-        // （Infinity 阶段在 UIV 以上等级会触发）；产出与并行数不截断。
+        // GT 2.9 多方块 mEUt 为 int：多安培消耗在 Integer.MAX_VALUE 处饱和（Infinity 在 UIV+ 触发）。
         mOutputFluids = new FluidStack[] { output };
         final long totalEUt = GTValues.V[getMinTier()] * (long) cachedParallel;
         mEUt = (int) -Math.min(totalEUt, Integer.MAX_VALUE);
@@ -340,7 +304,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         mEfficiency = getCurrentEfficiency(null);
         mEfficiencyIncrease = 10000;
 
-        // 6. 更新 GUI 显示状态。
         selectedDimensionAbbr = resolveDisplayedAbbr(dimension);
         displayDimensionAbbr = selectedDimensionAbbr == null ? "" : selectedDimensionAbbr;
         displayFluidKey = fluid.getUnlocalizedName();
@@ -351,10 +314,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return SimpleCheckRecipeResult.ofSuccess("vmd_drilling");
     }
 
-    /**
-     * 单周期的总产出（mB）：基础产出 × 电压系数 × 并行数 × 钻头加成。
-     * 在 long 空间中计算，以在最终截断到 int 范围前避免溢出。
-     */
+    /** 单周期产出 = 基础产出 × 电压系数 × 并行 × 钻头加成；long 空间计算，最终截断前避免溢出。 */
     protected long computeOutputAmount(int parallel, double drillBonus) {
         return (long) ((long) BASE_OUTPUT_MB * getVoltageFactor() * parallel * drillBonus);
     }
@@ -366,7 +326,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         if (drill == null) return;
         if (XSTR_INSTANCE.nextFloat() >= DRILL_CONSUMPTION_CHANCE) return;
 
-        // getStoredInputs() 返回的物品堆是输入总线库存的活跃引用（直接修改即生效）。
+        // getStoredInputs() 返回输入总线库存的活跃引用（直接修改即生效）。
         ItemStack stack = drill.stack;
         if (stack.stackSize <= 1) {
             stack.stackSize = 0;
@@ -376,15 +336,9 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         updateSlots();
     }
 
-    /**************************************************************************
-     * 维度、流体与钻头的解析辅助方法。
-     *************************************************************************/
+    // ==== 维度、流体与钻头的解析辅助 ====
 
-    /**
-     * 解析本钻机开采地下流体表的目标维度。
-     * <p>
-     * 控制器槽位中的维度显示方块可显式指定维度；无效物品会被忽略，机器回退到其所在维度。
-     */
+    /** 目标维度：控制器槽位的维度显示方块优先，无效物品忽略后回退机器所在维度。 */
     @Nullable
     protected GTUODimension resolveTargetDimension() {
         final ItemStack planet = getControllerSlot();
@@ -395,7 +349,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return GTMod.proxy.mUndergroundOil.GetDimension(getBaseMetaTileEntity().getWorld().provider.dimensionId);
     }
 
-    /** 已解析维度对应的显示缩写，无 GTNEI 条目时为 null。 */
     @Nullable
     private String resolveDisplayedAbbr(@Nullable GTUODimension dimension) {
         return VoidFluidTableHelper.getAbbrOfDimension(dimension);
@@ -411,7 +364,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return 0;
     }
 
-    /** 输入总线中当前存放的共享阶梯里加成最高的钻头，无则为 null。 */
+    /** 输入总线中共享阶梯里加成最高的钻头，无则为 null。 */
     @Nullable
     private DrillSelection findBestDrill() {
         DrillSelection best = null;
@@ -419,8 +372,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
             if (input == null) continue;
             for (DrillTier tier : DRILL_TIERS) {
                 final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, tier.material, 1);
-                // 在正确的构建中不会出现 null：五种物品堆均在配方注册时（RecipeLoader）校验过。
-                // 若 GT 数据损坏，选择跳过而不是让服务器线程崩溃。
+                // 正常构建中不会为 null（RecipeLoader 已校验）；GT 数据损坏时跳过而不崩溃。
                 if (drillStack == null) continue;
                 if (input.isItemEqual(drillStack) && (best == null || tier.bonus > best.bonus)) {
                     best = new DrillSelection(input, tier.bonus, tier.material.mName);
@@ -430,9 +382,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return best;
     }
 
-    /**************************************************************************
-     * GUI 与工具提示。
-     *************************************************************************/
+    // ==== GUI 与工具提示 ====
 
     @Override
     protected void drawTexts(DynamicPositionedColumn screenElements, SlotWidget inventorySlot) {
@@ -545,9 +495,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return tt;
     }
 
-    /**************************************************************************
-     * 多方块基类要求的样板代码。
-     *************************************************************************/
+    // ==== 多方块基类要求的样板代码 ====
 
     @Override
     public RecipeMap<?> getRecipeMap() {
@@ -576,8 +524,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
 
     @Override
     public boolean supportsBatchMode() {
-        // 批量模式通过配方逻辑翻倍产出；本机器改为通过并行数扩量，
-        // 该开关将是无效操作，因此禁用。
+        // 扩量走并行数而非批量模式，该开关无效，禁用。
         return false;
     }
 

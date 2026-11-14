@@ -19,22 +19,14 @@ import gregtech.api.recipe.RecipeMap;
 import gregtech.api.render.TextureFactory;
 
 /**
- * 木制虚空流体泵：一台无电力的木制机器，将主世界的地下流体抽取到其内部输出储罐中。
- * <p>
- * 流体选择遵循木制机器的共用规则：编程电路（配置 1..N）选择主世界流体表的第 N 项，
- * 没有电路或配置 0 时按权重随机选取（权重 = 配置的生成概率），超过 N 的配置则空转。
- * 储罐绝不混合流体；储罐已满或流体不兼容时机器停滞，直到流体被从任意非正面方向
- * 的管道抽出。
- * <p>
- * 贴图复用现有的 GT 资源：以木制机壳作为本体，正面使用水泵覆盖层；
- * 本模组不附带任何新贴图。
+ * 木制虚空流体泵：无电力木制机器，将主世界地下流体抽入内部输出储罐。
+ * 电路选择：配置 1..N 选主世界流体表第 N 项，0/无电路按权重随机，超过 N 空转。
+ * 储罐不混流体；罐满或流体不兼容时停滞，直到被任意非正面方向的管道抽出。
  */
-// 跳过 GT 的区域名称注册；显示名称来自标准 lang 键
-// （该注解不会被继承，因此由具体类显式携带）。
+// 跳过 GT 区域名注册，显示名来自 lang 键。
 @IMetaTileEntity.SkipGenerateName
 public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
 
-    /** 会话级标志，确保损坏的主世界流体表只报告一次，而不是每个周期都报告。 */
     private static boolean warnedNoOverworldTable = false;
 
     public MTEVoidFluidPumpWooden(int aID, String aName, String aNameRegional) {
@@ -55,9 +47,7 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
         return VmdRecipeMaps.voidFluidDrillerRecipes;
     }
 
-    /**************************************************************************
-     * 储罐配置：输出储罐是唯一的储罐；不从外部注入任何东西。
-     *************************************************************************/
+    // ==== 储罐配置：唯一储罐即输出储罐，不从外部注入 ====
 
     @Override
     public boolean canTankBeFilled() {
@@ -79,9 +69,7 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
         return 1;
     }
 
-    /**************************************************************************
-     * 生产。
-     *************************************************************************/
+    // ==== 生产 ====
 
     @Override
     public int checkRecipe() {
@@ -98,7 +86,7 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
         final int config = readCircuitConfig();
         final GTUOFluid pick;
         if (config >= 1) {
-            if (config > candidates.size()) return DID_NOT_FIND_RECIPE; // 配置超出范围：空转。
+            if (config > candidates.size()) return DID_NOT_FIND_RECIPE;
             pick = candidates.get(config - 1);
         } else {
             pick = VoidFluidTableHelper.weightedRandom(candidates);
@@ -107,17 +95,13 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
         if (fluid == null) return DID_NOT_FIND_RECIPE;
 
         final FluidStack output = new FluidStack(fluid, PRODUCTION_AMOUNT_MB);
-        // canOutput 会拒绝满罐的情况，以及储罐中仍留有其他流体时的流体切换。
+        // canOutput 拒绝满罐，以及储罐仍留有其他流体时的流体切换。
         if (!canOutput(output)) return DID_NOT_FIND_RECIPE;
 
         mOutputFluid = output;
         mMaxProgresstime = getProductionCycleTicks();
         return FOUND_AND_SUCCESSFULLY_USED_RECIPE;
     }
-
-    /**************************************************************************
-     * 贴图。
-     *************************************************************************/
 
     @Override
     protected ITexture getFrontOverlay() {
@@ -127,9 +111,7 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
             .build();
     }
 
-    /**************************************************************************
-     * 提示信息：静态规则加上当前流体选择的实时状态行。
-     *************************************************************************/
+    // ==== 提示信息：静态规则 + 实时流体选择状态行 ====
 
     @Override
     public String[] getDescription() {
@@ -139,7 +121,6 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
             StatCollector.translateToLocalFormatted("vmd.pump.desc.selection", describeCurrentSelection()) };
     }
 
-    /** 机器当前将选择的流体的本地化描述。 */
     private String describeCurrentSelection() {
         final int config = readCircuitConfig();
         if (config >= 1) {

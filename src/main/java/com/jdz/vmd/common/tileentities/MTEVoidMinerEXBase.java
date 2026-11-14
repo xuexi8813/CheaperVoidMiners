@@ -146,10 +146,7 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
         return ImmutableList.of(InputBus, OutputBus, Maintenance, Energy);
     }
 
-    /**
-     * 替代 GT5u 在 5.09.55.x 中从 MTEVoidMinerBase 移除的气体提示行构建方法；格式与 5.09.51.x
-     * 所附带的实现保持完全一致。
-     */
+    /** 复刻 GT5u 5.09.51.x 的气体提示行构建（该方法在 5.09.55.x 中被移除）。 */
     private String createGasString(EnumChatFormatting color, String gas, int boost) {
         return String.format(
             "%s%s%s : %s%dx%s",

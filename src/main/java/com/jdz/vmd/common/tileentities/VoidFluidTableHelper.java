@@ -19,15 +19,12 @@ import gregtech.api.objects.GTUOFluid;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * GT5u 地下流体表（{@code GTMod.proxy.mUndergroundOil}）的共享访问层。
- * <p>
- * 动机：Void Fluid Driller（虚空流体钻机）与 Wooden Void Fluid Pump（木制虚空流体泵）都从同一份
- * 按维度划分的流体表中选取流体，因此维度键映射、流体候选提取与加权随机抽取只在此处实现一次，
- * 避免在每台机器中重复。
+ * GT5u 地下流体表（{@code GTMod.proxy.mUndergroundOil}）的共享访问层：
+ * 维度键映射、流体候选提取与加权随机抽取，供流体钻机与木制泵共用。
  */
 public final class VoidFluidTableHelper {
 
-    /** 地下流体维度列表中主世界（Overworld）条目的键（{@link gtneioreplugin} 中的 "Ow"）。 */
+    /** 地下流体维度列表中主世界条目的键（对应 GTNEI 的 "Ow"）。 */
     public static final String OVERWORLD_DIMENSION_KEY = "0";
 
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
@@ -39,19 +36,13 @@ public final class VoidFluidTableHelper {
         return GTMod.proxy.mUndergroundOil.getDimensionList();
     }
 
-    /**
-     * 主世界的地下流体表。GT 未生成主世界条目（配置损坏或为空）时返回 null；
-     * 调用方将其视为"无流体数据"。
-     */
+    /** 主世界地下流体表；GT 未生成条目时为 null（调用方视为无流体数据）。 */
     @Nullable
     public static GTUODimension getOverworldDimension() {
         return getDimensionList().get(OVERWORLD_DIMENSION_KEY);
     }
 
-    /**
-     * 按 GTNEI 维度缩写（如 "Ow"、"Mo"）查找对应的地下流体维度条目。
-     * GT5u 流体表中不存在该缩写时返回 null。
-     */
+    /** 按 GTNEI 维度缩写查找地下流体维度条目；不存在时为 null。 */
     @Nullable
     public static GTUODimension findDimensionByAbbr(String abbr) {
         for (Map.Entry<String, GTUODimension> entry : getDimensionList().entrySet()) {
@@ -70,12 +61,8 @@ public final class VoidFluidTableHelper {
     }
 
     /**
-     * 把地下流体维度列表的键映射为对应的 GTNEI 缩写。
-     * <p>
-     * 该列表的键要么是数字维度 id（仅主世界，id 0），要么是世界 provider 类名片段
-     * （"Moon"、"BarnardaC" 等）。此映射复刻了
-     * {@code gtneioreplugin.util.GT5UndergroundFluidHelper#init} 的映射逻辑，
-     * 它是两套数据集之间的标准桥梁。
+     * 地下流体维度键（数字维度 id 或世界 provider 类名片段）映射为 GTNEI 缩写；
+     * 复刻 {@code gtneioreplugin.util.GT5UndergroundFluidHelper#init} 的映射逻辑。
      */
     @Nullable
     public static String getAbbrForUoKey(String rawDimension) {
@@ -110,10 +97,7 @@ public final class VoidFluidTableHelper {
         return null;
     }
 
-    /**
-     * 某维度可抽取的流体列表，保持表内（配置）顺序，跳过 FluidRegistry 未收录的流体。
-     * 永不返回 null；该维度没有可用流体数据时为空列表。
-     */
+    /** 维度可抽取的流体列表，保持表内顺序，跳过 FluidRegistry 未收录的流体；无数据时为空列表。 */
     public static List<GTUOFluid> getFluidCandidates(@Nullable GTUODimension dimension) {
         final List<GTUOFluid> candidates = new ArrayList<>();
         if (dimension == null) return candidates;
@@ -124,10 +108,7 @@ public final class VoidFluidTableHelper {
         return candidates;
     }
 
-    /**
-     * 以配置的生成概率（Chance）为权重，对流体表做加权随机抽取。
-     * 循环对 [0, total) 区间的划分是精确的，因此末尾的 return 实际不可达，但编译器要求必须存在。
-     */
+    /** 以生成概率（Chance）为权重加权随机抽取；末尾 return 不可达，仅为满足编译器。 */
     public static GTUOFluid weightedRandom(List<GTUOFluid> candidates) {
         long total = 0;
         for (GTUOFluid fluid : candidates) {

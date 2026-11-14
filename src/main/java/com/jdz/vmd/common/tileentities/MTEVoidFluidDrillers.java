@@ -16,19 +16,13 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.util.GTUtility;
 
 /**
- * Void Fluid Driller（虚空流体钻机）家族的五个阶段。每个阶段仅改变结构材料、电压等级（EU/t）、
- * 产出系数与并行规则；工作逻辑完全位于 {@link MTEVoidFluidDrillerBase}。
- * <p>
- * Naquadah 与 Infinity 阶段复用现有的高级机壳，因为 GT 没有提供专用的
- * Naquadah/Infinity 机器机壳（替代依据见模块报告）。
- * 命名：每台具体机器类都携带 {@link IMetaTileEntity.SkipGenerateName}，
- * 使显示名来自标准 lang 键，而不是 GT 的区域名注册。
+ * Void Fluid Driller（虚空流体钻机）家族的五个阶段，仅差结构材料、电压、产出系数与并行规则；
+ * 工作逻辑见 {@link MTEVoidFluidDrillerBase}。每台具体类须显式携带 {@link IMetaTileEntity.SkipGenerateName}
+ * （注解不继承），显示名来自 lang 键。Naquadah/Infinity 无专用机壳，复用高级机壳替代。
  */
 public class MTEVoidFluidDrillers {
 
-    /** Iron 阶段：LV 机器，产出系数 x1。 */
-    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都要显式携带。
+    /** Iron 阶段：LV，产出系数 x1。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerIron extends MTEVoidFluidDrillerBase<VoidFluidDrillerIron> {
 
@@ -79,9 +73,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Steel 阶段：MV 机器，产出系数 x4。 */
-    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都要显式携带。
+    /** Steel 阶段：MV，产出系数 x4。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerSteel extends MTEVoidFluidDrillerBase<VoidFluidDrillerSteel> {
 
@@ -132,9 +124,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Titanium 阶段：HV 机器，产出系数 x16。 */
-    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都要显式携带。
+    /** Titanium 阶段：HV，产出系数 x16。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerTitanium extends MTEVoidFluidDrillerBase<VoidFluidDrillerTitanium> {
 
@@ -185,12 +175,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /**
-     * Naquadah 阶段：LuV 机器，产出系数 x64。因不存在 Naquadah 机器机壳，
-     * 以钨钢钻井机壳代替；框架保持为 Naquadah。
-     */
-    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都要显式携带。
+    /** Naquadah 阶段：LuV，产出系数 x64；机壳以钨钢钻井机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerNaquadah extends MTEVoidFluidDrillerBase<VoidFluidDrillerNaquadah> {
 
@@ -242,15 +227,9 @@ public class MTEVoidFluidDrillers {
     }
 
     /**
-     * Infinity 阶段：UV 机器，产出系数 x256。因不存在 Infinity 机器机壳，
-     * 以中子素采矿机壳代替；框架保持为 Infinity。
-     * <p>
-     * 与其他阶段不同，本机器的并行数随所供电压提升：
-     * parallel = 8^(输入等级 - UV)，即 UHV 一次运行 8 个周期，UEV 64 个……MAX 等级一次运行 262144 个周期，
-     * EU/t 消耗相应倍增（多安培抽取）。
+     * Infinity 阶段：UV，产出系数 x256；机壳以中子素采矿机壳代替（无专用机壳）。
+     * 并行随电压提升：parallel = 8^(输入等级 - UV)（UHV=8 … MAX=262144），EU/t 多安培倍增。
      */
-    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
-    // 因此每个具体类都要显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerInfinity extends MTEVoidFluidDrillerBase<VoidFluidDrillerInfinity> {
 
@@ -284,8 +263,7 @@ public class MTEVoidFluidDrillers {
 
         @Override
         protected int calculateParallel(int inputTier) {
-            // 8^(等级 - UV)，截断到 GT 等级阶梯（MAX 以上的等级属于错误等级）。
-            // GTUtility.powInt 返回 double；对每个可达的指数，结果都是精确的。
+            // 8^(等级 - UV)，截断到 MAX；GTUtility.powInt 对每个可达指数结果精确。
             final int exponent = Math.min(inputTier, MAX) - UV;
             return (int) GTUtility.powInt(8, exponent);
         }
