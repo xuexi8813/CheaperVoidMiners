@@ -26,38 +26,38 @@ import gregtech.common.WorldgenGTOreSmallPieces;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * Wooden Void Miner: a non-electric singleblock machine that slowly pulls ore items from the Overworld ore
- * generation tables ("from the void", no block breaking).
+ * 木制虚空采矿机：一台无电力的单方块机器，缓慢地从主世界矿石生成表中抽出矿石物品
+ * （"从虚空中抽取"，不破坏方块）。
  * <p>
- * The ore data is rebuilt from the same GT5u sources the void miner uses, see
- * {@code bwcrossmod.galacticgreg.VoidMinerUtility#generateDropMaps}: enabled {@link WorldgenGTOreLayer} ore
- * veins restricted to the Overworld, plus enabled {@link WorldgenGTOreSmallPieces} entries (poor ore drops
- * resolved by {@link VoidOreTableHelper}). Selection follows the shared wooden rules: a programmed circuit
- * (configuration 1..N) picks the N-th vein, N+1 picks the poor (small) ore pool, configuration 0 or no
- * circuit mixes everything into one weighted pool, anything beyond N+1 idles.
+ * 矿石数据从虚空采矿机所用的同一批 GT5u 数据源重建，参见
+ * {@code bwcrossmod.galacticgreg.VoidMinerUtility#generateDropMaps}：限定于主世界的已启用
+ * {@link WorldgenGTOreLayer} 矿脉，加上已启用的 {@link WorldgenGTOreSmallPieces} 条目
+ * （贫矿掉落由 {@link VoidOreTableHelper} 解析）。选择遵循木制机器的共用规则：编程电路
+ * （配置 1..N）选择第 N 条矿脉，N+1 选择贫矿（小型矿石）池，配置 0 或没有电路时把所有内容
+ * 混合进一个加权池，超过 N+1 的配置则空转。
  * <p>
- * Determinism: veins are iterated in {@code sList} registration order and the stone type expansion follows
- * {@link DimensionHelper#getStoneTypes}, exactly like the vanilla void miner drop map construction.
+ * 确定性：矿脉按 {@code sList} 注册顺序遍历，石头类型展开遵循
+ * {@link DimensionHelper#getStoneTypes}，与原版虚空采矿机掉落表的构建方式完全一致。
  */
-// Skips the GT regional-name registration; the display name comes from the standard lang keys
-// (the annotation is not inherited, so the concrete class carries it explicitly).
+// 跳过 GT 的区域名称注册；显示名称来自标准 lang 键
+// （该注解不会被继承，因此由具体类显式携带）。
 @IMetaTileEntity.SkipGenerateName
 public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
 
-    /** Ticks between two production attempts; the wooden miner works twice as fast as the wooden pump. */
+    /** 两次生产尝试之间的间隔 tick 数；木制采矿机的速度是木制泵的两倍。 */
     public static final int MINER_PRODUCTION_CYCLE_TICKS = 100;
 
-    /** The Overworld dimension name as used by the ore worldgen tables and the GTNEI helpers. */
+    /** 矿石世界生成表与 GTNEI 辅助类中所使用的主世界维度名称。 */
     private static final String OVERWORLD_DIM_NAME = DimensionDef.DimNames.OW;
 
-    /** Sporadic and between materials count as one eighth of the vein weight, mirroring the void miner. */
+    /** Sporadic（零星）与 Between（夹层）材料按矿脉权重的八分之一计算，与虚空采矿机保持一致。 */
     private static final float SPORADIC_WEIGHT_DIVISOR = 8.0f;
 
-    /** A weighted entry of an ore pool. */
+    /** 矿石池中的一条带权重条目。 */
     @Desugar
     public record WeightedOre(ItemStack stack, float weight) {}
 
-    /** One ore vein: the four vein materials expanded over the Overworld stone types. */
+    /** 一条矿脉：四种矿脉材料在主世界石头类型上的展开。 */
     public static final class OreVein {
 
         public final String name;
@@ -69,8 +69,8 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     }
 
     /**
-     * The three Overworld ore pools built by {@link #buildOverworldPools()}; shared between machine
-     * instances and the NEI output recipe registration, so both sides see identical data.
+     * 由 {@link #buildOverworldPools()} 构建的三个主世界矿石池；在机器实例与 NEI 产出配方注册之间
+     * 共享，因此两侧看到的数据完全一致。
      */
     public static final class OverworldPools {
 
@@ -79,10 +79,10 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         public final List<WeightedOre> mixed = new ArrayList<>();
     }
 
-    /** Session wide flag so empty ore tables are reported once instead of every cycle. */
+    /** 会话级标志，确保空矿石表只报告一次，而不是每个周期都报告。 */
     private static boolean warnedEmptyOverworldPools = false;
 
-    // Ore pools, built lazily once per machine instance (server and client both need them).
+    // 矿石池，每个机器实例惰性构建一次（服务端与客户端都需要）。
     private boolean poolsBuilt = false;
     private List<OreVein> veinPool = new ArrayList<>();
     private List<WeightedOre> smallOrePool = new ArrayList<>();
@@ -112,7 +112,7 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     }
 
     /**************************************************************************
-     * Production.
+     * 生产。
      *************************************************************************/
 
     @Override
@@ -129,19 +129,19 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         final int config = readCircuitConfig();
         final List<WeightedOre> pool;
         if (config == 0) {
-            // No circuit or configuration 0: everything mixed into one weighted pool.
+            // 没有电路或配置 0：所有内容混合进一个加权池。
             pool = mixedPool;
         } else if (config <= veinPool.size()) {
             pool = veinPool.get(config - 1).drops;
         } else if (config == veinPool.size() + 1) {
             pool = smallOrePool;
         } else {
-            return DID_NOT_FIND_RECIPE; // Beyond the pool count: idle, mirroring the wooden machine family.
+            return DID_NOT_FIND_RECIPE; // 超出池数量：空转，与木制机器家族保持一致。
         }
         if (pool.isEmpty()) return DID_NOT_FIND_RECIPE;
 
         final ItemStack output = singleOutput(weightedPick(pool).stack());
-        // A full output slot or a different ore still inside stalls the machine until the slot drains.
+        // 输出槽已满或槽内仍有不同矿石时机器停滞，直到该槽被清空。
         if (!canOutput(output)) return DID_NOT_FIND_RECIPE;
 
         mOutputItems[0] = output;
@@ -149,7 +149,7 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         return FOUND_AND_SUCCESSFULLY_USED_RECIPE;
     }
 
-    /** Weighted random pick over a pool; the roll partitions [0, total) exactly like the fluid helper. */
+    /** 在池中做加权随机选取；掷点对 [0, total) 的划分方式与流体辅助类完全一致。 */
     private WeightedOre weightedPick(List<WeightedOre> pool) {
         float total = 0;
         for (WeightedOre entry : pool) {
@@ -166,7 +166,7 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     }
 
     /**************************************************************************
-     * Ore pool construction, mirroring VoidMinerUtility.generateDropMaps for the Overworld.
+     * 矿石池构建，为主世界复刻 VoidMinerUtility.generateDropMaps 的逻辑。
      *************************************************************************/
 
     private void buildOrePools() {
@@ -178,15 +178,15 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     }
 
     /**
-     * Builds the three Overworld ore pools from the GT5u worldgen tables; the same data source, expansion
-     * rules and ordering the machine itself uses, exposed for the NEI output recipe registration.
+     * 从 GT5u 世界生成表构建三个主世界矿石池；数据源、展开规则与排序均与机器自身所用的一致，
+     * 公开此方法供 NEI 产出配方注册使用。
      */
     public static OverworldPools buildOverworldPools() {
         final OverworldPools pools = new OverworldPools();
 
         final List<StoneType> stones = DimensionHelper.getStoneTypes(OVERWORLD_DIM_NAME);
 
-        // Registration order of sList is deterministic, so is the resulting vein indexing.
+        // sList 的注册顺序是确定性的，因此得到的矿脉索引顺序也是确定的。
         for (WorldgenGTOreLayer layer : WorldgenGTOreLayer.sList) {
             if (!layer.mEnabled) continue;
             if (!layer.getAllowedDimensions()
@@ -216,13 +216,13 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         return pools;
     }
 
-    /** Expands one vein material over the stone types; a missing adapter stops the expansion early. */
+    /** 将一种矿脉材料在石头类型上展开；缺少适配器时会提前终止展开。 */
     private static void addMaterialDrops(OreVein vein, IOreMaterial material, List<StoneType> stones, float weight) {
         if (material == null) return;
         for (IStoneType stone : stones) {
             final ItemStack stack = VoidOreTableHelper.resolveOreStack(material, stone, false);
             if (stack == null) {
-                // Mirrors VoidMinerUtility: an unresolvable (material, stone) pair stops the expansion.
+                // 与 VoidMinerUtility 一致：无法解析的 (材料, 石头) 组合会终止展开。
                 break;
             }
             if (VoidOreTableHelper.isVoidMinerBlacklisted(stack)) continue;
@@ -231,7 +231,7 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     }
 
     /**************************************************************************
-     * Textures: wooden casing body with the GT ore drill overlay on the front face.
+     * 贴图：木制机壳本体，正面叠加 GT 矿石钻覆盖层。
      *************************************************************************/
 
     @Override
@@ -243,7 +243,7 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     }
 
     /**************************************************************************
-     * Tooltip: static rules plus a live status line for the current selection.
+     * 提示信息：静态规则加上当前选择的实时状态行。
      *************************************************************************/
 
     @Override
@@ -254,7 +254,7 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
             StatCollector.translateToLocalFormatted("vmd.miner.desc.selection", describeCurrentSelection()) };
     }
 
-    /** Human readable name of what the inserted circuit currently selects. */
+    /** 已插入电路当前所选内容的人类可读名称。 */
     protected String describeCurrentSelection() {
         if (!poolsBuilt) buildOrePools();
 

@@ -16,20 +16,19 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.util.GTUtility;
 
 /**
- * The five stages of the Void Excavator family. Each stage only changes the structure materials, the
- * voltage tier (EU/t), the resource block output factor and the parallel rule; the working logic lives
- * entirely in {@link MTEVoidExcavatorBase}.
+ * Void Excavator（虚空挖掘机）家族的五个阶段。每个阶段仅改变结构材料、电压等级（EU/t）、
+ * 资源方块产出系数与并行规则；工作逻辑完全位于 {@link MTEVoidExcavatorBase}。
  * <p>
- * The Naquadah and Infinity stages reuse existing high tier casings because GT does not ship dedicated
- * Naquadah/Infinity machine casings (same substitution as the Void Fluid Driller family).
- * Naming: every concrete machine class carries {@link IMetaTileEntity.SkipGenerateName} so the
- * display name comes from the standard lang keys instead of the GT regional-name registration.
+ * Naquadah 与 Infinity 阶段复用现有的高级机壳，因为 GT 没有提供专用的
+ * Naquadah/Infinity 机器机壳（与 Void Fluid Driller 家族的替代方式相同）。
+ * 命名：每台具体机器类都携带 {@link IMetaTileEntity.SkipGenerateName}，
+ * 使显示名来自标准 lang 键，而不是 GT 的区域名注册。
  */
 public class MTEVoidExcavators {
 
-    /** Iron stage: LV machine, 1 resource block per cycle. */
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    /** Iron 阶段：LV 机器，每周期产出 1 个资源方块。 */
+    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都要显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorIron extends MTEVoidExcavatorBase<VoidExcavatorIron> {
 
@@ -80,9 +79,9 @@ public class MTEVoidExcavators {
         }
     }
 
-    /** Steel stage: MV machine, 4 resource blocks per cycle. */
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    /** Steel 阶段：MV 机器，每周期产出 4 个资源方块。 */
+    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都要显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorSteel extends MTEVoidExcavatorBase<VoidExcavatorSteel> {
 
@@ -133,9 +132,9 @@ public class MTEVoidExcavators {
         }
     }
 
-    /** Titanium stage: HV machine, 16 resource blocks per cycle. */
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    /** Titanium 阶段：HV 机器，每周期产出 16 个资源方块。 */
+    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都要显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorTitanium extends MTEVoidExcavatorBase<VoidExcavatorTitanium> {
 
@@ -187,11 +186,11 @@ public class MTEVoidExcavators {
     }
 
     /**
-     * Naquadah stage: LuV machine, 64 resource blocks per cycle. Uses the tungstensteel drilling casing as a
-     * stand-in because no Naquadah machine casing exists; the frame stays Naquadah.
+     * Naquadah 阶段：LuV 机器，每周期产出 64 个资源方块。因不存在 Naquadah 机器机壳，
+     * 以钨钢钻井机壳代替；框架保持为 Naquadah。
      */
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都要显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorNaquadah extends MTEVoidExcavatorBase<VoidExcavatorNaquadah> {
 
@@ -243,15 +242,15 @@ public class MTEVoidExcavators {
     }
 
     /**
-     * Infinity stage: UV machine, 256 resource blocks per cycle. Uses the neutronium mining casing as a
-     * stand-in because no Infinity machine casing exists; the frame stays Infinity.
+     * Infinity 阶段：UV 机器，每周期产出 256 个资源方块。因不存在 Infinity 机器机壳，
+     * 以中子素采矿机壳代替；框架保持为 Infinity。
      * <p>
-     * Unlike the other stages this machine scales its parallel count with the supplied voltage:
-     * parallel = 8^(input tier - UV), so UHV runs 8 cycles, UEV 64, ... and MAX tier 262144 cycles at once,
-     * with the EU/t draw multiplied accordingly (multi-amp drain).
+     * 与其他阶段不同，本机器的并行数随所供电压提升：
+     * parallel = 8^(输入等级 - UV)，即 UHV 一次运行 8 个周期，UEV 64 个……MAX 等级一次运行 262144 个周期，
+     * EU/t 消耗相应倍增（多安培抽取）。
      */
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    // 跳过 GT 的区域名注册（见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都要显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorInfinity extends MTEVoidExcavatorBase<VoidExcavatorInfinity> {
 
@@ -285,8 +284,8 @@ public class MTEVoidExcavators {
 
         @Override
         protected int calculateParallel(int inputTier) {
-            // 8^(tier - UV), clamped to the GT tier ladder (tiers above MAX are error tiers).
-            // GTUtility.powInt returns double; the result is exact for every reachable exponent.
+            // 8^(等级 - UV)，截断到 GT 等级阶梯（MAX 以上的等级属于错误等级）。
+            // GTUtility.powInt 返回 double；对每个可达的指数，结果都是精确的。
             final int exponent = Math.min(inputTier, MAX) - UV;
             return (int) GTUtility.powInt(8, exponent);
         }

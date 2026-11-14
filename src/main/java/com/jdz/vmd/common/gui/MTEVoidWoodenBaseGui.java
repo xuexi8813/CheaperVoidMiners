@@ -9,13 +9,12 @@ import gregtech.api.recipe.BasicUIProperties;
 import gregtech.common.gui.modularui.singleblock.base.MTEBasicMachineBaseGui;
 
 /**
- * MUI2 window of the wooden void machines: the standard singleblock machine layout (input slots with the
- * progress bar, output slots, error area, power switch and muffler buttons) with the auto-output toggles
- * removed, because the wooden machines keep their output inside until it is taken out.
+ * 木制虚空机器的 MUI2 界面：采用标准的单方块机器布局（带进度条的输入槽、输出槽、错误提示区、
+ * 电力开关与消音器按钮），并移除了自动输出开关，因为木制机器会将产物保留在机器内部，
+ * 直到被玩家取出。
  * <p>
- * The pump shows its fluid output tank through the standard fluid output slot
- * ({@code properties.maxFluidOutputs = 1}), the excavator shows its dimension display block slot as the
- * second item input slot ({@code properties.maxItemInputs = 2}).
+ * 泵通过标准的流体输出槽展示其流体输出仓（{@code properties.maxFluidOutputs = 1}），
+ * 挖掘机将维度显示方块槽展示为第二个物品输入槽（{@code properties.maxItemInputs = 2}）。
  */
 public class MTEVoidWoodenBaseGui extends MTEBasicMachineBaseGui<MTEVoidWoodenBase> {
 
@@ -25,8 +24,8 @@ public class MTEVoidWoodenBaseGui extends MTEBasicMachineBaseGui<MTEVoidWoodenBa
 
     @Override
     protected Flow createBottomLeftCornerFlow(ModularPanel panel, PanelSyncManager syncManager) {
-        // Plain corner flow without the fluid/item auto-output toggles: outputs stay inside the machine
-        // until they are taken out, so the toggles would have no effect and only confuse.
+        // 简单的角落布局，不包含流体/物品自动输出开关：产物会一直留在机器内直到被取出，
+        // 这些开关不会起任何作用，只会造成困惑。
         return Flow.row()
             .coverChildren()
             .verticalCenter()

@@ -147,8 +147,8 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
     }
 
     /**
-     * Replaces the gas tooltip line builder removed from GT5u's MTEVoidMinerBase in 5.09.55.x; the format is kept
-     * identical to the implementation shipped in 5.09.51.x.
+     * 替代 GT5u 在 5.09.55.x 中从 MTEVoidMinerBase 移除的气体提示行构建方法；格式与 5.09.51.x
+     * 所附带的实现保持完全一致。
      */
     private String createGasString(EnumChatFormatting color, String gas, int boost) {
         return String.format(

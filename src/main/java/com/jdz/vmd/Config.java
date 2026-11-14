@@ -8,39 +8,38 @@ import java.util.Map;
 import net.minecraftforge.common.config.Configuration;
 
 /**
- * Mod configuration, currently holding the per dimension resource tables of the Void Excavators.
+ * 模组配置，目前保存虚空挖掘机（Void Excavators）各维度的资源表。
  * <p>
- * Every table is keyed by the dimension abbreviation of the GTNEI dimension display blocks (e.g. "Ow",
- * "Mo"); the former "greeting" sample entry was removed together with this extension because nothing
- * referenced it anymore.
+ * 每张表以 GTNEI 维度显示方块的维度缩写作为键（例如 "Ow"、"Mo"）；原先的 "greeting" 示例条目
+ * 已随本次扩展一并移除，因为不再有任何代码引用它。
  * <p>
- * Table entry format: {@code blockid:meta:weight}, blockid being either a vanilla registry name ("clay")
- * or a "modid:name" pair ("GalacticraftCore:moonBlock"). The strings are resolved against the GameRegistry
- * at use time (see {@link com.jdz.vmd.common.tileentities.VoidExcavatorResourceTable}), so the defaults
- * below are the only place where these identifiers appear.
+ * 表条目格式：{@code blockid:meta:weight}，其中 blockid 既可以是原版注册名（"clay"），
+ * 也可以是 "modid:name" 形式（"GalacticraftCore:moonBlock"）。这些字符串会在使用时通过 GameRegistry
+ * 解析（参见 {@link com.jdz.vmd.common.tileentities.VoidExcavatorResourceTable}），因此下面的默认值
+ * 是这些标识符出现的唯一位置。
  */
 public class Config {
 
-    /** Config category of the per dimension excavator resource tables. */
+    /** 各维度挖掘机资源表的配置分类。 */
     private static final String CATEGORY_EXCAVATOR_RESOURCES = "excavator_resources";
 
-    // Defaults of the documented dimensions, in the shorthand order of the GTNEI progression tiers.
-    // Vanilla entries are always resolvable; the Galacticraft entries degrade to an error log entry when
-    // that mod is absent, without breaking the rest of the table.
+    // 已收录维度的默认值，按 GTNEI 进度阶段缩写的顺序排列。
+    // 原版条目总是可以解析；当 Galacticraft 模组缺失时，其条目会降级为一条错误日志，
+    // 而不会破坏表中的其余内容。
     private static final String[] DEFAULT_OW = { "clay:0:20", "sand:0:15", "gravel:0:15", "dirt:0:50" };
     private static final String[] DEFAULT_NE = { "netherrack:0:60", "soulSand:0:40" };
     private static final String[] DEFAULT_ED = { "endStone:0:100" };
     private static final String[] DEFAULT_MO = { "GalacticraftCore:moonBlock:4:60", "GalacticraftCore:moonBlock:3:40" };
     private static final String[] DEFAULT_MA = { "GalacticraftMars:mars:9:60", "GalacticraftMars:mars:5:40" };
 
-    /** Resource tables by dimension abbreviation, in config file order. */
+    /** 按维度缩写索引的资源表，保持配置文件中的顺序。 */
     private static final Map<String, String[]> EXCAVATOR_RESOURCE_TABLES = new LinkedHashMap<>();
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
 
-        // The documented dimensions are seeded with their default tables so they show up in the generated
-        // config file; every additional key the player adds to the category is picked up by the scan below.
+        // 为已收录维度写入默认资源表，使其出现在生成的配置文件中；玩家在该分类下额外添加的
+        // 任意键都会被下方的扫描逻辑读取。
         loadTable(configuration, "Ow", DEFAULT_OW, "Overworld: clay, sand, gravel, dirt");
         loadTable(configuration, "Ne", DEFAULT_NE, "Nether: netherrack, soul sand");
         loadTable(configuration, "ED", DEFAULT_ED, "The End: endstone");
@@ -64,13 +63,13 @@ public class Config {
         }
     }
 
-    /** Reads one dimension table from the config, storing the defaults into the file when it is new. */
+    /** 从配置中读取一张维度表；若为新建条目，则将默认值写入配置文件。 */
     private static void loadTable(Configuration configuration, String abbr, String[] defaults, String comment) {
         EXCAVATOR_RESOURCE_TABLES
             .put(abbr, configuration.getStringList(abbr, CATEGORY_EXCAVATOR_RESOURCES, defaults, comment));
     }
 
-    /** Snapshot of the configured tables; entries are raw config strings, parsed by the resource table helper. */
+    /** 已配置资源表的快照；条目为原始配置字符串，由资源表辅助类负责解析。 */
     public static Map<String, String[]> getExcavatorResourceTables() {
         return Collections.unmodifiableMap(EXCAVATOR_RESOURCE_TABLES);
     }

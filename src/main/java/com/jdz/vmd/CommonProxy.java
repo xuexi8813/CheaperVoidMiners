@@ -20,30 +20,28 @@ public class CommonProxy {
         Config.synchronizeConfiguration(event.getSuggestedConfigurationFile());
     }
 
-    // load "Do your mod setup. Build whatever data structures you care about. Register recipes." (Remove if not needed)
+    // load "进行模组初始化设置。构建需要的数据结构，注册配方。"（如不需要可移除）
     public void init(FMLInitializationEvent event) {
         ItemRegistry.run();
-        // Load the NEI output recipe maps early: NEI builds its handler list from every registered recipe
-        // category while it processes its config load, which can happen during postInit - before a server
-        // start would first touch the class.
+        // 尽早加载 NEI 产出配方表：NEI 在处理自身配置加载时会基于所有已注册的配方类别构建处理器列表，
+        // 而该过程可能发生在 postInit 期间——早于服务器启动才会首次触达该类的时机。
         VmdRecipeMaps.register();
     }
 
-    // postInit "Handle interaction with other mods, complete your setup based on this." (Remove if not needed)
+    // postInit "处理与其他模组的交互，并在此基础上完成初始化设置。"（如不需要可移除）
     public void postInit(FMLPostInitializationEvent event) {
         RecipeLoader.run();
     }
 
     /**
-     * Server start: late data hooks that must run after every mod finished its own loading. BartWorks generates
-     * the void miner drop maps ({@code VoidMinerUtility.generateDropMaps()}) during its load-complete phase,
-     * which always precedes the first server start, so appending the poor ores here is safe and the NEI output
-     * recipes registered right after include them.
+     * 服务器启动：后期数据钩子，必须在所有模组完成自身加载后运行。BartWorks 在其 load-complete 阶段生成
+     * 虚空采矿机掉落表（{@code VoidMinerUtility.generateDropMaps()}），该阶段总是先于首次服务器启动，
+     * 因此在此处追加贫矿是安全的，且紧接着注册的 NEI 产出配方会包含这些贫矿。
      * <p>
-     * Deliberately NOT done in FMLLoadCompleteEvent: first-loading gameplay classes (wooden miner pools, fluid
-     * tables, resource tables) during initializeMods crashes RFB/HMCL pack environments with
-     * {@code ClassNotFoundException: Class bytes are null for net.minecraft.inventory.ISidedInventory} (verified
-     * in user pack crash reports 23:06/23:08); the server-start phase loads classes safely, as verified in game.
+     * 刻意不在 FMLLoadCompleteEvent 中执行：在 initializeMods 期间首次加载游戏玩法类（木制采矿机奖池、
+     * 流体表、资源表）会导致 RFB/HMCL 整合包环境崩溃，报
+     * {@code ClassNotFoundException: Class bytes are null for net.minecraft.inventory.ISidedInventory}
+     * （已通过用户整合包 23:06/23:08 的崩溃报告验证）；而服务器启动阶段可以安全地加载这些类，已在游戏中验证。
      */
     public void serverStarting(FMLServerStartingEvent event) {
         FMLLog.log("CheaperVoidMiners", Level.INFO, "ServerStarting: appending poor ores to the void miner drop maps");

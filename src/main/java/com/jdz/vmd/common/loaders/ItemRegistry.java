@@ -22,7 +22,7 @@ import cpw.mods.fml.common.ModContainer;
 
 public class ItemRegistry {
 
-    /** Fallback display name for the ownership tooltip line, should the active mod container be absent. */
+    /** 归属提示行在当前模组容器缺失时的后备显示名称。 */
     private static final String FALLBACK_MOD_DISPLAY_NAME = "CheaperVoidMiners";
 
     public static ItemStack VoidMinerEX1;
@@ -116,13 +116,12 @@ public class ItemRegistry {
     }
 
     /**
-     * Appends an "Added by CheaperVoidMiners" line to the tooltip of every machine of this mod, following
-     * the Twist Space Technology pattern of a mod credit line appended through GTNHLib's
-     * {@link AnimatedTooltipHandler} (these machines are registered on the GregTech block, so the generic
-     * mod attribution would show GregTech instead).
+     * 为本模组的每台机器的提示信息（tooltip）追加一行 "Added by CheaperVoidMiners"，遵循 Twist Space
+     * Technology 的做法，通过 GTNHLib 的 {@link AnimatedTooltipHandler} 追加模组署名行
+     * （这些机器注册在 GregTech 的方块上，因此通用的模组归属显示的会是 GregTech）。
      * <p>
-     * The displayed name is the mcmod.info name of the active mod container, read while {@link #run()} is
-     * called from {@code init} where this mod is still the active container.
+     * 显示的名称是当前活跃模组容器的 mcmod.info 名称，在 {@link #run()} 被从 {@code init} 调用时读取，
+     * 此时本模组仍是活跃容器。
      */
     private static void registerOwnershipTooltips() {
         final ModContainer container = Loader.instance()

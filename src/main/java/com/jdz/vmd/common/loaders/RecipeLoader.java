@@ -40,18 +40,16 @@ public class RecipeLoader {
     }
 
     /**
-     * Assembler recipes of the five Void Fluid Driller stages. Every input stack is validated before the
-     * recipe is registered; a missing GT item aborts that machine's recipe with an error log instead of
-     * silently producing a broken recipe.
+     * 五个虚空流体钻机阶段的装配机配方。每份输入物品堆都在注册配方前进行校验；GT 物品缺失时
+     * 会以一条错误日志中止该机器的配方，而不是静默地生成一条损坏的配方。
      * <p>
-     * All five recipes consume one programmed circuit with configuration 12 and scale frame count and
-     * duration with the stage ladder.
+     * 五条配方均消耗一个配置 12 的编程电路，框架数量与配方时长随阶段阶梯递增。
      */
     private static void registerDrillerAssemblerRecipes() {
-        // Drill heads are shared tooling of the family; they must all exist or the whole ladder is broken.
+        // 钻头是这一系列机器共用的工具；它们必须全部存在，否则整个阶梯都是坏的。
         validateDrillHeads();
 
-        // Iron stage, LV: 4 casings + 4 frames + super tank + pump + starter drill head + circuit 12.
+        // 铁阶段，LV：4 机壳 + 4 框架 + 超级储罐 + 泵 + 入门钻头 + 电路 12。
         addDrillerAssemblerRecipe(
             ItemRegistry.VoidFluidDrillerIron,
             ItemList.Casing_ULV,
@@ -84,7 +82,7 @@ public class RecipeLoader {
             400);
         addDrillerAssemblerRecipe(
             ItemRegistry.VoidFluidDrillerNaquadah,
-            // No dedicated Naquadah machine casing exists; the tungstensteel drilling casing stands in.
+            // 不存在专用的 Naquadah 机器机壳；以钨钢钻井机壳代替。
             ItemList.Casing_RobustTungstenSteel,
             Materials.Naquadah,
             8,
@@ -95,7 +93,7 @@ public class RecipeLoader {
             800);
         addDrillerAssemblerRecipe(
             ItemRegistry.VoidFluidDrillerInfinity,
-            // No dedicated Infinity machine casing exists; the neutronium mining casing stands in.
+            // 不存在专用的 Infinity 机器机壳；以中子素采矿机壳代替。
             ItemList.Casing_MiningNeutronium,
             Materials.Infinity,
             8,
@@ -106,7 +104,7 @@ public class RecipeLoader {
             1600);
     }
 
-    /** Fails fast (with an error log) when one of the shared drill head stacks is not registered. */
+    /** 任一共用钻头物品堆未注册时立即失败（输出错误日志）。 */
     private static void validateDrillHeads() {
         for (Materials material : new Materials[] { Materials.Iron, Materials.Steel, Materials.Titanium,
             Materials.Naquadah, Materials.Infinity }) {
@@ -125,7 +123,7 @@ public class RecipeLoader {
         final ItemStack tankStack = superTank.get(1);
         final ItemStack pumpStack = pump.get(1);
         final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, drillMaterial, 1);
-        // The configured programming circuit (configuration 12) required by the confirmed design.
+        // 已确认设计中要求的规定编程电路（配置 12）。
         final ItemStack circuitStack = ItemList.Circuit_Integrated.getWithDamage(1L, 12L);
 
         if (casingStack == null || frameStack == null
@@ -154,16 +152,16 @@ public class RecipeLoader {
     }
 
     /**
-     * Shaped crafting recipe of the Wooden Void Fluid Pump:
+     * 木制虚空流体泵的有序合成配方：
      *
      * <pre>
-     * log        bronze fluid pipe (medium)   log
-     * log        fired clay bucket            log
-     * log        log                          log
+     * 原木       青铜流体管道（中型）         原木
+     * 原木       烧制粘土桶                   原木
+     * 原木       原木                         原木
      * </pre>
      *
-     * The fired clay bucket comes from Iguana Tweaks; when that mod is absent the recipe is skipped with an
-     * error log, the machine itself stays registered but is unobtainable.
+     * 烧制粘土桶来自 Iguana Tweaks；该模组缺失时会以一条错误日志跳过该配方，
+     * 机器本身仍保持注册状态，但无法获取。
      */
     private static void registerWoodenPumpCraftingRecipe() {
         final ItemStack clayBucket = getFiredClayBucket();
@@ -180,19 +178,18 @@ public class RecipeLoader {
     }
 
     /**
-     * Shaped crafting recipe of the Wooden Void Miner:
+     * 木制虚空采矿机的有序合成配方：
      *
      * <pre>
-     * log    flint    log
-     * log    stick    log
-     * log    flint    log
+     * 原木    燧石    原木
+     * 原木    木棍    原木
+     * 原木    燧石    原木
      * </pre>
      *
-     * The log uses the {@code logWood} ore dictionary entry (via {@link OrePrefixes#log} of Wood, the same
-     * spelling as the Wooden Void Fluid Pump recipe), the flint is the vanilla item (with wildcard damage,
-     * the same spelling as the GT5u crafting recipe loader) and the stick is the {@code stickWood} ore
-     * dictionary entry (GT's recipe handler resolves plain strings against the ore dictionary, the same
-     * spelling as the BartWorks crafting recipes).
+     * 原木使用 {@code logWood} 矿物词典条目（通过 Wood 的 {@link OrePrefixes#log}，与木制虚空流体泵
+     * 配方的写法相同），燧石为原版物品（带通配耐久值，与 GT5u 合成配方加载器的写法相同），
+     * 木棍为 {@code stickWood} 矿物词典条目（GT 的配方处理器会将普通字符串按矿物词典解析，
+     * 与 BartWorks 合成配方的写法相同）。
      */
     private static void registerWoodenMinerCraftingRecipe() {
         GTModHandler.addCraftingRecipe(
@@ -203,16 +200,16 @@ public class RecipeLoader {
     }
 
     /**
-     * Shaped crafting recipe of the Wooden Void Excavator:
+     * 木制虚空挖掘机的有序合成配方：
      *
      * <pre>
-     * log    flint    log
-     * log    dirt     log
-     * log    flint    log
+     * 原木    燧石    原木
+     * 原木    泥土    原木
+     * 原木    燧石    原木
      * </pre>
      *
-     * Same spellings as the Wooden Void Fluid Pump and Miner recipes; the dirt is the vanilla block item
-     * (the spelling GT itself uses for dirt stacks, e.g. the scrapbox drop table).
+     * 写法与木制虚空流体泵及采矿机配方相同；泥土为原版方块物品
+     * （GT 自身对泥土物品堆所用的写法，例如废纸箱掉落表）。
      */
     private static void registerWoodenExcavatorCraftingRecipe() {
         GTModHandler.addCraftingRecipe(
@@ -223,13 +220,13 @@ public class RecipeLoader {
     }
 
     /**
-     * Assembler recipes of the five Void Excavator stages, one flat pattern each:
-     * casing x4 + frameGt x4 (Naquadah/Infinity x8) + drill head x1 + conveyor module x2 + circuit 12 x1.
+     * 五个虚空挖掘机阶段的装配机配方，每级均为同一扁平模式：
+     * 机壳 x4 + frameGt x4（Naquadah/Infinity 为 x8）+ 钻头 x1 + 传送带模块 x2 + 电路 12 x1。
      * <p>
-     * The conveyor module of a stage uses the conveyor tier matching the machine voltage
-     * ({@code ItemList.Conveyor_Module_*}, the spelling GT's own assembler recipes use for conveyor
-     * modules, e.g. the Drone Centre recipe). All input stacks are validated before registration; a missing
-     * GT item aborts that machine's recipe with an error log instead of silently producing a broken recipe.
+     * 每个阶段的传送带模块使用与机器电压匹配的传送带等级
+     * （{@code ItemList.Conveyor_Module_*}，GT 自身装配机配方中传送带模块所用的写法，
+     * 例如无人机中心配方）。所有输入物品堆在注册前都会校验；GT 物品缺失时会以一条错误日志
+     * 中止该机器的配方，而不是静默地生成一条损坏的配方。
      */
     private static void registerExcavatorAssemblerRecipes() {
         addExcavatorAssemblerRecipe(
@@ -258,7 +255,7 @@ public class RecipeLoader {
             400);
         addExcavatorAssemblerRecipe(
             ItemRegistry.VoidExcavatorNaquadah,
-            // No dedicated Naquadah machine casing exists; the tungstensteel drilling casing stands in.
+            // 不存在专用的 Naquadah 机器机壳；以钨钢钻井机壳代替。
             ItemList.Casing_RobustTungstenSteel,
             Materials.Naquadah,
             8,
@@ -267,7 +264,7 @@ public class RecipeLoader {
             800);
         addExcavatorAssemblerRecipe(
             ItemRegistry.VoidExcavatorInfinity,
-            // No dedicated Infinity machine casing exists; the neutronium mining casing stands in.
+            // 不存在专用的 Infinity 机器机壳；以中子素采矿机壳代替。
             ItemList.Casing_MiningNeutronium,
             Materials.Infinity,
             8,
@@ -277,9 +274,8 @@ public class RecipeLoader {
     }
 
     /**
-     * Registers one excavator assembler recipe; shared drill heads are validated by
-     * {@link #validateDrillHeads()}. The drill head material follows the stage ladder, which is identical to
-     * the frame material (Iron/Steel/Titanium/Naquadah/Infinity).
+     * 注册一条挖掘机装配机配方；共用钻头由 {@link #validateDrillHeads()} 校验。
+     * 钻头材料遵循阶段阶梯，与框架材料一致（铁/钢/钛/Naquadah/Infinity）。
      */
     private static void addExcavatorAssemblerRecipe(ItemStack output, ItemList casing, Materials frameMaterial,
         int frameCount, ItemList conveyor, long euTier, int durationTicks) {
@@ -312,7 +308,7 @@ public class RecipeLoader {
             .addTo(assemblerRecipes);
     }
 
-    /** The fired clay bucket, following the same lookup as GT's own container registration. */
+    /** 烧制粘土桶，采用与 GT 自身容器注册相同的查找方式。 */
     private static ItemStack getFiredClayBucket() {
         if (!Mods.IguanaTweaksTinkerConstruct.isModLoaded()) return null;
         return GTModHandler.getModItem(Mods.IguanaTweaksTinkerConstruct.ID, "clayBucketFired", 1L, 0);

@@ -27,27 +27,26 @@ import gregtech.common.ores.OreManager;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * Shared access layer over the GT5u ore generation tables for the poor (small) ore forms.
+ * GT5u 贫矿（小型矿）形态矿石生成表的共享访问层。
  * <p>
- * Motivation: the Wooden Void Miner builds its poor ore pool from {@link WorldgenGTOreSmallPieces} and the
- * one-time append of the same poor ores into the vanilla void miner drop maps needs the exact same
- * resolution, stone type expansion and blacklist rules, so that logic lives here once instead of being
- * duplicated per machine (mirrors {@link VoidFluidTableHelper} on the fluid side).
+ * 动机：Wooden Void Miner（木制虚空采矿机）要基于 {@link WorldgenGTOreSmallPieces} 构建贫矿奖池，
+ * 而把同一批贫矿一次性追加进原版虚空采矿机掉落表也需要完全相同的解析、石类型展开与黑名单规则，
+ * 因此该逻辑只在此处实现一次，避免在每台机器中重复（流体侧对应 {@link VoidFluidTableHelper}）。
  * <p>
- * The drop shape follows the GT5u void miner data sources: a small pieces entry is resolved as
- * {@code OreInfo(material, stoneType, isSmall = true)} through {@link OreManager#getStack}, which yields the
- * poor ore (orePoor) item form, weighted by the entry's generation amount ({@code mAmount}).
+ * 掉落形态遵循 GT5u 虚空采矿机的数据源：small pieces 条目通过 {@link OreManager#getStack}
+ * 以 {@code OreInfo(material, stoneType, isSmall = true)} 解析，得到贫矿（orePoor）物品形态，
+ * 并以条目的生成量（{@code mAmount}）为权重。
  */
 public final class VoidOreTableHelper {
 
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
 
-    /** Session wide flag so the one-time append to the void miner drop maps never runs twice. */
+    /** 会话级标记，确保向虚空采矿机掉落表的一次性追加永远不会执行两次。 */
     private static boolean appendedToVoidMinerDropMaps = false;
 
     private VoidOreTableHelper() {}
 
-    /** Receives one resolved poor ore drop of a small pieces worldgen entry, together with its weight. */
+    /** 接收一条由 small pieces 世界生成条目解析出的贫矿掉落及其权重。 */
     @FunctionalInterface
     public interface SmallOreDropConsumer {
 
@@ -55,8 +54,8 @@ public final class VoidOreTableHelper {
     }
 
     /**
-     * Resolves the ore item of a (material, stone type) pair through the GT ore adapter system; small = true
-     * yields the poor ore (orePoor) form. Returns null when no adapter supports the pair.
+     * 通过 GT 矿石适配器系统解析 (材料, 石类型) 组合的矿石物品；small = true 得到贫矿（orePoor）形态。
+     * 没有适配器支持该组合时返回 null。
      */
     @Nullable
     public static ItemStack resolveOreStack(IOreMaterial material, IStoneType stone, boolean small) {
@@ -73,8 +72,8 @@ public final class VoidOreTableHelper {
     }
 
     /**
-     * Same identifier format ({@code modid:block:meta}) as the void miner drop map blacklist
-     * ({@code VoidMinerUtility.DropMap}).
+     * 判断方式与虚空采矿机掉落表黑名单（{@code VoidMinerUtility.DropMap}）相同，
+     * 使用同样的标识格式 {@code modid:block:meta}。
      */
     public static boolean isVoidMinerBlacklisted(ItemStack stack) {
         final String identifier = String.format(
@@ -87,11 +86,11 @@ public final class VoidOreTableHelper {
     }
 
     /**
-     * Expands one small pieces worldgen entry into its poor ore drops over the given stone types and hands
-     * every accepted drop to the consumer, weighted by the entry's generation amount.
+     * 把一条 small pieces 世界生成条目按给定石类型展开为贫矿掉落，并将每个被接受的掉落连同权重
+     * 交给消费者，权重取条目的生成量。
      * <p>
-     * Expansion rules mirror {@code VoidMinerUtility.DropMap#addDrop(IOreMaterial, List, float)}: an
-     * unresolvable (material, stone) pair stops the expansion, void miner blacklisted drops are skipped.
+     * 展开规则复刻 {@code VoidMinerUtility.DropMap#addDrop(IOreMaterial, List, float)}：
+     * 无法解析的 (材料, 石头) 组合会中止展开，命中虚空采矿机黑名单的掉落会被跳过。
      */
     public static void forEachSmallOreDrop(WorldgenGTOreSmallPieces piece, List<StoneType> stones,
         SmallOreDropConsumer consumer) {
@@ -100,7 +99,7 @@ public final class VoidOreTableHelper {
         for (IStoneType stone : stones) {
             final ItemStack stack = resolveOreStack(material, stone, true);
             if (stack == null) {
-                // Mirrors VoidMinerUtility: an unresolvable (material, stone) pair stops the expansion.
+                // 与 VoidMinerUtility 一致：无法解析的 (材料, 石头) 组合会中止展开。
                 break;
             }
             if (isVoidMinerBlacklisted(stack)) continue;
@@ -109,14 +108,14 @@ public final class VoidOreTableHelper {
     }
 
     /**
-     * One-time append of every enabled poor ore worldgen entry into the vanilla void miner drop maps
-     * ({@link VoidMinerUtility#addBlockToDimensionList}), so the GT void miners can also produce poor ores.
+     * 一次性把所有已启用的贫矿世界生成条目追加进原版虚空采矿机掉落表
+     * （{@link VoidMinerUtility#addBlockToDimensionList}），使 GT 虚空采矿机也能产出贫矿。
      * <p>
-     * Timing contract: must run after {@code VoidMinerUtility.generateDropMaps()} (BartWorks runs it in its
-     * FMLLoadCompleteEvent handler, which would otherwise rebuild the maps from scratch) and before the first
-     * void miner machine calls {@code calculateDropMap()} on its first tick (the alias distribution cache is
-     * built there and would freeze the map without the appended entries). The server starting event satisfies
-     * both bounds in every environment; the flag makes repeated server starts idempotent.
+     * 时序契约：必须在 {@code VoidMinerUtility.generateDropMaps()} 之后运行（BartWorks 在其
+     * FMLLoadCompleteEvent 处理器中执行它，否则会从头重建掉落表），并且必须在第一台虚空采矿机
+     * 首个 tick 调用 {@code calculateDropMap()} 之前运行（别名分布缓存在那里构建，
+     * 若没有追加的条目，掉落表会被冻结）。服务器启动事件在所有环境中都满足这两个边界；
+     * 标记位保证重复启动服务器时具有幂等性。
      */
     public static void appendPoorOresToVoidMinerDropMaps() {
         if (appendedToVoidMinerDropMaps) return;
@@ -132,8 +131,8 @@ public final class VoidOreTableHelper {
         for (WorldgenGTOreSmallPieces piece : WorldgenGTOreSmallPieces.sList) {
             if (!piece.mEnabled) continue;
             for (String dim : piece.getAllowedDimensions()) {
-                // Same dimension filter semantics as VoidMinerUtility.generateDropMaps: a dimension unknown
-                // to the GT dimension registry still gets a drop map, non void minable ones are skipped.
+                // 与 VoidMinerUtility.generateDropMaps 相同的维度过滤语义：GT 维度注册表未收录的维度
+                // 仍会获得掉落表，不可虚空开采的维度则被跳过。
                 final ModDimensionDef dimensionDef = DimensionDef.getDefByName(dim);
                 if (dimensionDef != null && !dimensionDef.canBeVoidMined()) continue;
 
@@ -148,10 +147,10 @@ public final class VoidOreTableHelper {
     }
 
     /**
-     * Routes one poor ore drop into the void miner drop map of a dimension through the public
-     * {@link VoidMinerUtility#addBlockToDimensionList(String, Block, int, float)} API, which only accepts a
-     * Block + meta pair. The GT ore items are block items, so the reverse lookup is lossless; anything else
-     * is reported as an error instead of being silently dropped.
+     * 通过公开的 {@link VoidMinerUtility#addBlockToDimensionList(String, Block, int, float)} API，
+     * 把一条贫矿掉落路由到某维度的虚空采矿机掉落表；该 API 只接受 Block + meta 组合。
+     * GT 矿石物品都是方块物品，因此反向查找是无损的；其他情况会以错误日志报告，
+     * 而不是被静默丢弃。
      */
     private static boolean appendPoorOreToDimension(String dim, ItemStack stack, float weight) {
         final Block block = Block.getBlockFromItem(stack.getItem());

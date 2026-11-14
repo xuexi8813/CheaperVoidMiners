@@ -19,24 +19,22 @@ import gregtech.api.recipe.RecipeMap;
 import gregtech.api.render.TextureFactory;
 
 /**
- * Wooden Void Excavator: a non-electric singleblock machine that slowly pulls plain (non ore) resource
- * blocks of a chosen dimension out of the void, config table driven (see {@link VoidExcavatorResourceTable}).
+ * 木制虚空挖掘机：一台无电力的单方块机器，缓慢地从虚空中抽出所选维度的普通（非矿石）资源方块，
+ * 由配置表驱动（参见 {@link VoidExcavatorResourceTable}）。
  * <p>
- * The dimension is selected with a dimension display block in the second input slot (not consumed); an
- * empty slot falls back to the Overworld default resources and foreign items are rejected by the slot.
- * Selection follows the shared wooden rules: a programmed circuit (configuration 1..N) picks the N-th
- * resource of that dimension's table, configuration 0 or no circuit is a weighted random pick (weights =
- * configured table weights), anything beyond N idles.
+ * 维度通过第二个输入槽中的维度显示方块选择（不消耗）；槽位为空时回退到主世界默认资源，
+ * 外来物品会被该槽位拒绝。选择遵循木制机器的共用规则：编程电路（配置 1..N）选择该维度表的
+ * 第 N 项资源，配置 0 或没有电路时按权重随机选取（权重 = 配置表中的权重），超过 N 的配置则空转。
  * <p>
- * Textures reuse existing GT assets: the wooden casing as body and the ore drill overlay on the front face;
- * no new textures are shipped with this mod.
+ * 贴图复用现有的 GT 资源：以木制机壳作为本体，正面使用矿石钻覆盖层；
+ * 本模组不附带任何新贴图。
  */
-// Skips the GT regional-name registration; the display name comes from the standard lang keys
-// (the annotation is not inherited, so the concrete class carries it explicitly).
+// 跳过 GT 的区域名称注册；显示名称来自标准 lang 键
+// （该注解不会被继承，因此由具体类显式携带）。
 @IMetaTileEntity.SkipGenerateName
 public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
 
-    /** Session wide record of the dimensions already warned about for having an empty resource table. */
+    /** 会话级记录，记录已经因资源表为空而警告过的维度，避免重复警告。 */
     private static final Set<String> WARNED_EMPTY_DIMENSIONS = new HashSet<>();
 
     public MTEVoidExcavatorWooden(int aID, String aName, String aNameRegional) {
@@ -65,12 +63,12 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
     @Override
     public boolean allowPullStack(IGregTechTileEntity aBaseMetaTileEntity, int aIndex, ForgeDirection side,
         ItemStack aStack) {
-        // The display block is configuration and can be retrieved again.
+        // 显示方块属于配置信息，可以再次取出。
         return aIndex == getDimensionDisplaySlot() || super.allowPullStack(aBaseMetaTileEntity, aIndex, side, aStack);
     }
 
     /**************************************************************************
-     * Production.
+     * 生产。
      *************************************************************************/
 
     @Override
@@ -90,16 +88,16 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
         final int config = readCircuitConfig();
         final VoidExcavatorResourceTable.WeightedResource pick;
         if (config == 0) {
-            // No circuit or configuration 0: weighted random over the dimension table.
+            // 没有电路或配置 0：在该维度表上按权重随机选取。
             pick = VoidExcavatorResourceTable.weightedRandom(resources);
         } else if (config <= resources.size()) {
             pick = resources.get(config - 1);
         } else {
-            return DID_NOT_FIND_RECIPE; // Beyond the resource count: idle, mirroring the wooden machine family.
+            return DID_NOT_FIND_RECIPE; // 超出资源数量：空转，与木制机器家族保持一致。
         }
 
         final ItemStack output = singleOutput(pick.stack());
-        // A full output slot or a different resource still inside stalls the machine until the slot drains.
+        // 输出槽已满或槽内仍有不同资源时机器停滞，直到该槽被清空。
         if (!canOutput(output)) return DID_NOT_FIND_RECIPE;
 
         mOutputItems[0] = output;
@@ -107,14 +105,14 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
         return FOUND_AND_SUCCESSFULLY_USED_RECIPE;
     }
 
-    /** Dimension of the display block; an empty slot falls back to the Overworld default resources. */
+    /** 显示方块对应的维度；槽位为空时回退到主世界默认资源。 */
     private String resolveDimensionAbbr() {
         final String abbr = VoidExcavatorResourceTable.getDimensionAbbr(mInventory[getDimensionDisplaySlot()]);
         return abbr != null ? abbr : VoidExcavatorResourceTable.DEFAULT_DIMENSION;
     }
 
     /**************************************************************************
-     * Textures: wooden casing body with the GT ore drill overlay on the front face.
+     * 贴图：木制机壳本体，正面叠加 GT 矿石钻覆盖层。
      *************************************************************************/
 
     @Override
@@ -126,7 +124,7 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
     }
 
     /**************************************************************************
-     * Tooltip: static rules plus a live status line for the current selection.
+     * 提示信息：静态规则加上当前选择的实时状态行。
      *************************************************************************/
 
     @Override
@@ -139,7 +137,7 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
             StatCollector.translateToLocalFormatted("vmd.excavator.desc.selection", describeCurrentSelection()) };
     }
 
-    /** Human readable name of the resource the inserted circuit currently selects. */
+    /** 已插入电路当前所选资源的人类可读名称。 */
     protected String describeCurrentSelection() {
         final String dimensionAbbr = resolveDimensionAbbr();
         final List<VoidExcavatorResourceTable.WeightedResource> resources = VoidExcavatorResourceTable

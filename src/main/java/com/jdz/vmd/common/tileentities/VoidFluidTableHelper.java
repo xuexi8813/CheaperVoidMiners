@@ -19,29 +19,29 @@ import gregtech.api.objects.GTUOFluid;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * Shared access layer over the GT5u underground fluid tables ({@code GTMod.proxy.mUndergroundOil}).
+ * GT5u 地下流体表（{@code GTMod.proxy.mUndergroundOil}）的共享访问层。
  * <p>
- * Motivation: both the Void Fluid Drillers and the Wooden Void Fluid Pump select fluids from the same
- * per-dimension fluid tables, so dimension key mapping, fluid candidate extraction and the weighted random
- * pick live here once instead of being duplicated per machine.
+ * 动机：Void Fluid Driller（虚空流体钻机）与 Wooden Void Fluid Pump（木制虚空流体泵）都从同一份
+ * 按维度划分的流体表中选取流体，因此维度键映射、流体候选提取与加权随机抽取只在此处实现一次，
+ * 避免在每台机器中重复。
  */
 public final class VoidFluidTableHelper {
 
-    /** Key of the Overworld entry in the underground fluid dimension list ({@link gtneioreplugin} "Ow"). */
+    /** 地下流体维度列表中主世界（Overworld）条目的键（{@link gtneioreplugin} 中的 "Ow"）。 */
     public static final String OVERWORLD_DIMENSION_KEY = "0";
 
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
 
     private VoidFluidTableHelper() {}
 
-    /** Root access to the underground fluid dimension list, keyed by dimension id or provider name fragment. */
+    /** 地下流体维度列表的根访问入口，以维度 id 或 provider 名称片段为键。 */
     public static BiMap<String, GTUODimension> getDimensionList() {
         return GTMod.proxy.mUndergroundOil.getDimensionList();
     }
 
     /**
-     * The Overworld underground fluid table. Returns null when GT shipped no Overworld entry (broken or
-     * emptied config); callers treat that as "no fluid data".
+     * 主世界的地下流体表。GT 未生成主世界条目（配置损坏或为空）时返回 null；
+     * 调用方将其视为"无流体数据"。
      */
     @Nullable
     public static GTUODimension getOverworldDimension() {
@@ -49,8 +49,8 @@ public final class VoidFluidTableHelper {
     }
 
     /**
-     * Finds the underground fluid dimension entry behind a GTNEI dimension abbreviation (e.g. "Ow", "Mo").
-     * Returns null when the abbreviation is unknown to the GT5u fluid tables.
+     * 按 GTNEI 维度缩写（如 "Ow"、"Mo"）查找对应的地下流体维度条目。
+     * GT5u 流体表中不存在该缩写时返回 null。
      */
     @Nullable
     public static GTUODimension findDimensionByAbbr(String abbr) {
@@ -60,7 +60,7 @@ public final class VoidFluidTableHelper {
         return null;
     }
 
-    /** Reverse lookup: abbreviation of a resolved dimension entry, or null when it has no GTNEI entry. */
+    /** 反向查找：已解析维度条目对应的缩写，无 GTNEI 条目时为 null。 */
     @Nullable
     public static String getAbbrOfDimension(GTUODimension dimension) {
         for (Map.Entry<String, GTUODimension> entry : getDimensionList().entrySet()) {
@@ -70,12 +70,12 @@ public final class VoidFluidTableHelper {
     }
 
     /**
-     * Maps a key of the underground fluid dimension list to its GTNEI abbreviation.
+     * 把地下流体维度列表的键映射为对应的 GTNEI 缩写。
      * <p>
-     * The list is keyed either by numeric dimension id (only the Overworld, id 0) or by a world provider class
-     * name fragment ("Moon", "BarnardaC", ...). This replicates the mapping of
-     * {@code gtneioreplugin.util.GT5UndergroundFluidHelper#init}, which is the canonical bridge between the two
-     * data sets.
+     * 该列表的键要么是数字维度 id（仅主世界，id 0），要么是世界 provider 类名片段
+     * （"Moon"、"BarnardaC" 等）。此映射复刻了
+     * {@code gtneioreplugin.util.GT5UndergroundFluidHelper#init} 的映射逻辑，
+     * 它是两套数据集之间的标准桥梁。
      */
     @Nullable
     public static String getAbbrForUoKey(String rawDimension) {
@@ -83,7 +83,7 @@ public final class VoidFluidTableHelper {
             final int id = Integer.parseInt(rawDimension);
             return id == 0 ? "Ow" : null;
         } catch (NumberFormatException e) {
-            // Not a numeric key, fall through to the name fragment matching below.
+            // 非数字键，继续走下方按名称片段匹配的逻辑。
             LOG.debug("Skipping non-numeric underground fluid dimension key '{}'", rawDimension, e);
         }
         switch (rawDimension) {
@@ -111,8 +111,8 @@ public final class VoidFluidTableHelper {
     }
 
     /**
-     * Extractable fluids of a dimension, in table (config) order, skipping fluids unknown to the
-     * FluidRegistry. Never null; empty when the dimension has no usable fluid data.
+     * 某维度可抽取的流体列表，保持表内（配置）顺序，跳过 FluidRegistry 未收录的流体。
+     * 永不返回 null；该维度没有可用流体数据时为空列表。
      */
     public static List<GTUOFluid> getFluidCandidates(@Nullable GTUODimension dimension) {
         final List<GTUOFluid> candidates = new ArrayList<>();
@@ -125,9 +125,8 @@ public final class VoidFluidTableHelper {
     }
 
     /**
-     * Weighted random pick over the fluid table using the configured generation chance as weight.
-     * The loop partitions the range [0, total) exactly, so the final return is unreachable but required by
-     * the compiler.
+     * 以配置的生成概率（Chance）为权重，对流体表做加权随机抽取。
+     * 循环对 [0, total) 区间的划分是精确的，因此末尾的 return 实际不可达，但编译器要求必须存在。
      */
     public static GTUOFluid weightedRandom(List<GTUOFluid> candidates) {
         long total = 0;

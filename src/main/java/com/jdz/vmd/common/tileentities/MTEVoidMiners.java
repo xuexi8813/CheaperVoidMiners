@@ -10,16 +10,15 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.util.GTUtility;
 
 /**
- * The three EX Void Miner stages (EX I/II/III), built on the GT void miner multiblock.
+ * 三个 EX 虚空采矿机阶段（EX I/II/III），构建在 GT 虚空采矿机多方块结构之上。
  * <p>
- * Naming: every concrete machine class carries {@link IMetaTileEntity.SkipGenerateName} so the display
- * name comes from the standard lang keys instead of the GT regional-name registration (the annotation is
- * not inherited, so each concrete class carries it explicitly).
+ * 命名：每个具体机器类都带有 {@link IMetaTileEntity.SkipGenerateName}，使显示名称来自标准 lang 键，
+ * 而不是 GT 的区域名称注册（该注解不会被继承，因此每个具体类都显式携带）。
  */
 public class MTEVoidMiners {
 
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    // 跳过 GT 的区域名称注册（参见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VMLV extends MTEVoidMinerEXBase<VMLV> {
 
@@ -43,7 +42,7 @@ public class MTEVoidMiners {
 
         @Override
         protected int getMinTier() {
-            return VoltageIndex.LV; // LV
+            return VoltageIndex.LV; // LV 电压等级
         }
 
         @Override
@@ -63,8 +62,8 @@ public class MTEVoidMiners {
 
     }
 
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    // 跳过 GT 的区域名称注册（参见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VMHV extends MTEVoidMinerEXBase<VMHV> {
 
@@ -108,8 +107,8 @@ public class MTEVoidMiners {
 
     }
 
-    // Skips the GT regional-name registration (see the class javadoc); the annotation is not inherited,
-    // so every concrete class carries it explicitly.
+    // 跳过 GT 的区域名称注册（参见类 javadoc）；该注解不会被继承，
+    // 因此每个具体类都显式携带。
     @IMetaTileEntity.SkipGenerateName
     public static class VMIV extends MTEVoidMinerEXBase<VMIV> {
 
