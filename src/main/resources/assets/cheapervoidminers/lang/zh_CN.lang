@@ -1,13 +1,22 @@
 # 机器显示名（键位遵循 GT5u 机制：gt.blockmachines.<aName>.name）
 gt.blockmachines.VoidMinerEX1.name=虚空矿机 EX I
+gt.blockmachines.voidminerex1.name=虚空矿机 EX I
 gt.blockmachines.VoidMinerEX2.name=虚空矿机 EX II
+gt.blockmachines.voidminerex2.name=虚空矿机 EX II
 gt.blockmachines.VoidMinerEX3.name=虚空矿机 EX III
+gt.blockmachines.voidminerex3.name=虚空矿机 EX III
 gt.blockmachines.VoidFluidDrillerIron.name=虚空液体钻机（铁）
+gt.blockmachines.voidfluiddrilleriron.name=虚空液体钻机（铁）
 gt.blockmachines.VoidFluidDrillerSteel.name=虚空液体钻机（钢）
+gt.blockmachines.voidfluiddrillersteel.name=虚空液体钻机（钢）
 gt.blockmachines.VoidFluidDrillerTitanium.name=虚空液体钻机（钛）
+gt.blockmachines.voidfluiddrillertitanium.name=虚空液体钻机（钛）
 gt.blockmachines.VoidFluidDrillerNaquadah.name=虚空液体钻机（硅岩）
+gt.blockmachines.voidfluiddrillernaquadah.name=虚空液体钻机（硅岩）
 gt.blockmachines.VoidFluidDrillerInfinity.name=虚空液体钻机（无尽）
+gt.blockmachines.voidfluiddrillerinfinity.name=虚空液体钻机（无尽）
 gt.blockmachines.VoidFluidPumpWooden.name=木质虚空流体泵
+gt.blockmachines.voidfluidpumpwooden.name=木质虚空流体泵
 
 # 虚空液体钻机 tooltip
 vmd.mbtt.machine_type=虚空液体钻机
@@ -67,6 +76,7 @@ vmd.pump.selection.invalid=无效电路配置
 
 # 木质虚空矿机
 gt.blockmachines.VoidMinerWooden.name=木质虚空矿机
+gt.blockmachines.voidminerwooden.name=木质虚空矿机
 
 # 木质虚空矿机 tooltip
 vmd.miner.desc.1=无需电力的木质矿机，直接从主世界矿物生成表中产出矿石物品，不破坏方块。
@@ -80,11 +90,17 @@ vmd.miner.selection.mixed=全部矿物（加权随机）
 
 # Void Excavator 机器名
 gt.blockmachines.VoidExcavatorWooden.name=木质虚空挖土机
+gt.blockmachines.voidexcavatorwooden.name=木质虚空挖土机
 gt.blockmachines.VoidExcavatorIron.name=虚空挖土机（铁）
+gt.blockmachines.voidexcavatoriron.name=虚空挖土机（铁）
 gt.blockmachines.VoidExcavatorSteel.name=虚空挖土机（钢）
+gt.blockmachines.voidexcavatorsteel.name=虚空挖土机（钢）
 gt.blockmachines.VoidExcavatorTitanium.name=虚空挖土机（钛）
+gt.blockmachines.voidexcavatortitanium.name=虚空挖土机（钛）
 gt.blockmachines.VoidExcavatorNaquadah.name=虚空挖土机（硅岩）
+gt.blockmachines.voidexcavatornaquadah.name=虚空挖土机（硅岩）
 gt.blockmachines.VoidExcavatorInfinity.name=虚空挖土机（无尽）
+gt.blockmachines.voidexcavatorinfinity.name=虚空挖土机（无尽）
 
 # 木质虚空挖土机 tooltip
 vmd.excavator.desc.1=无需电力的木质挖土机，从虚空挖取所选维度的非矿物资源方块；资源表由配置文件驱动。
