@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8.5-GTNH",
+  "package": "com.jdz.vmd.mixin.mixins",
+  "plugin": "com.jdz.vmd.mixin.VmdMixinPlugin",
+  "refmap": "mixins.cheapervoidminers.refmap.json",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "VMDVoidMinerBaseMixin",
+    "VMDVoidMinerBaseGuiMixin"
+  ],
+  "client": [],
+  "server": []
+}

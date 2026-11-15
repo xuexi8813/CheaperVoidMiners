@@ -142,3 +142,10 @@ vmd.ex.structure.maintenance_hatch=Any base casing
 vmd.ex.structure.input_bus=Mining Pipes or Ores, optional, any base casing
 vmd.ex.structure.input_hatch=Optional noble gas, any base casing
 vmd.ex.structure.output_bus=Any base casing
+
+# Void Miner EX dimension override (merged from Void-Miner-Tweak-Mod)
+vmd.gui.override.description=Dimension Override: 
+vmd.gui.override.failed=Override not applied. You must visit the target dimension first.
+vmd.gui.override.error=You must visit the dimension at least once to enable its ore drops.
+vmd.gui.override.end_asteroids=T0: End Asteroids (same as The End)
+vmd.gui.filter.no_ores=No ores available. Place a dimension block to select a target dimension.

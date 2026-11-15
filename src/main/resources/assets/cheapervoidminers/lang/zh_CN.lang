@@ -142,3 +142,10 @@ vmd.ex.structure.maintenance_hatch=任意基础机壳
 vmd.ex.structure.input_bus=钻杆或矿石（可选），任意基础机壳
 vmd.ex.structure.input_hatch=惰性气体（可选），任意基础机壳
 vmd.ex.structure.output_bus=任意基础机壳
+
+# 虚空矿机 EX 维度覆写（合并自 Void-Miner-Tweak-Mod）
+vmd.gui.override.description=维度覆写为: 
+vmd.gui.override.failed=覆写未成功，请先前往该维度一次。
+vmd.gui.override.error=你必须至少去过该维度一次才能获取矿物列表。
+vmd.gui.override.end_asteroids=T0: 末地小行星（与末地掉落相同）
+vmd.gui.filter.no_ores=当前无可用矿物。请放入维度方块以选择目标维度。
