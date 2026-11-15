@@ -21,7 +21,7 @@ import gregtech.api.util.MethodsReturnNonnullByDefault;
  * 起被 NEI 页面右边缘裁切。物品输出默认网格在超出常规数量时同样无法保证不出界。
  * <p>
  * 方案：仿照 GT 自带的 {@code DistillationTowerFrontend}（3 列向上堆叠）改为 <b>3 列 × N 行网格、
- * 向上堆叠</b>——4 列是因为 NEI 页面在 x=106 之后约可容纳 4 列（第 5 列起出界）；向上堆叠则
+ * 向上堆叠</b>——3 列是因为 NEI 页面在 x=106 之后约可容纳 3 列（第 4 列起出界）；向上堆叠则
  * 占用页面上部空白，避免与页面下方（背景之外）由 {@code RecipeDisplayInfo} 绘制的能量/时长文本重叠。
  */
 @ParametersAreNonnullByDefault
@@ -29,8 +29,8 @@ import gregtech.api.util.MethodsReturnNonnullByDefault;
 public class VmdFrontend extends RecipeMapFrontend {
 
     /**
-     * 网格列数。NEI 页面背景右缘约在 x=168-175，输出区从 x=106 起，4 列（末列槽位 x=160..178）
-     * 恰好容纳；第 5 列起点 x=178 起将出界被裁切。
+     * 网格列数。NEI 页面背景右缘约在 x=168-175，输出区从 x=106 起，3 列（末列槽位 x=142..160）
+     * 恰好容纳；第 4 列起点 x=160 起将出界被裁切。
      */
     private static final int GRID_COLUMNS = 3;
 

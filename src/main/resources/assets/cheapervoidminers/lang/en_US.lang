@@ -1,21 +1,12 @@
 # Machine display names (keys follow the GT5u mechanism: gt.blockmachines.<aName>.name)
-gt.blockmachines.VoidMinerEX1.name=Void Miner EX I
 gt.blockmachines.voidminerex1.name=Void Miner EX I
-gt.blockmachines.VoidMinerEX2.name=Void Miner EX II
 gt.blockmachines.voidminerex2.name=Void Miner EX II
-gt.blockmachines.VoidMinerEX3.name=Void Miner EX III
 gt.blockmachines.voidminerex3.name=Void Miner EX III
-gt.blockmachines.VoidFluidDrillerIron.name=Void Fluid Driller (Iron)
 gt.blockmachines.voidfluiddrilleriron.name=Void Fluid Driller (Iron)
-gt.blockmachines.VoidFluidDrillerSteel.name=Void Fluid Driller (Steel)
 gt.blockmachines.voidfluiddrillersteel.name=Void Fluid Driller (Steel)
-gt.blockmachines.VoidFluidDrillerTitanium.name=Void Fluid Driller (Titanium)
 gt.blockmachines.voidfluiddrillertitanium.name=Void Fluid Driller (Titanium)
-gt.blockmachines.VoidFluidDrillerNaquadah.name=Void Fluid Driller (Naquadah)
 gt.blockmachines.voidfluiddrillernaquadah.name=Void Fluid Driller (Naquadah)
-gt.blockmachines.VoidFluidDrillerInfinity.name=Void Fluid Driller (Infinity)
 gt.blockmachines.voidfluiddrillerinfinity.name=Void Fluid Driller (Infinity)
-gt.blockmachines.VoidFluidPumpWooden.name=Wooden Void Fluid Pump
 gt.blockmachines.voidfluidpumpwooden.name=Wooden Void Fluid Pump
 
 # Void Fluid Driller tooltip
@@ -77,7 +68,6 @@ vmd.pump.selection.invalid=Invalid circuit configuration
 vmd.pump.selection.no_circuit=No programming circuit inserted (idle)
 
 # Wooden Void Miner
-gt.blockmachines.VoidMinerWooden.name=Wooden Void Miner
 gt.blockmachines.voidminerwooden.name=Wooden Void Miner
 
 # Wooden Void Miner tooltip
@@ -91,17 +81,11 @@ vmd.miner.selection.poor=Poor ore pool
 vmd.miner.selection.mixed=All ores (weighted)
 
 # Void Excavator machine names
-gt.blockmachines.VoidExcavatorWooden.name=Wooden Void Excavator
 gt.blockmachines.voidexcavatorwooden.name=Wooden Void Excavator
-gt.blockmachines.VoidExcavatorIron.name=Void Excavator (Iron)
 gt.blockmachines.voidexcavatoriron.name=Void Excavator (Iron)
-gt.blockmachines.VoidExcavatorSteel.name=Void Excavator (Steel)
 gt.blockmachines.voidexcavatorsteel.name=Void Excavator (Steel)
-gt.blockmachines.VoidExcavatorTitanium.name=Void Excavator (Titanium)
 gt.blockmachines.voidexcavatortitanium.name=Void Excavator (Titanium)
-gt.blockmachines.VoidExcavatorNaquadah.name=Void Excavator (Naquadah)
 gt.blockmachines.voidexcavatornaquadah.name=Void Excavator (Naquadah)
-gt.blockmachines.VoidExcavatorInfinity.name=Void Excavator (Infinity)
 gt.blockmachines.voidexcavatorinfinity.name=Void Excavator (Infinity)
 
 # Wooden Void Excavator tooltip

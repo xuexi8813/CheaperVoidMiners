@@ -5,7 +5,6 @@ public enum MetaTileEntityIDs {
     VoidMinerEX1Controller(26763),
     VoidMinerEX2Controller(26764),
     VoidMinerEX3Controller(26765),
-    VoidMinerEX4Controller(26766),
     VoidFluidDrillerIron(26767),
     VoidFluidDrillerSteel(26768),
     VoidFluidDrillerTitanium(26769),

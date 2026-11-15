@@ -115,10 +115,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     // 服务端每周期状态，在 checkProcessing() 中重新计算。
     private int cachedParallel = 1;
     private double cachedDrillBonus = 1.0;
-    @Nullable
-    private Fluid cachedFluid = null;
-    @Nullable
-    private String selectedDimensionAbbr = null;
 
     // GUI 显示状态，在 drawTexts() 中通过 FakeSyncWidget 同步。
     private String displayDimensionAbbr = "";
@@ -290,7 +286,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         }
         final GTUOFluid selectedFluid = candidates.get(circuitConfig - 1);
         final Fluid fluid = selectedFluid.getFluid();
-        cachedFluid = fluid;
 
         final DrillSelection drill = findBestDrill();
         cachedDrillBonus = drill == null ? 1.0 : drill.bonus;
@@ -311,7 +306,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         mEfficiency = getCurrentEfficiency(null);
         mEfficiencyIncrease = 10000;
 
-        selectedDimensionAbbr = resolveDisplayedAbbr(dimension);
+        final String selectedDimensionAbbr = resolveDisplayedAbbr(dimension);
         displayDimensionAbbr = selectedDimensionAbbr == null ? "" : selectedDimensionAbbr;
         displayFluidKey = fluid.getUnlocalizedName();
         displayDrillMaterial = drill == null ? "" : drill.materialName;

@@ -15,7 +15,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 
-import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
 import com.gtnewhorizon.structurelib.structure.ISurvivalBuildEnvironment;
 import com.gtnewhorizon.structurelib.structure.StructureDefinition;
@@ -25,14 +24,12 @@ import gregtech.api.enums.GTValues;
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.OrePrefixes;
-import gregtech.api.interfaces.IHatchElement;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.structure.error.StructureError;
 import gregtech.api.structure.error.StructureErrors;
 import gregtech.api.util.GTOreDictUnificator;
 import gregtech.api.util.GTUtility;
 import gregtech.api.util.MultiblockTooltipBuilder;
-import gregtech.common.tileentities.machines.multi.MTEDrillerBase;
 
 /**
  * EX 系列虚空采矿机基类：在 GT 虚空采矿机（{@link MTEVoidMinerBase}）之上定制结构与文案。
@@ -166,11 +163,6 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
         if (GTUtility.getTier(getMaxInputVoltage()) < getMinTier()) {
             errors.add(StructureErrors.energyHatchTierTooLow(getMinTier()));
         }
-    }
-
-    @Override
-    protected List<IHatchElement<? super MTEDrillerBase>> getAllowedHatches() {
-        return ImmutableList.of(InputBus, OutputBus, Maintenance, Energy);
     }
 
     /**
