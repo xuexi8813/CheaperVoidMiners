@@ -1,8 +1,5 @@
 package com.jdz.vmd.api.recipe;
 
-import com.gtnewhorizons.modularui.common.widget.ProgressBar;
-
-import gregtech.api.gui.modularui.GTUITextures;
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.RecipeMapBackend;
 import gregtech.api.recipe.RecipeMapBuilder;
@@ -31,24 +28,27 @@ public final class VmdRecipeMaps {
                 .setMultipleWidgetsAllowed(false))
         .build();
 
-    /** 虚空挖掘机与木制虚空挖掘机的产出配方：配置表中的资源。 */
+    /**
+     * 虚空挖掘机与木制虚空挖掘机的产出配方：配置表中的资源。
+     * 不配置 NEI 进度条（progressBar/progressBarPos）：GT5u 5.09.54.264 的 NEI 渲染路径下
+     * GTUITextures.PROGRESSBAR_HAMMER 贴图解析失败，渲染时反复抛 ERROR 刷屏，故省略。
+     */
     public static final RecipeMap<RecipeMapBackend> voidExcavatorRecipes = RecipeMapBuilder
         .of("vmd.recipe.voidexcavator")
         .maxIO(1, MAX_ITEM_OUTPUTS, 0, 0)
         .minInputs(1, 0)
-        .progressBar(GTUITextures.PROGRESSBAR_HAMMER, ProgressBar.Direction.DOWN)
-        .progressBarPos(75, 26)
         .neiHandlerInfo(
             builder -> builder.setHeight(240)
                 .setMultipleWidgetsAllowed(false))
         .build();
 
-    /** 木制虚空采矿机的产出配方：主世界的完整混合奖池（矿脉 + 贫矿）。 */
+    /**
+     * 木制虚空采矿机的产出配方：主世界的完整混合奖池（矿脉 + 贫矿）。
+     * 与 voidExcavatorRecipes 相同，不配置 NEI 进度条以避免贴图解析失败刷屏。
+     */
     public static final RecipeMap<RecipeMapBackend> woodenMinerRecipes = RecipeMapBuilder.of("vmd.recipe.woodenminer")
         .maxIO(1, MAX_ITEM_OUTPUTS, 0, 0)
         .minInputs(1, 0)
-        .progressBar(GTUITextures.PROGRESSBAR_HAMMER, ProgressBar.Direction.DOWN)
-        .progressBarPos(75, 26)
         .neiHandlerInfo(
             builder -> builder.setHeight(240)
                 .setMultipleWidgetsAllowed(false))

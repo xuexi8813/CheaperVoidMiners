@@ -66,13 +66,11 @@ public final class VoidFluidTableHelper {
      */
     @Nullable
     public static String getAbbrForUoKey(String rawDimension) {
-        try {
-            final int id = Integer.parseInt(rawDimension);
-            return id == 0 ? "Ow" : null;
-        } catch (NumberFormatException e) {
-            // 非数字键，继续走下方按名称片段匹配的逻辑。
-            LOG.debug("Skipping non-numeric underground fluid dimension key '{}'", rawDimension, e);
+        final Long dimensionId = tryParseDimensionId(rawDimension);
+        if (dimensionId != null) {
+            return dimensionId == 0L ? "Ow" : null;
         }
+        // 非数字键，走下方按名称片段匹配的逻辑。
         switch (rawDimension) {
             case "aCentauriBb" -> {
                 return "CB";
@@ -95,6 +93,40 @@ public final class VoidFluidTableHelper {
                 .equalsIgnoreCase(rawDimension)) return record.abbr();
         }
         return null;
+    }
+
+    /**
+     * 无异常路径的维度键整数解析：与 {@code Integer.parseInt} 成功的判定语义等价
+     * （可选 +/- 前缀、全 ASCII 十进制数字、数值在 int 范围内；空串与纯符号视为非数字），
+     * 但不抛 {@code NumberFormatException}——旧实现对每个非数字键反复抛异常并打印 debug
+     * 堆栈，循环调用时刷屏且开销大。超出 int 范围或含非数字字符的键返回 null，
+     * 与旧实现解析失败后落入名称匹配分支的行为一致。
+     *
+     * @return 解析出的维度 id（装箱）；非数字或越界时为 null
+     */
+    @Nullable
+    private static Long tryParseDimensionId(String rawDimension) {
+        if (rawDimension == null || rawDimension.isEmpty()) return null;
+        int index = 0;
+        boolean negative = false;
+        final char first = rawDimension.charAt(0);
+        if (first == '+' || first == '-') {
+            negative = first == '-';
+            index = 1;
+            if (index == rawDimension.length()) return null;
+        }
+        // int 上限 2147483647 共 10 位，超过 10 位数字必然越界，直接按非数字处理。
+        if (rawDimension.length() - index > 10) return null;
+        long value = 0;
+        for (; index < rawDimension.length(); index++) {
+            // Character.digit(..., 10) 与 Integer.parseInt 的字符接受集一致，非十进制数字返回 -1。
+            final int digit = Character.digit(rawDimension.charAt(index), 10);
+            if (digit < 0) return null;
+            value = value * 10 + digit;
+        }
+        if (negative) value = -value;
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) return null;
+        return value;
     }
 
     /** 维度可抽取的流体列表，保持表内顺序，跳过 FluidRegistry 未收录的流体；无数据时为空列表。 */

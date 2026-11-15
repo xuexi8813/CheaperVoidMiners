@@ -250,6 +250,18 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
 
     // ==== GUI（MUI2，与青铜机器同一窗口家族） ====
 
+    /**
+     * GT5u 5.09.54.x 的 {@link MTEBasicMachine} 默认返回 false，即右键 {@code openGui} 走 MUI1 旧
+     * GUI 体系（{@code addUIWidgets} 通道）；而本类 GUI 由 MUI2 构建（{@link #buildUI} +
+     * {@link MTEVoidWoodenBaseGui}），MUI1 路径不会调用 MUI2 面板，导致 GUI 打不开。
+     * 54.264 中 {@code GTGuis.GLOBAL_SWITCH_MUI2} 默认为 true，覆写后 openGui 进入
+     * {@code MetaTileEntityGuiHandler.open} 的 MUI2 分支并调用 {@link #buildUI}。
+     */
+    @Override
+    protected boolean useMui2() {
+        return true;
+    }
+
     /** GUI 中显示的流体输出槽数量；物品机器为 0，泵为 1。 */
     protected int getFluidOutputSlotCount() {
         return 0;
@@ -266,6 +278,8 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
             .build();
     }
 
+    // 54.264 契约：CommonMetaTileEntity.buildUI(PosGuiData, PanelSyncManager, UISettings) 在 useMui2 为 true
+    // 时由 MetaTileEntityGuiHandler 调用（服务器与客户端两侧），签名与本覆写一致。
     @Override
     public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager syncManager, UISettings uiSettings) {
         return new MTEVoidWoodenBaseGui(this, getUIProperties()).build(guiData, syncManager, uiSettings);
