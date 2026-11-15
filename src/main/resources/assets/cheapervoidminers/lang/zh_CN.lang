@@ -70,7 +70,7 @@ vmd.pump.desc.1=无需电力的木质泵，抽取主世界地下流体。
 vmd.pump.desc.2=每 200 tick 产出 100mB 存入内部输出罐；罐满或流体不兼容时待机，请用管道从非主面抽取。
 vmd.pump.desc.3=电路槽中的编程电路（配置 1..N）选择主世界流体表第 N 项；配置 0 或无电路 = 加权随机。
 vmd.pump.desc.4=内部流体罐不混装流体；请在罐排空后再更换电路。
-vmd.pump.desc.5=电路槽（第一个输入槽）仅接受编程电路。
+vmd.pump.desc.5=编程电路可直接在 GUI 的电路槽中点选配置（或放入真实编程电路）。
 vmd.pump.desc.selection=当前选择：%s
 vmd.pump.selection.invalid=无效电路配置
 
@@ -83,7 +83,7 @@ vmd.miner.desc.1=无需电力的木质矿机，直接从主世界矿物生成表
 vmd.miner.desc.2=每 100 tick 产出 1 个矿石存入 6 个输出槽之一（同类物品可叠加）；6 个输出槽都无法再容纳产出时待机，请手动取出或用传送带抽取。
 vmd.miner.desc.3=电路槽中的编程电路（配置 1..N）选择主世界第 N 条矿脉（产出该矿脉的大矿及归属的贫瘠矿）；配置 N+1 选择全部贫瘠矿（小型矿）。
 vmd.miner.desc.4=配置 0 或无电路时，全部矿脉与贫瘠矿合并为一个加权池（权重 = 生成权重）。
-vmd.miner.desc.5=电路配置超出 N+1 时机器静默待机；电路槽（第一个输入槽）仅接受编程电路。
+vmd.miner.desc.5=电路配置超出 N+1 时机器静默待机；编程电路可直接在 GUI 的电路槽中点选配置（或放入真实编程电路）。
 vmd.miner.desc.selection=当前选择：%s
 vmd.miner.selection.poor=贫瘠矿池
 vmd.miner.selection.mixed=全部矿物（加权随机）
@@ -106,7 +106,7 @@ gt.blockmachines.voidexcavatorinfinity.name=虚空挖土机（无尽）
 vmd.excavator.desc.1=无需电力的木质挖土机，从虚空挖取所选维度的非矿物资源方块；资源表由配置文件驱动。
 vmd.excavator.desc.2=第二个输入槽放置维度显示方块以选择维度（不消耗）；空槽表示主世界默认资源。
 vmd.excavator.desc.3=每 200 tick 产出 1 个资源方块存入 6 个输出槽之一（同类物品可叠加）；6 个输出槽都无法再容纳产出时待机，请手动取出或用传送带抽取。
-vmd.excavator.desc.4=电路槽（第一个输入槽）中的编程电路（配置 1..N）选择该维度资源表第 N 项；配置 0 或无电路 = 加权随机（权重 = 表中权重）。
+vmd.excavator.desc.4=编程电路（配置 1..N）可直接在 GUI 的电路槽中点选配置（或放入真实编程电路），选择该维度资源表第 N 项；配置 0 或无电路 = 加权随机（权重 = 表中权重）。
 vmd.excavator.desc.5=电路配置超出资源数量时机器静默待机；资源表在 cheapervoidminers.cfg 的 excavator_resources 分类中配置。
 vmd.excavator.desc.selection=当前选择：%s
 

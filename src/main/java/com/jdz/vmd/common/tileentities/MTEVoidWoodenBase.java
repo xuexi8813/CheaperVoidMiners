@@ -26,8 +26,13 @@ import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 /**
  * 木制、无电力虚空机器（泵/采矿机/挖掘机）的共享基类，构建在 {@link MTEBasicMachine}（tier 0 / 电流 1）
  * 之上以获得标准机器 GUI 与配方循环；产出由各机器在 {@link #checkRecipe()} 中选择。
- * 产物留在机器内部直到被取出，不自动输出。槽位约定：第一个输入槽兼任编程电路槽（真实物品，非幽灵槽），
- * 挖掘机另有第二个输入槽放维度显示方块。
+ * 产物留在机器内部直到被取出，不自动输出。
+ * <p>
+ * 槽位约定：编程电路使用 GT5u 标准幽灵电路槽（GUI 右下角点选配置，槽内影子堆叠 stackSize=0），
+ * 位于输入槽之前的专用 OTHER 槽位（5.09.54.x 默认布局）；原"第一个输入槽兼电路槽"方案在幽灵模式下
+ * 不可行——基类 onPostTick 在每次配方成功后会清空输入槽范围内 stackSize<=0 的堆叠，幽灵电路会被误清，
+ * 故电路槽必须独立于输入槽范围，且原首输入槽对 GUI 与自动化一并封闭。
+ * 挖掘机另有输入槽 1（偏移 1）放维度显示方块。
  */
 public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
 
@@ -56,16 +61,39 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
 
     // ==== 槽位配置 ====
 
-    /** 电路槽 = 输入槽 0（真实电路物品，非幽灵槽）。 */
+    /**
+     * 电路槽 = 输入槽前的专用 OTHER 槽位（getInputSlot() - 1，与 GT5u 5.09.54.x 默认电路槽布局一致），
+     * 本机器的该槽位原本空闲（充电/放电槽数为 0，特殊槽为 3）。
+     * 动机：幽灵电路堆叠 stackSize 恒为 0（GhostCircuitItemStackHandler 与
+     * MetaTileEntity.setInventorySlotContents 均强制归零），而 MTEBasicMachine.onPostTick 在每次
+     * 配方调度成功后会清空 [getInputSlot(), getInputSlot()+mInputSlotCount) 内 stackSize<=0 的堆叠；
+     * 电路槽必须位于输入槽范围之外，幽灵配置才能跨生产周期保留。
+     */
     @Override
     public int getCircuitSlot() {
-        return getInputSlot();
+        return getInputSlot() - 1;
     }
 
-    /** 电路为放入输入槽的真实物品，GUI 不提供幽灵电路槽。 */
+    /**
+     * 启用 GT5u 2.9 标准幽灵电路槽，GUI 中可直接点选配置：MTETieredMachineBlockBaseGui 在右下角
+     * 自动渲染 GhostCircuitSlotWidget（本方法为 true 时生效），左键/滚轮步进 1..24，Shift+右键清除，
+     * Shift+左键打开选择面板；手持真实编程电路点击幽灵槽等效写入对应配置（槽内为 stackSize=0 的
+     * 影子堆叠，真实物品不消耗）。基类默认 false，此处覆写为 true。
+     */
     @Override
     public boolean allowSelectCircuit() {
-        return false;
+        return true;
+    }
+
+    /**
+     * 封闭首个输入槽（getInputSlot()）：电路迁移至专用幽灵槽后，三台木制机器的该槽位均无物品用途
+     * （挖掘机的维度显示方块在输入槽 1）。若不封闭，isValidSlot 返回 true 会让管道经
+     * canInsertItem（以 isValidSlot 为门）把杂物无声塞进 GUI 已不再渲染的死槽位。
+     */
+    @Override
+    public boolean isValidSlot(int aIndex) {
+        if (aIndex == getInputSlot()) return false;
+        return super.isValidSlot(aIndex);
     }
 
     /** 维度显示方块槽位相对 {@link #getInputSlot()} 的偏移；无该槽为 -1（挖掘机为 1）。 */
@@ -85,8 +113,8 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     @Override
     public boolean allowPutStack(IGregTechTileEntity aBaseMetaTileEntity, int aIndex, ForgeDirection side,
         ItemStack aStack) {
-        // 槽位专属内容过滤，叠加在标准朝向/过滤逻辑之上。
-        if (aIndex == getCircuitSlot() && !ItemList.Circuit_Integrated.isStackEqual(aStack, true, true)) return false;
+        // 槽位专属内容过滤，叠加在标准朝向/过滤逻辑之上。电路槽（isValidSlot 已封闭）与
+        // 首个输入槽（同被封闭）不会进入此路径，仅维度显示方块槽需要类型过滤。
         final int dimensionSlot = getDimensionDisplaySlot();
         if (dimensionSlot >= 0 && aIndex == dimensionSlot && !isDimensionDisplayItem(aStack)) return false;
         return super.allowPutStack(aBaseMetaTileEntity, aIndex, side, aStack);
@@ -347,7 +375,13 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
         return PRODUCTION_CYCLE_TICKS;
     }
 
-    /** 已插入集成电路的配置值，槽位中没有电路时为 0。 */
+    /**
+     * 已插入集成电路的配置值：读取电路槽内堆叠的 damage。幽灵电路（GUI 点选写入）与真实编程电路
+     * （经幽灵槽点击放置，被 MetaTileEntity.setInventorySlotContents 规范化）落在同一电路槽，
+     * 两者均为 stackSize=0 影子堆叠，damage 读取语义天然一致；槽位为空时返回 0——与
+     * GhostCircuitItemStackHandler.getCircuitConfig() 的无电路（NO_CONFIG = -1）在机器侧等价
+     * （配置 0 = 混合/加权池语义），1..N 选第 N 项、N+1 选贫矿池、超界待机的分支由各机器保持。
+     */
     protected int readCircuitConfig() {
         final ItemStack circuit = mInventory[getCircuitSlot()];
         if (circuit != null && ItemList.Circuit_Integrated.isStackEqual(circuit, true, true)) {

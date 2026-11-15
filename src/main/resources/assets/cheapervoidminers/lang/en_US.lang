@@ -70,7 +70,7 @@ vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground flu
 vmd.pump.desc.2=Produces 100mB every 200 ticks into its internal output tank; a full or incompatible tank stalls the machine, draw the fluid out with pipes from any non-main face.
 vmd.pump.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld fluid; configuration 0 or no circuit = weighted random.
 vmd.pump.desc.4=The internal tank never mixes fluids; switch the circuit only after it is drained.
-vmd.pump.desc.5=The circuit slot (first input slot) only accepts programmed circuits.
+vmd.pump.desc.5=The programmed circuit can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there).
 vmd.pump.desc.selection=Current selection: %s
 vmd.pump.selection.invalid=Invalid circuit configuration
 
@@ -83,7 +83,7 @@ vmd.miner.desc.1=Non-electric wooden miner that pulls ore items from the Overwor
 vmd.miner.desc.2=Produces 1 ore item every 100 ticks into one of its 6 output slots (same items stack up); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
 vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein (its main ores plus its matching poor/small ores); configuration N+1 selects the full poor (small) ore pool.
 vmd.miner.desc.4=Configuration 0 or no circuit mixes all veins and poor ores into one weighted pool (weights = generation weights).
-vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the circuit slot (first input slot) only accepts programmed circuits.
+vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the programmed circuit can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there).
 vmd.miner.desc.selection=Current selection: %s
 vmd.miner.selection.poor=Poor ore pool
 vmd.miner.selection.mixed=All ores (weighted)
@@ -106,7 +106,7 @@ gt.blockmachines.voidexcavatorinfinity.name=Void Excavator (Infinity)
 vmd.excavator.desc.1=Non-electric wooden excavator that digs plain (non ore) resource blocks of a chosen dimension out of the void; the resource tables are config driven.
 vmd.excavator.desc.2=The second input slot takes a dimension display block to select the dimension (not consumed); an empty slot means the Overworld default resources.
 vmd.excavator.desc.3=Produces 1 resource block every 200 ticks into one of its 6 output slots (same items stack up); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
-vmd.excavator.desc.4=Programmed circuit (configuration 1..N) in the circuit slot (first input slot) selects the N-th resource of that dimension's table; configuration 0 or no circuit = weighted random (weights = table weights).
+vmd.excavator.desc.4=The programmed circuit (configuration 1..N) can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there) to select the N-th resource of that dimension's table; configuration 0 or no circuit = weighted random (weights = table weights).
 vmd.excavator.desc.5=A circuit configuration beyond the resource count idles the machine; resource tables are configured in cheapervoidminers.cfg, category excavator_resources.
 vmd.excavator.desc.selection=Current selection: %s
 
