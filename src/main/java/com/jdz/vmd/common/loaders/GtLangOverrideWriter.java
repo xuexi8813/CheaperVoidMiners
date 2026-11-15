@@ -20,7 +20,8 @@ import cpw.mods.fml.relauncher.Side;
  * <p>
  * 动机：GT5u 2.9 的机器名不走 vanilla 语言通道，而是 {@code GTLanguageManager} 自维护的
  * GT 语言链（WAILA 等读取该链），其键为全小写（GT 构造器强制 {@code mName.toLowerCase()}），
- * 非英文语言时从 {@code config/GregTech/GregTech_(语言码).lang} 读取。本模组 vanilla 语言
+ * 非英文语言时从游戏根目录的 {@code GregTech_(语言码).lang} 读取（注意不是 config 子目录，
+ * GT5u 经 GTPreLoad.initLocalization 以 config 的父目录为语言文件目录）。本模组 vanilla 语言
  * 副本（assets/.../lang/zh_CN.lang）只对 vanilla 通道生效，WAILA 显示名必须写入上述覆盖
  * 文件才能汉化。
  * <p>
@@ -30,9 +31,6 @@ import cpw.mods.fml.relauncher.Side;
  * 环境触发类加载崩溃，勿迁移时机）。
  */
 public final class GtLangOverrideWriter {
-
-    /** GT5u 语言覆盖文件所在目录名，与 GTLanguageManager 的读取目录（config/GregTech）一致。 */
-    private static final String GT_CONFIG_SUBDIR = "GregTech";
 
     /** 覆盖文件名：GTLanguageManager.reloadLanguage 按 "GregTech_" + 当前语言码 + ".lang" 拼接。 */
     private static final String L10N_FILE_NAME = "GregTech_zh_CN.lang";
@@ -88,11 +86,12 @@ public final class GtLangOverrideWriter {
         if (!TARGET_LANGUAGE.equalsIgnoreCase(languageCode)) {
             return;
         }
+        // 与 GT5u 同目录：游戏根目录（config 的父目录），即 GTPreLoad.initLocalization 传入的
+        // languageDir；整合包中就是版本目录（如 versions/GT New Horizons 2.9.0/GregTech_zh_CN.lang）。
         final File langFile = new File(
-            new File(
-                Loader.instance()
-                    .getConfigDir(),
-                GT_CONFIG_SUBDIR),
+            Loader.instance()
+                .getConfigDir()
+                .getParentFile(),
             L10N_FILE_NAME);
         try {
             final Configuration config = new Configuration(langFile);

@@ -31,7 +31,8 @@ public final class VmdRecipeMaps {
     /**
      * 虚空挖掘机与木制虚空挖掘机的产出配方：配置表中的资源。
      * 不配置 NEI 进度条（progressBar/progressBarPos）：GT5u 5.09.54.264 的 NEI 渲染路径下
-     * GTUITextures.PROGRESSBAR_HAMMER 贴图解析失败，渲染时反复抛 ERROR 刷屏，故省略。
+     * 反复抛 Missing progressbar texture ERROR（hammer.png 资产存在但运行时未命中，具体根因
+     * 未定位），故省略以由 RecipeMapBuilder 的默认回退进度条渲染。
      */
     public static final RecipeMap<RecipeMapBackend> voidExcavatorRecipes = RecipeMapBuilder
         .of("vmd.recipe.voidexcavator")

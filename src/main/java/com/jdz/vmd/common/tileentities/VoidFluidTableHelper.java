@@ -120,6 +120,7 @@ public final class VoidFluidTableHelper {
         long value = 0;
         for (; index < rawDimension.length(); index++) {
             // Character.digit(..., 10) 与 Integer.parseInt 的字符接受集一致，非十进制数字返回 -1。
+            // 注：11 位以上的前导零数字串与 parseInt 不等价（GT 维度键空间不可达），不计入等价承诺。
             final int digit = Character.digit(rawDimension.charAt(index), 10);
             if (digit < 0) return null;
             value = value * 10 + digit;
