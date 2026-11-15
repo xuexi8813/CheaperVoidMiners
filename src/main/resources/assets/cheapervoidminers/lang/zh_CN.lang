@@ -120,3 +120,23 @@ vmd.mbe.info.5=输入总线中的钻头提升产量：铁 x1.25、钢 x1.5、钛
 vmd.mbe.info.6=每 100 tick 产出 %s 个资源方块 × 并行数 × 钻头加成。
 vmd.mbe.structure.input_bus=输入总线（维度显示方块、钻头与编程电路）
 vmd.mbe.structure.output_bus=输出总线（资源输出，必需）
+
+# 虚空矿机 EX tooltip（多方块）
+vmd.ex.machine_type=采矿机
+vmd.ex.eu=消耗 %s EU/t
+vmd.ex.gas.intro=可提供 §b%s L/s§7 惰性气体提升 §6产量
+vmd.ex.gas.neon=氖气
+vmd.ex.gas.krypton=氪气
+vmd.ex.gas.xenon=氙气
+vmd.ex.gas.oganesson=鿫
+vmd.ex.output=根据所在维度每秒产出 %s 个矿石
+vmd.ex.whitelist.item=将矿石放入输入总线以设置白名单/黑名单
+vmd.ex.whitelist.toggle=使用螺丝刀切换白名单/黑名单
+vmd.ex.blacklist.warn=黑名单或非白名单矿石将被 §c销毁§r。
+vmd.ex.structure.casing=§65x§7 %s
+vmd.ex.structure.frame=§620x§7 %s
+vmd.ex.structure.energy_hatch=任意基础机壳，最低 %s
+vmd.ex.structure.maintenance_hatch=任意基础机壳
+vmd.ex.structure.input_bus=钻杆或矿石（可选），任意基础机壳
+vmd.ex.structure.input_hatch=惰性气体（可选），任意基础机壳
+vmd.ex.structure.output_bus=任意基础机壳

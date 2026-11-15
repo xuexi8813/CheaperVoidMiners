@@ -120,3 +120,23 @@ vmd.mbe.info.5=Drill heads in the input bus boost the output: Iron x1.25, Steel 
 vmd.mbe.info.6=Produces %s resource block(s) x parallel count x drill bonus per 100 tick cycle.
 vmd.mbe.structure.input_bus=Input Bus (dimension display, drill head and programmed circuit)
 vmd.mbe.structure.output_bus=Output Bus (resource output, required)
+
+# Void Miner EX tooltip
+vmd.ex.machine_type=Miner
+vmd.ex.eu=Consumes %sEU/t
+vmd.ex.gas.intro=Can be supplied with §b%s L/s§7 of Noble gases to boost §6output
+vmd.ex.gas.neon=Neon
+vmd.ex.gas.krypton=Krypton
+vmd.ex.gas.xenon=Xenon
+vmd.ex.gas.oganesson=Oganesson
+vmd.ex.output=Will output %s Ores per Second depending on the Dimension it is build in
+vmd.ex.whitelist.item=Put the Ore into the input bus to set the Whitelist/Blacklist
+vmd.ex.whitelist.toggle=Use a screwdriver to toggle Whitelist/Blacklist
+vmd.ex.blacklist.warn=Blacklist or non Whitelist Ore will be §4VOIDED§r.
+vmd.ex.structure.casing=§65x§7 %s
+vmd.ex.structure.frame=§620x§7 %s
+vmd.ex.structure.energy_hatch=%s+, Any base casing
+vmd.ex.structure.maintenance_hatch=Any base casing
+vmd.ex.structure.input_bus=Mining Pipes or Ores, optional, any base casing
+vmd.ex.structure.input_hatch=Optional noble gas, any base casing
+vmd.ex.structure.output_bus=Any base casing

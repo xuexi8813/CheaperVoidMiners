@@ -11,6 +11,7 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.StatCollector;
 
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
@@ -32,6 +33,9 @@ import gregtech.api.util.MultiblockTooltipBuilder;
 import gregtech.common.tileentities.machines.multi.MTEDrillerBase;
 
 public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extends MTEVoidMinerBase<T> {
+
+    /** 惰性气体供给速率（L/s），复刻父类 MTEVoidMinerBase 的私有常量 NOBLE_GAS_CONSUMPTION_PER_TIER（不可直接访问）。 */
+    private static final int NOBLE_GAS_SUPPLY_RATE_PER_SECOND = 2;
 
     public MTEVoidMinerEXBase(int aID, String aName, String aNameRegional, int multiplier) {
         super(aID, aName, aNameRegional, multiplier);
@@ -73,50 +77,43 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
             .build();
     }
 
+    /** 工具提示文案全部走 vmd.ex.* lang 键实现双语；动态数值（EU/t、气体速率、产出速度、电压档）由 translateToLocalFormatted 注入。 */
     @Override
     protected MultiblockTooltipBuilder createTooltip() {
         final MultiblockTooltipBuilder tt = new MultiblockTooltipBuilder();
-        tt.addMachineType("Miner")
-            .addInfo("Consumes " + numberFormat.format(GTValues.V[this.getMinTier()]) + "EU/t")
+        tt.addMachineType(StatCollector.translateToLocal("vmd.ex.machine_type"))
             .addInfo(
-                "Can be supplied with " + EnumChatFormatting.AQUA
-                    + "2 L/s"
-                    + EnumChatFormatting.GRAY
-                    + " of Noble gases to boost "
-                    + EnumChatFormatting.GOLD
-                    + "output")
-            .addInfo(createGasString(EnumChatFormatting.LIGHT_PURPLE, "Neon", 4))
-            .addInfo(createGasString(EnumChatFormatting.AQUA, "Krypton", 8))
-            .addInfo(createGasString(EnumChatFormatting.DARK_AQUA, "Xenon", 16))
-            .addInfo(createGasString(EnumChatFormatting.BLUE, "Oganesson", 64))
+                StatCollector
+                    .translateToLocalFormatted("vmd.ex.eu", numberFormat.format(GTValues.V[this.getMinTier()])))
+            .addInfo(StatCollector.translateToLocalFormatted("vmd.ex.gas.intro", NOBLE_GAS_SUPPLY_RATE_PER_SECOND))
             .addInfo(
-                "Will output " + 2 * this.TIER_MULTIPLIER
-                    + " Ores per Second depending on the Dimension it is build in")
-            .addInfo("Put the Ore into the input bus to set the Whitelist/Blacklist")
-            .addInfo("Use a screwdriver to toggle Whitelist/Blacklist")
+                createGasString(EnumChatFormatting.LIGHT_PURPLE, StatCollector.translateToLocal("vmd.ex.gas.neon"), 4))
+            .addInfo(createGasString(EnumChatFormatting.AQUA, StatCollector.translateToLocal("vmd.ex.gas.krypton"), 8))
             .addInfo(
-                "Blacklist or non Whitelist Ore will be " + EnumChatFormatting.DARK_RED
-                    + "VOIDED"
-                    + EnumChatFormatting.RESET
-                    + ".")
+                createGasString(EnumChatFormatting.DARK_AQUA, StatCollector.translateToLocal("vmd.ex.gas.xenon"), 16))
+            .addInfo(
+                createGasString(EnumChatFormatting.BLUE, StatCollector.translateToLocal("vmd.ex.gas.oganesson"), 64))
+            .addInfo(StatCollector.translateToLocalFormatted("vmd.ex.output", 2 * this.TIER_MULTIPLIER))
+            .addInfo(StatCollector.translateToLocal("vmd.ex.whitelist.item"))
+            .addInfo(StatCollector.translateToLocal("vmd.ex.whitelist.toggle"))
+            .addInfo(StatCollector.translateToLocal("vmd.ex.blacklist.warn"))
             .beginStructureBlock(3, 7, 3, false)
             .addStructureInfo(
-                EnumChatFormatting.GOLD + "5x"
-                    + EnumChatFormatting.GRAY
-                    + " "
-                    + GTOreDictUnificator.get(OrePrefixes.itemCasing, getMaterials(), 1)
-                        .getDisplayName())
+                StatCollector.translateToLocalFormatted(
+                    "vmd.ex.structure.casing",
+                    GTOreDictUnificator.get(OrePrefixes.itemCasing, getMaterials(), 1)
+                        .getDisplayName()))
             .addStructureInfo(
-                EnumChatFormatting.GOLD + "20x"
-                    + EnumChatFormatting.GRAY
-                    + " "
-                    + GTOreDictUnificator.get(OrePrefixes.frameGt, getMaterials(), 1)
-                        .getDisplayName())
-            .addEnergyHatch(VN[this.getMinTier()] + "+, Any base casing")
-            .addMaintenanceHatch("Any base casing")
-            .addInputBus("Mining Pipes or Ores, optional, any base casing")
-            .addInputHatch("Optional noble gas, any base casing")
-            .addOutputBus("Any base casing")
+                StatCollector.translateToLocalFormatted(
+                    "vmd.ex.structure.frame",
+                    GTOreDictUnificator.get(OrePrefixes.frameGt, getMaterials(), 1)
+                        .getDisplayName()))
+            .addEnergyHatch(
+                StatCollector.translateToLocalFormatted("vmd.ex.structure.energy_hatch", VN[this.getMinTier()]))
+            .addMaintenanceHatch(StatCollector.translateToLocal("vmd.ex.structure.maintenance_hatch"))
+            .addInputBus(StatCollector.translateToLocal("vmd.ex.structure.input_bus"))
+            .addInputHatch(StatCollector.translateToLocal("vmd.ex.structure.input_hatch"))
+            .addOutputBus(StatCollector.translateToLocal("vmd.ex.structure.output_bus"))
             .toolTipFinisher();
         return tt;
     }
