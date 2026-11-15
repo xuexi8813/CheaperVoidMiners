@@ -20,8 +20,9 @@ public class Config {
     private static final String[] DEFAULT_OW = { "clay:0:20", "sand:0:15", "gravel:0:15", "dirt:0:50" };
     private static final String[] DEFAULT_NE = { "netherrack:0:60", "soulSand:0:40" };
     private static final String[] DEFAULT_ED = { "endStone:0:100" };
-    private static final String[] DEFAULT_MO = { "GalacticraftCore:moonBlock:4:60", "GalacticraftCore:moonBlock:3:40" };
-    private static final String[] DEFAULT_MA = { "GalacticraftMars:mars:9:60", "GalacticraftMars:mars:5:40" };
+    private static final String[] DEFAULT_MO = { "GalacticraftCore:tile.moonBlock:4:60",
+        "GalacticraftCore:tile.moonBlock:3:40" };
+    private static final String[] DEFAULT_MA = { "GalacticraftMars:tile.mars:9:60", "GalacticraftMars:tile.mars:5:40" };
 
     /** 按维度缩写索引的资源表，保持配置顺序。 */
     private static final Map<String, String[]> EXCAVATOR_RESOURCE_TABLES = new LinkedHashMap<>();
