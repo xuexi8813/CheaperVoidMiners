@@ -15,8 +15,11 @@ public final class VmdRecipeMaps {
     /** 物品输出上限（9 行 × 8 列 = 72，与 GT5u 5.09.55.x 的 VoidMinerFrontend 一致）。 */
     public static final int MAX_ITEM_OUTPUTS = 72;
 
-    /** 流体输出上限；GTNH 地下流体表远低于此值，条目更多的维度在 NEI 中无法完整展示。 */
-    public static final int MAX_FLUID_OUTPUTS = 32;
+    /**
+     * 流体输出上限：GTNH 2.9.0 的 UndergroundFluids.cfg 每维度最多 5 种流体（23 个维度），
+     * 取 12 留出自定义余量；更大的值会让 NEI 默认前端按 32 槽分配网格，流体槽被页面边缘裁切。
+     */
+    public static final int MAX_FLUID_OUTPUTS = 12;
 
     /** 虚空流体钻机与木制虚空流体泵的产出配方：某个维度的流体。 */
     public static final RecipeMap<RecipeMapBackend> voidFluidDrillerRecipes = RecipeMapBuilder
