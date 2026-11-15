@@ -131,13 +131,6 @@ public final class VmdOutputRecipeLoader {
 
         final MTEVoidMinerWooden.OverworldPools pools = MTEVoidMinerWooden.buildOverworldPools();
 
-        // 混合奖池（配置 0/无电路）：全部矿脉条目（大矿 + 归属贫矿）+ 未归属贫矿。
-        addItemWeightedRecipe(
-            VmdRecipeMaps.woodenMinerRecipes,
-            new ItemStack[] { toMarkerStack(marker) },
-            toStacks(pools.mixed),
-            toWeights(pools.mixed));
-
         // 矿脉配方（配置 1..N）：电路 i 与机器矿脉选择完全一致（veins.get(i - 1)），vein.drops 已含归属贫矿。
         for (int i = 0; i < pools.veins.size(); i++) {
             final MTEVoidMinerWooden.OreVein vein = pools.veins.get(i);
