@@ -12,12 +12,18 @@ import gregtech.api.recipe.RecipeMapBuilder;
  */
 public final class VmdRecipeMaps {
 
-    /** 物品输出上限（9 行 × 8 列 = 72，与 GT5u 5.09.55.x 的 VoidMinerFrontend 一致）。 */
+    /**
+     * 物品输出上限（9 行 × 8 列 = 72，与 GT5u 5.09.55.x 的 VoidMinerFrontend 一致）。
+     * 这是配方表（RecipeMap 后端）的容量上限；实际每条配方的物品输出数为该维度条目数
+     * （≤6 种资源），NEI 页面由 {@link VmdFrontend} 的 4 列 × N 行向上网格渲染，足够容纳。
+     */
     public static final int MAX_ITEM_OUTPUTS = 72;
 
     /**
      * 流体输出上限：GTNH 2.9.0 的 UndergroundFluids.cfg 每维度最多 5 种流体（23 个维度），
-     * 取 12 留出自定义余量；更大的值会让 NEI 默认前端按 32 槽分配网格，流体槽被页面边缘裁切。
+     * 取 12 留出自定义余量；更大的值会让 NEI 默认前端按 32 槽分配网格，流体槽被页面边缘裁切
+     * （该裁切问题已由 {@link VmdFrontend} 的 4 列向上网格布局修复）。实际每条配方的流体输出数
+     * 为该维度流体条目数（≤5 种），4 列 × N 行网格足够容纳。
      */
     public static final int MAX_FLUID_OUTPUTS = 12;
 
@@ -26,6 +32,7 @@ public final class VmdRecipeMaps {
         .of("vmd.recipe.voidfluiddriller")
         .maxIO(1, 0, 0, MAX_FLUID_OUTPUTS)
         .minInputs(1, 0)
+        .frontend(VmdFrontend::new)
         .neiHandlerInfo(
             builder -> builder.setHeight(240)
                 .setMultipleWidgetsAllowed(false))
@@ -41,6 +48,7 @@ public final class VmdRecipeMaps {
         .of("vmd.recipe.voidexcavator")
         .maxIO(1, MAX_ITEM_OUTPUTS, 0, 0)
         .minInputs(1, 0)
+        .frontend(VmdFrontend::new)
         .neiHandlerInfo(
             builder -> builder.setHeight(240)
                 .setMultipleWidgetsAllowed(false))
@@ -53,6 +61,7 @@ public final class VmdRecipeMaps {
     public static final RecipeMap<RecipeMapBackend> woodenMinerRecipes = RecipeMapBuilder.of("vmd.recipe.woodenminer")
         .maxIO(1, MAX_ITEM_OUTPUTS, 0, 0)
         .minInputs(1, 0)
+        .frontend(VmdFrontend::new)
         .neiHandlerInfo(
             builder -> builder.setHeight(240)
                 .setMultipleWidgetsAllowed(false))

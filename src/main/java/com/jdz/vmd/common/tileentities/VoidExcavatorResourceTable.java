@@ -20,7 +20,6 @@ import com.github.bsideup.jabel.Desugar;
 import com.jdz.vmd.Config;
 
 import cpw.mods.fml.common.registry.GameRegistry;
-import gregtech.api.enums.Mods;
 import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 import gtneioreplugin.util.DimensionHelper;
 
@@ -32,6 +31,29 @@ import gtneioreplugin.util.DimensionHelper;
 public final class VoidExcavatorResourceTable {
 
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
+
+    /**
+     * 原版方块的直接引用映射（键小写以容忍配置的大小写写法）。1.7.10 的原版方块不走
+     * GameRegistry.registerBlock 注册，{@code GameRegistry.findBlock("minecraft", name)} 恒为 null，
+     * 因此配置中不带 modid 的条目必须经由此表解析。
+     */
+    private static final Map<String, Block> VANILLA_BLOCKS = new HashMap<>();
+
+    static {
+        VANILLA_BLOCKS.put("dirt", Blocks.dirt);
+        VANILLA_BLOCKS.put("grass", Blocks.grass);
+        VANILLA_BLOCKS.put("stone", Blocks.stone);
+        VANILLA_BLOCKS.put("cobblestone", Blocks.cobblestone);
+        VANILLA_BLOCKS.put("sand", Blocks.sand);
+        VANILLA_BLOCKS.put("gravel", Blocks.gravel);
+        VANILLA_BLOCKS.put("clay", Blocks.clay);
+        VANILLA_BLOCKS.put("netherrack", Blocks.netherrack);
+        VANILLA_BLOCKS.put("soulsand", Blocks.soul_sand);
+        VANILLA_BLOCKS.put("endstone", Blocks.end_stone);
+        VANILLA_BLOCKS.put("snow", Blocks.snow);
+        VANILLA_BLOCKS.put("mycelium", Blocks.mycelium);
+        VANILLA_BLOCKS.put("hardenedclay", Blocks.hardened_clay);
+    }
 
     /** 未放维度显示方块时默认使用的维度缩写。 */
     public static final String DEFAULT_DIMENSION = "Ow";
@@ -108,9 +130,14 @@ public final class VoidExcavatorResourceTable {
         }
 
         final String blockId = segments.length == 4 ? segments[0] + ":" + segments[1] : segments[0];
-        // FML 没有单参数的 findBlock；原版方块位于 "Minecraft" 命名空间。
-        final Block block = segments.length == 4 ? GameRegistry.findBlock(segments[0], segments[1])
-            : GameRegistry.findBlock(Mods.Minecraft.ID, segments[0]);
+        final Block block;
+        if (segments.length == 4) {
+            // 带 modid 的条目走 GameRegistry（GalacticraftCore:moonBlock 等）。
+            block = GameRegistry.findBlock(segments[0], segments[1]);
+        } else {
+            // 原版方块不在 GameRegistry 的 mod 容器中，必须走直接映射表。
+            block = VANILLA_BLOCKS.get(segments[0].toLowerCase(java.util.Locale.ENGLISH));
+        }
         if (block == null || block == Blocks.air) {
             LOG.error("Excavator resource block '{}' not found, entry '{}' skipped", blockId, rawEntry);
             return null;
