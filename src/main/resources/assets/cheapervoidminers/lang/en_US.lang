@@ -22,7 +22,7 @@ gt.blockmachines.voidfluidpumpwooden.name=Wooden Void Fluid Pump
 vmd.mbtt.machine_type=Void Fluid Driller
 vmd.mbtt.info.1=Taps the underground fluids of a chosen dimension without drilling pipes and without depleting chunk veins.
 vmd.mbtt.info.2=Put a Dimension Display block into the controller slot to select the dimension; leave the slot empty to use the dimension the machine is built in.
-vmd.mbtt.info.3=A programmed circuit (configuration 1..N) in the input bus selects the N-th fluid of that dimension's fluid table; configuration 0 or no circuit picks a fluid by weighted random (weights = generation chance).
+vmd.mbtt.info.3=A programming circuit (configuration 1..N) must be inserted into the input bus to select the N-th fluid of that dimension's fluid table; the machine does not start without an inserted programming circuit.
 vmd.mbtt.info.4=A circuit configuration beyond the fluid count of the dimension fails the cycle with an error message.
 vmd.mbtt.info.5=Drill heads in the input bus boost the output: Iron x1.25, Steel x1.5, Titanium x1.75, Naquadah x2.0, Infinity x3.0 (highest present applies). Each finished cycle consumes one drill head with a 0.1% chance.
 vmd.mbtt.info.6=Produces 1000mB x voltage factor x drill bonus x parallel count per 100 tick cycle.
@@ -40,6 +40,7 @@ vmd.mbtt.structure.output_hatch=Output Hatch (fluid output, required)
 # Void Fluid Driller GUI
 vmd.gui.planet=Planet: %s
 vmd.gui.fluid=Fluid: %s
+vmd.gui.fluid.none=None
 vmd.gui.parallel=Parallel: %s
 vmd.gui.drill=Drill: %s
 vmd.gui.weighted_random=Weighted Random
@@ -58,7 +59,7 @@ vmd.recipe.woodenminer=Wooden Void Miner
 # Recipe check result messages (SimpleCheckRecipeResult keys)
 GT5U.gui.text.recipe_result.vmd_drilling=Extracting underground fluids
 GT5U.gui.text.recipe_result.vmd_no_fluid_data=No underground fluid data for this dimension
-GT5U.gui.text.recipe_result.vmd_circuit_out_of_range=Circuit configuration exceeds the fluid count of this dimension
+GT5U.gui.text.recipe_result.vmd_circuit_required=No programming circuit inserted
 GT5U.gui.text.recipe_result.vmd_output_full=Fluid output full
 GT5U.gui.text.recipe_result.vmd_excavator_digging=Digging resources from the void
 GT5U.gui.text.recipe_result.vmd_excavator_no_resources=No resource data for this dimension
@@ -68,11 +69,12 @@ GT5U.gui.text.recipe_result.vmd_excavator_output_full=Item output full
 # Wooden Void Fluid Pump tooltip
 vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground fluids.
 vmd.pump.desc.2=Produces 100mB every 200 ticks into its internal output tank; a full or incompatible tank stalls the machine, draw the fluid out with pipes from any non-main face.
-vmd.pump.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld fluid; configuration 0 or no circuit = weighted random.
+vmd.pump.desc.3=A programming circuit (configuration 1..N) must be inserted to select the N-th Overworld fluid; without it the pump idles.
 vmd.pump.desc.4=The internal tank never mixes fluids; switch the circuit only after it is drained.
 vmd.pump.desc.5=The programmed circuit can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there).
 vmd.pump.desc.selection=Current selection: %s
 vmd.pump.selection.invalid=Invalid circuit configuration
+vmd.pump.selection.no_circuit=No programming circuit inserted (idle)
 
 # Wooden Void Miner
 gt.blockmachines.VoidMinerWooden.name=Wooden Void Miner

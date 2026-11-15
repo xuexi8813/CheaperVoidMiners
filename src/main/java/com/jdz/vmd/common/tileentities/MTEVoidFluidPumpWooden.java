@@ -20,7 +20,8 @@ import gregtech.api.render.TextureFactory;
 
 /**
  * 木制虚空流体泵：无电力木制机器，将主世界地下流体抽入内部输出储罐。
- * 电路选择：配置 1..N 选主世界流体表第 N 项，0/无电路按权重随机，超过 N 空转。
+ * 电路选择：必须放入编程电路（配置 1..N）选定主世界流体表第 N 项流体；
+ * 未插入电路、配置 0 或超出范围时静默待机。
  * 储罐不混流体；罐满或流体不兼容时停滞，直到被任意非正面方向的管道抽出。
  */
 // 跳过 GT 区域名注册，显示名来自 lang 键。
@@ -83,15 +84,11 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
             return DID_NOT_FIND_RECIPE;
         }
 
+        // 必须由编程电路（配置 1..N）选定流体：未插入电路、配置 0 或超出范围时静默待机。
         final int config = readCircuitConfig();
-        final GTUOFluid pick;
-        if (config >= 1) {
-            if (config > candidates.size()) return DID_NOT_FIND_RECIPE;
-            pick = candidates.get(config - 1);
-        } else {
-            pick = VoidFluidTableHelper.weightedRandom(candidates);
-        }
-        final Fluid fluid = pick.getFluid();
+        if (config < 1 || config > candidates.size()) return DID_NOT_FIND_RECIPE;
+        final Fluid fluid = candidates.get(config - 1)
+            .getFluid();
         if (fluid == null) return DID_NOT_FIND_RECIPE;
 
         final FluidStack output = new FluidStack(fluid, PRODUCTION_AMOUNT_MB);
@@ -123,16 +120,14 @@ public class MTEVoidFluidPumpWooden extends MTEVoidWoodenBase {
 
     private String describeCurrentSelection() {
         final int config = readCircuitConfig();
-        if (config >= 1) {
-            final List<GTUOFluid> candidates = VoidFluidTableHelper
-                .getFluidCandidates(VoidFluidTableHelper.getOverworldDimension());
-            if (config <= candidates.size()) {
-                final Fluid fluid = candidates.get(config - 1)
-                    .getFluid();
-                if (fluid != null) return StatCollector.translateToLocal(fluid.getUnlocalizedName());
-            }
-            return StatCollector.translateToLocal("vmd.pump.selection.invalid");
+        if (config < 1) return StatCollector.translateToLocal("vmd.pump.selection.no_circuit");
+        final List<GTUOFluid> candidates = VoidFluidTableHelper
+            .getFluidCandidates(VoidFluidTableHelper.getOverworldDimension());
+        if (config <= candidates.size()) {
+            final Fluid fluid = candidates.get(config - 1)
+                .getFluid();
+            if (fluid != null) return StatCollector.translateToLocal(fluid.getUnlocalizedName());
         }
-        return StatCollector.translateToLocal("vmd.gui.weighted_random");
+        return StatCollector.translateToLocal("vmd.pump.selection.invalid");
     }
 }

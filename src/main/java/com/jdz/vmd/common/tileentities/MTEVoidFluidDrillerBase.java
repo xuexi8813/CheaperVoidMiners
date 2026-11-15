@@ -115,14 +115,12 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     private double cachedDrillBonus = 1.0;
     @Nullable
     private Fluid cachedFluid = null;
-    private boolean selectedByCircuit = false;
     @Nullable
     private String selectedDimensionAbbr = null;
 
     // GUI 显示状态，在 drawTexts() 中通过 FakeSyncWidget 同步。
     private String displayDimensionAbbr = "";
     private String displayFluidKey = "";
-    private boolean displayFluidSelectedByCircuit = false;
     private String displayDrillMaterial = "";
     private int displayParallel = 1;
 
@@ -267,21 +265,14 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
             return SimpleCheckRecipeResult.ofFailurePersistOnShutdown("vmd_no_fluid_data");
         }
 
-        // 编程电路配置 1..N 选择第 N 项流体，其他情况按权重随机。
+        // 必须由编程电路（配置 1..N）选定流体：未插入电路、配置 0 或超出范围时一律不启动。
         final int circuitConfig = readCircuitConfig();
-        final GTUOFluid selectedFluid;
-        if (circuitConfig >= 1) {
-            if (circuitConfig > candidates.size()) {
-                mEUt = 0;
-                mMaxProgresstime = 0;
-                return SimpleCheckRecipeResult.ofFailure("vmd_circuit_out_of_range");
-            }
-            selectedFluid = candidates.get(circuitConfig - 1);
-            selectedByCircuit = true;
-        } else {
-            selectedFluid = VoidFluidTableHelper.weightedRandom(candidates);
-            selectedByCircuit = false;
+        if (circuitConfig < 1 || circuitConfig > candidates.size()) {
+            mEUt = 0;
+            mMaxProgresstime = 0;
+            return SimpleCheckRecipeResult.ofFailure("vmd_circuit_required");
         }
+        final GTUOFluid selectedFluid = candidates.get(circuitConfig - 1);
         final Fluid fluid = selectedFluid.getFluid();
         cachedFluid = fluid;
 
@@ -307,7 +298,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         selectedDimensionAbbr = resolveDisplayedAbbr(dimension);
         displayDimensionAbbr = selectedDimensionAbbr == null ? "" : selectedDimensionAbbr;
         displayFluidKey = fluid.getUnlocalizedName();
-        displayFluidSelectedByCircuit = selectedByCircuit;
         displayDrillMaterial = drill == null ? "" : drill.materialName;
         displayParallel = cachedParallel;
 
@@ -403,11 +393,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
                         () -> StatCollector.translateToLocalFormatted("vmd.gui.fluid", resolveFluidDisplayName()))
                     .setTextAlignment(Alignment.CenterLeft)
                     .setDefaultColor(COLOR_TEXT_WHITE.get()))
-            .widget(new FakeSyncWidget.StringSyncer(() -> displayFluidKey, val -> displayFluidKey = val))
-            .widget(
-                new FakeSyncWidget.BooleanSyncer(
-                    () -> displayFluidSelectedByCircuit,
-                    val -> displayFluidSelectedByCircuit = val));
+            .widget(new FakeSyncWidget.StringSyncer(() -> displayFluidKey, val -> displayFluidKey = val));
         screenElements.widget(
             TextWidget.dynamicString(() -> StatCollector.translateToLocalFormatted("vmd.gui.parallel", displayParallel))
                 .setTextAlignment(Alignment.CenterLeft)
@@ -435,11 +421,9 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return StatCollector.translateToLocal("vmd.gui.planet.unknown");
     }
 
-    /** 流体行：电路选定的流体本地化名称，或权重随机标签。 */
+    /** 流体行：本周期由编程电路选定的流体本地化名称；机器尚未运行时显示"无"。 */
     private String resolveFluidDisplayName() {
-        if (!displayFluidSelectedByCircuit || displayFluidKey.isEmpty()) {
-            return StatCollector.translateToLocal("vmd.gui.weighted_random");
-        }
+        if (displayFluidKey.isEmpty()) return StatCollector.translateToLocal("vmd.gui.fluid.none");
         return StatCollector.translateToLocal(displayFluidKey);
     }
 

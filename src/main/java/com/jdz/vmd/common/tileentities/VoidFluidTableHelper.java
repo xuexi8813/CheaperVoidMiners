@@ -1,7 +1,5 @@
 package com.jdz.vmd.common.tileentities;
 
-import static gregtech.api.objects.XSTR.XSTR_INSTANCE;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +18,7 @@ import gtneioreplugin.util.DimensionHelper;
 
 /**
  * GT5u 地下流体表（{@code GTMod.proxy.mUndergroundOil}）的共享访问层：
- * 维度键映射、流体候选提取与加权随机抽取，供流体钻机与木制泵共用。
+ * 维度键映射与流体候选提取，供流体钻机与木制泵共用。
  */
 public final class VoidFluidTableHelper {
 
@@ -139,21 +137,5 @@ public final class VoidFluidTableHelper {
             if (fluid.getFluid() != null) candidates.add(fluid);
         }
         return candidates;
-    }
-
-    /** 以生成概率（Chance）为权重加权随机抽取；末尾 return 不可达，仅为满足编译器。 */
-    public static GTUOFluid weightedRandom(List<GTUOFluid> candidates) {
-        long total = 0;
-        for (GTUOFluid fluid : candidates) {
-            total += Math.max(0, fluid.Chance);
-        }
-        if (total <= 0) return candidates.get(XSTR_INSTANCE.nextInt(candidates.size()));
-
-        int roll = XSTR_INSTANCE.nextInt((int) Math.min(total, Integer.MAX_VALUE));
-        for (GTUOFluid fluid : candidates) {
-            roll -= Math.max(0, fluid.Chance);
-            if (roll < 0) return fluid;
-        }
-        return candidates.get(candidates.size() - 1);
     }
 }
