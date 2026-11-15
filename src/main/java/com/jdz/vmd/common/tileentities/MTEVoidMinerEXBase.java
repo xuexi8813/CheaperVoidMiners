@@ -8,6 +8,8 @@ import static gregtech.api.util.GTStructureUtility.buildHatchAdder;
 import static gregtech.api.util.GTStructureUtility.ofFrame;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
@@ -64,7 +66,21 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
 
     abstract public ItemList getItemList();
 
-    protected IStructureDefinition<T> buildBaseStructureDefinition(Class<T> clazz) {
+    /** 结构定义按具体类仅构建一次并缓存（GT5u MTEDrillerBase 约定）；蓝图投影仪等外部调用方会高频读取。 */
+    private static final Map<Class<?>, IStructureDefinition<?>> STRUCTURE_DEFINITIONS = new ConcurrentHashMap<>();
+
+    @Override
+    public IStructureDefinition<T> getStructureDefinition() {
+        return cachedStructureDefinition();
+    }
+
+    @SuppressWarnings("unchecked")
+    private IStructureDefinition<T> cachedStructureDefinition() {
+        return (IStructureDefinition<T>) STRUCTURE_DEFINITIONS
+            .computeIfAbsent(getClass(), k -> buildBaseStructureDefinition((Class<T>) k));
+    }
+
+    private IStructureDefinition<T> buildBaseStructureDefinition(Class<T> clazz) {
         return StructureDefinition.<T>builder()
             .addShape(
                 "main",

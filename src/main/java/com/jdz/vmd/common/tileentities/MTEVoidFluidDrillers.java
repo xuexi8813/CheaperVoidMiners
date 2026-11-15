@@ -7,8 +7,6 @@ import static gregtech.api.enums.VoltageIndex.MAX;
 import static gregtech.api.enums.VoltageIndex.MV;
 import static gregtech.api.enums.VoltageIndex.UV;
 
-import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
-
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
@@ -63,11 +61,6 @@ public class MTEVoidFluidDrillers {
         }
 
         @Override
-        public IStructureDefinition<VoidFluidDrillerIron> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidFluidDrillerIron.class);
-        }
-
-        @Override
         public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
             return new VoidFluidDrillerIron(this.mName);
         }
@@ -111,11 +104,6 @@ public class MTEVoidFluidDrillers {
                 getCasingBlock().getBlock(),
                 getCasingBlock().get(0)
                     .getItemDamage());
-        }
-
-        @Override
-        public IStructureDefinition<VoidFluidDrillerSteel> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidFluidDrillerSteel.class);
         }
 
         @Override
@@ -165,11 +153,6 @@ public class MTEVoidFluidDrillers {
         }
 
         @Override
-        public IStructureDefinition<VoidFluidDrillerTitanium> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidFluidDrillerTitanium.class);
-        }
-
-        @Override
         public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
             return new VoidFluidDrillerTitanium(this.mName);
         }
@@ -213,11 +196,6 @@ public class MTEVoidFluidDrillers {
                 getCasingBlock().getBlock(),
                 getCasingBlock().get(0)
                     .getItemDamage());
-        }
-
-        @Override
-        public IStructureDefinition<VoidFluidDrillerNaquadah> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidFluidDrillerNaquadah.class);
         }
 
         @Override
@@ -274,11 +252,6 @@ public class MTEVoidFluidDrillers {
                 getCasingBlock().getBlock(),
                 getCasingBlock().get(0)
                     .getItemDamage());
-        }
-
-        @Override
-        public IStructureDefinition<VoidFluidDrillerInfinity> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidFluidDrillerInfinity.class);
         }
 
         @Override

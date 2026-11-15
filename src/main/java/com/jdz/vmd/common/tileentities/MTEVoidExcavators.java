@@ -7,8 +7,6 @@ import static gregtech.api.enums.VoltageIndex.MAX;
 import static gregtech.api.enums.VoltageIndex.MV;
 import static gregtech.api.enums.VoltageIndex.UV;
 
-import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
-
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
@@ -63,11 +61,6 @@ public class MTEVoidExcavators {
         }
 
         @Override
-        public IStructureDefinition<VoidExcavatorIron> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidExcavatorIron.class);
-        }
-
-        @Override
         public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
             return new VoidExcavatorIron(this.mName);
         }
@@ -111,11 +104,6 @@ public class MTEVoidExcavators {
                 getCasingBlock().getBlock(),
                 getCasingBlock().get(0)
                     .getItemDamage());
-        }
-
-        @Override
-        public IStructureDefinition<VoidExcavatorSteel> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidExcavatorSteel.class);
         }
 
         @Override
@@ -165,11 +153,6 @@ public class MTEVoidExcavators {
         }
 
         @Override
-        public IStructureDefinition<VoidExcavatorTitanium> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidExcavatorTitanium.class);
-        }
-
-        @Override
         public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
             return new VoidExcavatorTitanium(this.mName);
         }
@@ -213,11 +196,6 @@ public class MTEVoidExcavators {
                 getCasingBlock().getBlock(),
                 getCasingBlock().get(0)
                     .getItemDamage());
-        }
-
-        @Override
-        public IStructureDefinition<VoidExcavatorNaquadah> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidExcavatorNaquadah.class);
         }
 
         @Override
@@ -274,11 +252,6 @@ public class MTEVoidExcavators {
                 getCasingBlock().getBlock(),
                 getCasingBlock().get(0)
                     .getItemDamage());
-        }
-
-        @Override
-        public IStructureDefinition<VoidExcavatorInfinity> getStructureDefinition() {
-            return buildBaseStructureDefinition(VoidExcavatorInfinity.class);
         }
 
         @Override

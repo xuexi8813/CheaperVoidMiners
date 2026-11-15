@@ -1,7 +1,5 @@
 package com.jdz.vmd.common.tileentities;
 
-import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
-
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.VoltageIndex;
@@ -49,11 +47,6 @@ public class MTEVoidMiners {
         }
 
         @Override
-        public IStructureDefinition<VMLV> getStructureDefinition() {
-            return buildBaseStructureDefinition(VMLV.class);
-        }
-
-        @Override
         public IMetaTileEntity newMetaEntity(IGregTechTileEntity iGregTechTileEntity) {
             return new VMLV(this.mName, this.TIER_MULTIPLIER);
         }
@@ -84,11 +77,6 @@ public class MTEVoidMiners {
         @Override
         protected int getMinTier() {
             return VoltageIndex.HV;
-        }
-
-        @Override
-        public IStructureDefinition<VMHV> getStructureDefinition() {
-            return buildBaseStructureDefinition(VMHV.class);
         }
 
         @Override
@@ -127,11 +115,6 @@ public class MTEVoidMiners {
         @Override
         protected int getMinTier() {
             return VoltageIndex.IV;
-        }
-
-        @Override
-        public IStructureDefinition<VMIV> getStructureDefinition() {
-            return buildBaseStructureDefinition(VMIV.class);
         }
 
         @Override
