@@ -1,8 +1,10 @@
 package com.jdz.vmd.mixin.mixins;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StatCollector;
 
@@ -21,10 +23,12 @@ import bwcrossmod.galacticgreg.MTEVoidMinerBase;
 import bwcrossmod.galacticgreg.VoidMinerUtility;
 import galacticgreg.api.ModDimensionDef;
 import galacticgreg.api.enums.DimensionDef;
+import gregtech.api.interfaces.IOreMaterial;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.implementations.MTEEnhancedMultiBlockBase;
 import gregtech.api.recipe.check.CheckRecipeResult;
 import gregtech.api.util.GTUtility;
+import gregtech.common.ores.OreManager;
 import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 import gtneioreplugin.util.DimensionHelper;
 
@@ -247,6 +251,41 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
             vmd$dimChangeVersion++;
             vmd$recalculateDropMap();
         }
+    }
+
+    // endregion
+
+    // region 材料级宽匹配
+
+    /**
+     * 上游 {@code contains(List, ItemStack)} 为精确 item+meta 匹配，而虚空矿机产出矿石与
+     * 自然挖取矿石的石器变体 meta 不同（meta = 材料%1000 + 石器*1000 + 大小矿偏移），
+     * 白名单/过滤器条目永不命中，白名单下全部产出被销毁（GTNH #25583 同类现象，上游定性 Not a Bug）。
+     *
+     * <p>
+     * 本注入为材料级宽匹配：同材料的任意石器变体、大小矿均视为同一矿物，经
+     * {@link OreManager#getMaterial(ItemStack)} 解析，GT/BW 双适配器天然兼容。仅在命中时
+     * {@code setReturnValue(true)}，未命中回落原精确匹配，黑/白名单语义只增不减。contains
+     * 是 GUI 过滤弹窗勾选与输入总线两条通道的唯一匹配点，一处注入两通道同时生效；
+     * 材料为单例对象，引用比较安全。
+     */
+    @Inject(method = "contains", at = @At("HEAD"), require = 1, remap = false, cancellable = true)
+    private static void vmd$onContains(List<ItemStack> list, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.isCancelled()) return;
+        if (vmd$matchesByMaterial(list, stack)) cir.setReturnValue(true);
+    }
+
+    /** 逐条比对列表与目标方块的矿物材料，任一条目与目标同材料即命中。 */
+    @Unique
+    private static boolean vmd$matchesByMaterial(List<ItemStack> list, ItemStack stack) {
+        if (list == null || list.isEmpty() || stack == null) return false;
+        final IOreMaterial material = OreManager.getMaterial(stack);
+        if (material == null) return false;
+        for (ItemStack cursor : list) {
+            if (cursor == null) continue;
+            if (OreManager.getMaterial(cursor) == material) return true;
+        }
+        return false;
     }
 
     // endregion
