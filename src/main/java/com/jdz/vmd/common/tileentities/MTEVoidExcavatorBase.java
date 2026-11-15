@@ -144,7 +144,11 @@ public abstract class MTEVoidExcavatorBase<T extends MTEVoidExcavatorBase<T>> ex
     /** 并行与钻头加成生效前，每周期产出的资源方块数。 */
     public abstract int getStageMultiplier();
 
-    /** 控制器正面贴图索引，兼作仓体基础机壳贴图。 */
+    /**
+     * 控制器正面贴图索引，兼作仓体基础机壳贴图。实现须取自 {@code Casings.XxxCasing.getTextureId()}：
+     * {@code GTUtility.getCasingTextureIndex} 对 meta 0 的层级机壳返回 0，违反
+     * {@code casingIndex > 0} 契约（结构投影仪构建即抛 IllegalArgumentException）。
+     */
     protected abstract int getControllerTextureIndex();
 
     /** 输入电压等级下的并行数，默认 1；Infinity 阶段以指数规则覆盖。 */

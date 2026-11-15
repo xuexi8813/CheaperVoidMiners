@@ -7,6 +7,7 @@ import static gregtech.api.enums.VoltageIndex.MAX;
 import static gregtech.api.enums.VoltageIndex.MV;
 import static gregtech.api.enums.VoltageIndex.UV;
 
+import gregtech.api.casing.Casings;
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
@@ -54,10 +55,10 @@ public class MTEVoidExcavators {
 
         @Override
         protected int getControllerTextureIndex() {
-            return GTUtility.getCasingTextureIndex(
-                getCasingBlock().getBlock(),
-                getCasingBlock().get(0)
-                    .getItemDamage());
+            // ULV 机壳贴图 id 为 0，被 casingIndex>0 契约保留为"未设置"（投影仪构建即抛
+            // IllegalArgumentException），改用相邻 LV 机壳贴图；仅影响投影全息提示渲染，
+            // 结构校验按方块+meta 完全不受影响。
+            return Casings.LVMachineCasing.getTextureId();
         }
 
         @Override
@@ -100,10 +101,7 @@ public class MTEVoidExcavators {
 
         @Override
         protected int getControllerTextureIndex() {
-            return GTUtility.getCasingTextureIndex(
-                getCasingBlock().getBlock(),
-                getCasingBlock().get(0)
-                    .getItemDamage());
+            return Casings.SolidSteelMachineCasing.getTextureId();
         }
 
         @Override
@@ -146,10 +144,7 @@ public class MTEVoidExcavators {
 
         @Override
         protected int getControllerTextureIndex() {
-            return GTUtility.getCasingTextureIndex(
-                getCasingBlock().getBlock(),
-                getCasingBlock().get(0)
-                    .getItemDamage());
+            return Casings.StableTitaniumMachineCasing.getTextureId();
         }
 
         @Override
@@ -192,10 +187,7 @@ public class MTEVoidExcavators {
 
         @Override
         protected int getControllerTextureIndex() {
-            return GTUtility.getCasingTextureIndex(
-                getCasingBlock().getBlock(),
-                getCasingBlock().get(0)
-                    .getItemDamage());
+            return Casings.RobustTungstenSteelMachineCasing.getTextureId();
         }
 
         @Override
@@ -248,10 +240,7 @@ public class MTEVoidExcavators {
 
         @Override
         protected int getControllerTextureIndex() {
-            return GTUtility.getCasingTextureIndex(
-                getCasingBlock().getBlock(),
-                getCasingBlock().get(0)
-                    .getItemDamage());
+            return Casings.MiningNeutroniumCasing.getTextureId();
         }
 
         @Override
