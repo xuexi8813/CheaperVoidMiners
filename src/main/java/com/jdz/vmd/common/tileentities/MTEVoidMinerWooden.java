@@ -28,7 +28,8 @@ import gtneioreplugin.util.DimensionHelper;
 /**
  * 木制虚空采矿机：无电力单方块机器，从主世界矿石生成表抽取矿石（数据源与展开规则同
  * {@code VoidMinerUtility#generateDropMaps}，贫矿掉落由 {@link VoidOreTableHelper} 解析）。
- * 电路选择：配置 1..N 选第 N 条矿脉，N+1 选贫矿池，0/无电路为混合加权池，超过 N+1 空转。
+ * 电路选择：配置 1..N 选第 N 条矿脉（矿脉材料大矿 + 归属该矿脉材料的贫矿），N+1 选贫矿池（全部贫矿），
+ * 0/无电路为混合加权池（全部矿脉条目 + 未归属贫矿），超过 N+1 空转。
  */
 // 跳过 GT 区域名注册，显示名来自 lang 键；注解不继承，需每个具体类显式携带。
 @IMetaTileEntity.SkipGenerateName
@@ -48,6 +49,8 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     public static final class OreVein {
 
         public final String name;
+        /** 矿脉携带的材料对象（primary/secondary/sporadic/between，与 drops 展开同源），供 NEI 侧贫矿按材料归属匹配。 */
+        public final List<IOreMaterial> materials = new ArrayList<>();
         public final List<WeightedOre> drops = new ArrayList<>();
 
         public OreVein(String name) {
@@ -55,12 +58,25 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         }
     }
 
-    /** 三个主世界矿石池；由机器与 NEI 配方注册共享，两侧数据一致。 */
+    /** 三个主世界矿石池与贫矿归属统计；由机器与 NEI 配方注册共享，两侧数据一致。 */
     public static final class OverworldPools {
 
-        public final List<OreVein> veins = new ArrayList<>();
-        public final List<WeightedOre> smallOres = new ArrayList<>();
-        public final List<WeightedOre> mixed = new ArrayList<>();
+        public final List<OreVein> veins;
+        public final List<WeightedOre> smallOres;
+        public final List<WeightedOre> mixed;
+        /** 归属进矿脉的贫矿条目数（展开前的 WorldgenGTOreSmallPieces 条目计数）。 */
+        public final int mergedSmallOrePieces;
+        /** 未被任何矿脉匹配、仅存于贫矿池与混合池的贫矿条目数（展开前计数）。 */
+        public final int unmatchedSmallOrePieces;
+
+        OverworldPools(List<OreVein> veins, List<WeightedOre> smallOres, List<WeightedOre> mixed,
+            int mergedSmallOrePieces, int unmatchedSmallOrePieces) {
+            this.veins = veins;
+            this.smallOres = smallOres;
+            this.mixed = mixed;
+            this.mergedSmallOrePieces = mergedSmallOrePieces;
+            this.unmatchedSmallOrePieces = unmatchedSmallOrePieces;
+        }
     }
 
     private static boolean warnedEmptyOverworldPools = false;
@@ -156,13 +172,17 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         this.mixedPool = pools.mixed;
     }
 
-    /** 从 GT5u 世界生成表构建三个主世界矿石池；公开供 NEI 产出配方注册复用。 */
+    /**
+     * 从 GT5u 世界生成表构建三个主世界矿石池；公开供 NEI 产出配方注册复用。
+     * 贫矿按材料归属：每个贫矿条目只并入第一条材料匹配的矿脉（vein.drops 同时供机器矿脉模式与
+     * NEI 矿脉配方消费，两侧不会漂移）；贫矿池保持全部贫矿；混合池由全部矿脉条目与未归属贫矿组成，
+     * 每个贫矿只出现一份。
+     */
     public static OverworldPools buildOverworldPools() {
-        final OverworldPools pools = new OverworldPools();
-
         final List<StoneType> stones = DimensionHelper.getStoneTypes(OVERWORLD_DIM_NAME);
 
         // sList 注册顺序确定性，矿脉索引顺序因此确定。
+        final List<OreVein> veins = new ArrayList<>();
         for (WorldgenGTOreLayer layer : WorldgenGTOreLayer.sList) {
             if (!layer.mEnabled) continue;
             if (!layer.getAllowedDimensions()
@@ -174,26 +194,74 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
             addMaterialDrops(vein, layer.mSporadic, stones, layer.mWeight / SPORADIC_WEIGHT_DIVISOR);
             addMaterialDrops(vein, layer.mBetween, stones, layer.mWeight / SPORADIC_WEIGHT_DIVISOR);
             if (vein.drops.isEmpty()) continue;
-            pools.veins.add(vein);
-            pools.mixed.addAll(vein.drops);
+            veins.add(vein);
         }
+
+        final List<WeightedOre> smallOres = new ArrayList<>();
+        final List<WeightedOre> unmatchedSmallOres = new ArrayList<>();
+        final int[] mergedPieces = { 0 };
+        final int[] unmatchedPieces = { 0 };
 
         for (WorldgenGTOreSmallPieces piece : WorldgenGTOreSmallPieces.sList) {
             if (!piece.mEnabled) continue;
             if (!piece.getAllowedDimensions()
                 .contains(OVERWORLD_DIM_NAME)) continue;
 
+            final IOreMaterial material = piece.getMaterial();
+            // 无材料条目无法展开，任何池均不含（与 forEachSmallOreDrop 的 null 短路一致）。
+            if (material == null) continue;
+
+            final OreVein vein = firstVeinWithMaterial(veins, material);
+            if (vein != null) mergedPieces[0]++;
+            else unmatchedPieces[0]++;
+
             VoidOreTableHelper.forEachSmallOreDrop(piece, stones, (stack, weight) -> {
                 final WeightedOre drop = new WeightedOre(stack, weight);
-                pools.smallOres.add(drop);
-                pools.mixed.add(drop);
+                // 贫矿池（电路 N+1）始终包含全部贫矿，语义不变。
+                smallOres.add(drop);
+                if (vein != null) {
+                    // 归属贫矿并入矿脉条目；混合池经 vein.drops 呈现，不再重复列出。
+                    vein.drops.add(drop);
+                } else {
+                    unmatchedSmallOres.add(drop);
+                }
             });
         }
-        return pools;
+
+        // 混合池 = 全部矿脉条目（大矿 + 归属贫矿）+ 未归属贫矿；条目集合与旧版逐池相加一致，无重复加权。
+        final List<WeightedOre> mixed = new ArrayList<>();
+        for (OreVein vein : veins) {
+            mixed.addAll(vein.drops);
+        }
+        mixed.addAll(unmatchedSmallOres);
+
+        return new OverworldPools(veins, smallOres, mixed, mergedPieces[0], unmatchedPieces[0]);
+    }
+
+    /** 返回第一条包含该材料的矿脉；无匹配为 null。矿脉顺序即机器编程电路 1..N 的选择顺序。 */
+    private static OreVein firstVeinWithMaterial(List<OreVein> veins, IOreMaterial material) {
+        for (OreVein vein : veins) {
+            for (IOreMaterial veinMaterial : vein.materials) {
+                if (isSameOreMaterial(veinMaterial, material)) return vein;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 矿脉与贫矿的材料匹配：同一 {@link IOreMaterial} 对象直接相等；跨材料系统（Werkstoff/Materials）
+     * 可能出现同材料不同实例，以内部名称兜底。归属匹配仅此一处实现，机器与 NEI 共用。
+     */
+    private static boolean isSameOreMaterial(IOreMaterial left, IOreMaterial right) {
+        if (left == null || right == null) return false;
+        if (left == right) return true;
+        final String leftName = left.getInternalName();
+        return leftName != null && leftName.equals(right.getInternalName());
     }
 
     private static void addMaterialDrops(OreVein vein, IOreMaterial material, List<StoneType> stones, float weight) {
         if (material == null) return;
+        if (!vein.materials.contains(material)) vein.materials.add(material);
         for (IStoneType stone : stones) {
             final ItemStack stack = VoidOreTableHelper.resolveOreStack(material, stone, false);
             if (stack == null) {

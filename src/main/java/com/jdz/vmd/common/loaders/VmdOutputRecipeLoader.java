@@ -20,6 +20,7 @@ import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
 import com.jdz.vmd.common.tileentities.VoidExcavatorResourceTable;
 import com.jdz.vmd.common.tileentities.VoidFluidTableHelper;
 
+import gregtech.api.enums.ItemList;
 import gregtech.api.objects.GTUODimension;
 import gregtech.api.objects.GTUOFluid;
 import gregtech.api.recipe.RecipeMap;
@@ -28,9 +29,10 @@ import gtneioreplugin.plugin.block.ModBlocks;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * 注册本模组的 NEI 产出配方：每个可开采维度一条，遵循 GT 虚空采矿机（{@code VoidMinerRecipes}）模式
+ * 注册本模组的 NEI 产出配方：遵循 GT 虚空采矿机（{@code VoidMinerRecipes}）模式
  * （维度显示方块作输入，带权重输出，权重为 0.01% 概率单位、按权重降序）。
- * 须在向 GT 掉落表追加贫矿之后调用，木制采矿机混合奖池才会包含贫矿。
+ * 木制采矿机额外按机器编程电路切分条目：混合奖池一条（无电路）+ 每条主世界矿脉一条（电路 1..N，
+ * 贫矿按材料归属并入对应矿脉）。须在向 GT 掉落表追加贫矿之后调用，木制采矿机奖池才会包含贫矿。
  */
 public final class VmdOutputRecipeLoader {
 
@@ -114,7 +116,12 @@ public final class VmdOutputRecipeLoader {
         }
     }
 
-    /** 木制采矿机：唯一的主世界配方，完整混合奖池（矿脉按矿脉权重、贫矿按生成量加权）。 */
+    /**
+     * 木制采矿机：与机器编程电路选择语义对应的 NEI 条目——混合奖池一条（配置 0/无电路，输入仅维度显示方块），
+     * 以及每条主世界矿脉一条（配置 1..N，输入附配置 i 的编程电路）。
+     * 贫矿归属（每个贫矿条目只归第一条材料匹配的矿脉、未归属者仅存贫矿池与混合池）由
+     * {@link MTEVoidMinerWooden#buildOverworldPools} 统一构建，机器与 NEI 消费同一份数据，不会漂移。
+     */
     private static void registerWoodenMinerRecipe() {
         final Block marker = ModBlocks.blocks.get(VoidExcavatorResourceTable.DEFAULT_DIMENSION);
         if (marker == null) {
@@ -124,17 +131,56 @@ public final class VmdOutputRecipeLoader {
 
         final MTEVoidMinerWooden.OverworldPools pools = MTEVoidMinerWooden.buildOverworldPools();
 
-        final List<ItemStack> stacks = new ArrayList<>(pools.mixed.size());
-        final List<Float> weights = new ArrayList<>(pools.mixed.size());
-        for (MTEVoidMinerWooden.WeightedOre entry : pools.mixed) {
-            stacks.add(entry.stack());
-            weights.add(entry.weight());
+        // 混合奖池（配置 0/无电路）：全部矿脉条目（大矿 + 归属贫矿）+ 未归属贫矿。
+        addItemWeightedRecipe(
+            VmdRecipeMaps.woodenMinerRecipes,
+            new ItemStack[] { toMarkerStack(marker) },
+            toStacks(pools.mixed),
+            toWeights(pools.mixed));
+
+        // 矿脉配方（配置 1..N）：电路 i 与机器矿脉选择完全一致（veins.get(i - 1)），vein.drops 已含归属贫矿。
+        for (int i = 0; i < pools.veins.size(); i++) {
+            final MTEVoidMinerWooden.OreVein vein = pools.veins.get(i);
+            addItemWeightedRecipe(
+                VmdRecipeMaps.woodenMinerRecipes,
+                new ItemStack[] { toMarkerStack(marker), ItemList.Circuit_Integrated.getWithDamage(1L, i + 1L) },
+                toStacks(vein.drops),
+                toWeights(vein.drops));
         }
-        addItemWeightedRecipe(VmdRecipeMaps.woodenMinerRecipes, marker, stacks, weights);
+
+        LOG.info(
+            "Wooden Void Miner NEI: {} vein recipes registered, {} Overworld small ore pieces merged into veins, {} unmatched pieces kept in the poor ore pool and mixed pool",
+            pools.veins.size(),
+            pools.mergedSmallOrePieces,
+            pools.unmatchedSmallOrePieces);
     }
 
-    /** 构建并添加带权重的物品输出配方；总权重 <= 0 时回退为均匀分配。 */
+    /** 加权条目的输出物品列表。 */
+    private static List<ItemStack> toStacks(List<MTEVoidMinerWooden.WeightedOre> entries) {
+        final List<ItemStack> stacks = new ArrayList<>(entries.size());
+        for (MTEVoidMinerWooden.WeightedOre entry : entries) {
+            stacks.add(entry.stack());
+        }
+        return stacks;
+    }
+
+    /** 加权条目的权重列表。 */
+    private static List<Float> toWeights(List<MTEVoidMinerWooden.WeightedOre> entries) {
+        final List<Float> weights = new ArrayList<>(entries.size());
+        for (MTEVoidMinerWooden.WeightedOre entry : entries) {
+            weights.add(entry.weight());
+        }
+        return weights;
+    }
+
+    /** 构建并添加带权重的物品输出配方（仅维度显示方块输入）；总权重 <= 0 时回退为均匀分配。 */
     private static void addItemWeightedRecipe(RecipeMap<RecipeMapBackend> recipeMap, Block marker,
+        List<ItemStack> stacks, List<Float> weights) {
+        addItemWeightedRecipe(recipeMap, new ItemStack[] { toMarkerStack(marker) }, stacks, weights);
+    }
+
+    /** 构建并添加带权重的物品输出配方（输入数组可附加编程电路）；总权重 <= 0 时回退为均匀分配。 */
+    private static void addItemWeightedRecipe(RecipeMap<RecipeMapBackend> recipeMap, ItemStack[] inputs,
         List<ItemStack> stacks, List<Float> weights) {
         float totalWeight = 0;
         for (float weight : weights) {
@@ -165,7 +211,7 @@ public final class VmdOutputRecipeLoader {
         }
 
         RA.stdBuilder()
-            .itemInputs(toMarkerStack(marker))
+            .itemInputs(inputs)
             .itemOutputs(outputs)
             .outputChances(chances)
             .duration(1)

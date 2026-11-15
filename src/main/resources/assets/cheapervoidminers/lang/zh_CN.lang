@@ -81,7 +81,7 @@ gt.blockmachines.voidminerwooden.name=木质虚空矿机
 # 木质虚空矿机 tooltip
 vmd.miner.desc.1=无需电力的木质矿机，直接从主世界矿物生成表中产出矿石物品，不破坏方块。
 vmd.miner.desc.2=每 100 tick 产出 1 个矿石存入 6 个输出槽之一（同类物品可叠加）；6 个输出槽都无法再容纳产出时待机，请手动取出或用传送带抽取。
-vmd.miner.desc.3=电路槽中的编程电路（配置 1..N）选择主世界第 N 条矿脉；配置 N+1 选择贫瘠矿（小型矿）池。
+vmd.miner.desc.3=电路槽中的编程电路（配置 1..N）选择主世界第 N 条矿脉（产出该矿脉的大矿及归属的贫瘠矿）；配置 N+1 选择全部贫瘠矿（小型矿）。
 vmd.miner.desc.4=配置 0 或无电路时，全部矿脉与贫瘠矿合并为一个加权池（权重 = 生成权重）。
 vmd.miner.desc.5=电路配置超出 N+1 时机器静默待机；电路槽（第一个输入槽）仅接受编程电路。
 vmd.miner.desc.selection=当前选择：%s

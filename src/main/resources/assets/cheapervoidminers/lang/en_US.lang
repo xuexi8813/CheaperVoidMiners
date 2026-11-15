@@ -81,7 +81,7 @@ gt.blockmachines.voidminerwooden.name=Wooden Void Miner
 # Wooden Void Miner tooltip
 vmd.miner.desc.1=Non-electric wooden miner that pulls ore items from the Overworld ore generation tables without breaking blocks.
 vmd.miner.desc.2=Produces 1 ore item every 100 ticks into one of its 6 output slots (same items stack up); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
-vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein; configuration N+1 selects the poor (small) ore pool.
+vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein (its main ores plus its matching poor/small ores); configuration N+1 selects the full poor (small) ore pool.
 vmd.miner.desc.4=Configuration 0 or no circuit mixes all veins and poor ores into one weighted pool (weights = generation weights).
 vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the circuit slot (first input slot) only accepts programmed circuits.
 vmd.miner.desc.selection=Current selection: %s

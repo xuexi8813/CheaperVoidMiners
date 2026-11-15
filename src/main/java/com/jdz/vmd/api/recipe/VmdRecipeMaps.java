@@ -55,11 +55,16 @@ public final class VmdRecipeMaps {
         .build();
 
     /**
-     * 木制虚空采矿机的产出配方：主世界的完整混合奖池（矿脉 + 贫矿）。
+     * 木制虚空采矿机的产出配方：与机器编程电路选择语义对应的两组条目——
+     * 混合奖池（配置 0/无电路，输入仅维度显示方块）、每条主世界矿脉一条（输入附配置 i 的编程电路）。
+     * 贫矿按材料归属并入对应矿脉条目（机器矿脉模式同样产出归属贫矿），归属数据由
+     * {@code MTEVoidMinerWooden#buildOverworldPools} 统一构建，未被归属的贫矿仅保留在贫矿池与混合奖池中。
+     * 物品输入上限为 2：编程电路作为第二输入；机器 {@code checkRecipe} 自行选择奖池、不走该表的配方匹配，
+     * 输入上限仅约束 NEI 展示与注册校验，故无运行时副作用。minInputs 保持 (1, 0)：混合池配方只有单一输入。
      * 与 voidExcavatorRecipes 相同，不配置 NEI 进度条以避免贴图解析失败刷屏。
      */
     public static final RecipeMap<RecipeMapBackend> woodenMinerRecipes = RecipeMapBuilder.of("vmd.recipe.woodenminer")
-        .maxIO(1, MAX_ITEM_OUTPUTS, 0, 0)
+        .maxIO(2, MAX_ITEM_OUTPUTS, 0, 0)
         .minInputs(1, 0)
         .frontend(VmdFrontend::new)
         .neiHandlerInfo(
