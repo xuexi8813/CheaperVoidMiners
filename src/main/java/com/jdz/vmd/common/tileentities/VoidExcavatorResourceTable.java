@@ -5,6 +5,7 @@ import static gregtech.api.objects.XSTR.XSTR_INSTANCE;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -33,14 +34,10 @@ public final class VoidExcavatorResourceTable {
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
 
     /**
-     * 原版方块的直接引用映射（键小写以容忍配置的大小写写法）。1.7.10 的原版方块不走
-     * GameRegistry.registerBlock 注册，{@code GameRegistry.findBlock("minecraft", name)} 恒为 null，
-     * 因此配置中不带 modid 的条目必须经由此表解析。
-     */
-    /**
      * GC 方块名别名：GTNH Galacticraft 的方块注册名带 "tile." 前缀（注册时传入
      * getUnlocalizedName() 全文），而早期默认配置使用无前缀短名；解析失败时经此表重试一次，
-     * 使已按旧名生成过配置文件的用户无需手动修改。
+     * 使已按旧名生成过配置文件的用户无需手动修改。值为 GC 实际注册名（含 "tile." 前缀、
+     * 不含 modid），重试时 modid 沿用配置条目首段。
      */
     private static final Map<String, String> MOD_BLOCK_ALIASES = new HashMap<>();
 
@@ -49,6 +46,11 @@ public final class VoidExcavatorResourceTable {
         MOD_BLOCK_ALIASES.put("galacticraftmars:mars", "tile.mars");
     }
 
+    /**
+     * 原版方块的直接引用映射（键小写以容忍配置的大小写写法）。1.7.10 的原版方块不走
+     * GameRegistry.registerBlock 注册，{@code GameRegistry.findBlock("minecraft", name)} 恒为 null，
+     * 因此配置中不带 modid 的条目必须经由此表解析。
+     */
     private static final Map<String, Block> VANILLA_BLOCKS = new HashMap<>();
 
     static {
@@ -147,18 +149,17 @@ public final class VoidExcavatorResourceTable {
             // 带 modid 的条目走 GameRegistry（GalacticraftCore:tile.moonBlock 等）。
             Block resolved = GameRegistry.findBlock(segments[0], segments[1]);
             if (resolved == null || resolved == Blocks.air) {
-                // 旧版默认配置的短名别名重试（GC 注册名带 "tile." 前缀）。
+                // 旧版默认配置的短名别名重试（GC 注册名带 "tile." 前缀）；modid 沿用条目首段。
                 final String alias = MOD_BLOCK_ALIASES
-                    .get((segments[0] + ":" + segments[1]).toLowerCase(java.util.Locale.ENGLISH));
+                    .get((segments[0] + ":" + segments[1]).toLowerCase(Locale.ENGLISH));
                 if (alias != null) {
-                    final int sep = alias.indexOf(':');
-                    resolved = GameRegistry.findBlock(alias.substring(0, sep), alias.substring(sep + 1));
+                    resolved = GameRegistry.findBlock(segments[0], alias);
                 }
             }
             block = resolved;
         } else {
             // 原版方块不在 GameRegistry 的 mod 容器中，必须走直接映射表。
-            block = VANILLA_BLOCKS.get(segments[0].toLowerCase(java.util.Locale.ENGLISH));
+            block = VANILLA_BLOCKS.get(segments[0].toLowerCase(Locale.ENGLISH));
         }
         if (block == null || block == Blocks.air) {
             LOG.error("Excavator resource block '{}' not found, entry '{}' skipped", blockId, rawEntry);
