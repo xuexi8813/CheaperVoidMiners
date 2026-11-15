@@ -330,6 +330,19 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     public abstract int checkRecipe();
 
     /**
+     * 单格库存上限。显式声明（覆写 {@code CommonMetaTileEntity.getInventoryStackLimit}，其实现恒为 64）
+     * 的动机：javac 对 {@code this.getInventoryStackLimit()} 生成 owner 为本类静态类型的符号引用，
+     * 发布重映射不会改写无声明 mod 类的调用点，导致发布 jar 中残留 MCP 名；而整合包运行环境
+     * （GT 类一律 SRG 名，5.09.54.265 的 {@code BaseMetaTileEntity.func_70297_j_} 亦同名覆写）
+     * 解析不到 MCP 名即抛 NoSuchMethodError（crash-2026-11-15_20.44.54）。声明后声明与调用点
+     * 一起随发布重映射改名，跨 5.09.54.x/265 运行环境均可命中。返回值与上游实现一致取 64。
+     */
+    @Override
+    public int getInventoryStackLimit() {
+        return 64;
+    }
+
+    /**
      * 输出缓冲空间检查：任一输出槽为空，或已有同物品同 NBT 堆叠且合并后不超过单格上限，即视为有空间。
      * 接受条件与基类周期结束搬运（{@code onPostTick} → {@code BaseMetaTileEntity.addStackToSlot}
      * 依次尝试全部输出槽）完全一致，用于替代 GT 原版 {@code canOutput(ItemStack...)} 的
