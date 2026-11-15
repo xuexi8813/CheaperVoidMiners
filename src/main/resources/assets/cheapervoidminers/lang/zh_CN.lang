@@ -25,7 +25,7 @@ vmd.mbtt.info.2=在控制器槽位放入维度显示方块以选择星球；留�
 vmd.mbtt.info.3=必须放入编程电路（配置 1..N）选择该维度流体表的第 N 项流体；未插入电路时机器不会启动。
 vmd.mbtt.info.4=电路配置超出该维度流体数量时，本周期失败并给出错误提示。
 vmd.mbtt.info.5=输入总线中的钻头提升产量：铁 x1.25、钢 x1.5、钛 x1.75、硅岩 x2.0、无尽 x3.0（取存在的最高档）。每完成一个周期有 0.1% 概率消耗 1 个钻头。
-vmd.mbtt.info.6=每 100 tick 产出 1000mB × 电压系数 × 钻头加成 × 并行数。
+vmd.mbtt.info.6=每 100 tick 产出 1000mB × 电压系数（LV=x16、MV=x64、HV=x256、LuV=x1024、UV=x4096）× 钻头加成 × 并行数。
 vmd.mbtt.info.7=无尽版并行数随输入电压增长：8^(电压档 - UV)，即 UHV=8、UEV=64、UIV=512、UMV=4096、UXV=32768、MAX=262144；总能耗按并行数成倍增加。
 vmd.mbtt.structure.front_bottom_center=控制器，前下方中心
 vmd.mbtt.structure.center_shaft_frame=框架方块（控制器正下方立柱）

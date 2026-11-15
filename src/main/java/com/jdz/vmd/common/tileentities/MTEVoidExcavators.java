@@ -22,7 +22,7 @@ import gregtech.api.util.GTUtility;
  */
 public class MTEVoidExcavators {
 
-    /** Iron 阶段：LV，每周期产出 1 个资源方块。 */
+    /** Iron 阶段：LV，每周期产出 16 个资源方块（数值加强前为 1 个）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorIron extends MTEVoidExcavatorBase<VoidExcavatorIron> {
 
@@ -51,7 +51,7 @@ public class MTEVoidExcavators {
 
         @Override
         public int getStageMultiplier() {
-            return 1;
+            return 16;
         }
 
         @Override
@@ -73,7 +73,7 @@ public class MTEVoidExcavators {
         }
     }
 
-    /** Steel 阶段：MV，每周期产出 4 个资源方块。 */
+    /** Steel 阶段：MV，每周期产出 64 个资源方块（数值加强前为 4 个）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorSteel extends MTEVoidExcavatorBase<VoidExcavatorSteel> {
 
@@ -102,7 +102,7 @@ public class MTEVoidExcavators {
 
         @Override
         public int getStageMultiplier() {
-            return 4;
+            return 64;
         }
 
         @Override
@@ -124,7 +124,7 @@ public class MTEVoidExcavators {
         }
     }
 
-    /** Titanium 阶段：HV，每周期产出 16 个资源方块。 */
+    /** Titanium 阶段：HV，每周期产出 256 个资源方块（数值加强前为 16 个）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorTitanium extends MTEVoidExcavatorBase<VoidExcavatorTitanium> {
 
@@ -153,7 +153,7 @@ public class MTEVoidExcavators {
 
         @Override
         public int getStageMultiplier() {
-            return 16;
+            return 256;
         }
 
         @Override
@@ -175,7 +175,7 @@ public class MTEVoidExcavators {
         }
     }
 
-    /** Naquadah 阶段：LuV，每周期产出 64 个资源方块；机壳以钨钢钻井机壳代替（无专用机壳）。 */
+    /** Naquadah 阶段：LuV，每周期产出 1024 个资源方块（数值加强前为 64 个）；机壳以钨钢钻井机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidExcavatorNaquadah extends MTEVoidExcavatorBase<VoidExcavatorNaquadah> {
 
@@ -204,7 +204,7 @@ public class MTEVoidExcavators {
 
         @Override
         public int getStageMultiplier() {
-            return 64;
+            return 1024;
         }
 
         @Override
@@ -227,7 +227,7 @@ public class MTEVoidExcavators {
     }
 
     /**
-     * Infinity 阶段：UV，每周期产出 256 个资源方块；机壳以中子素采矿机壳代替（无专用机壳）。
+     * Infinity 阶段：UV，每周期产出 4096 个资源方块（数值加强前为 256 个）；机壳以中子素采矿机壳代替（无专用机壳）。
      * 并行随电压提升：parallel = 8^(输入等级 - UV)（UHV=8 … MAX=262144），EU/t 多安培倍增。
      */
     @IMetaTileEntity.SkipGenerateName
@@ -258,7 +258,7 @@ public class MTEVoidExcavators {
 
         @Override
         public int getStageMultiplier() {
-            return 256;
+            return 4096;
         }
 
         @Override

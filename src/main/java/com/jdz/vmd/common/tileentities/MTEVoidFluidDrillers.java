@@ -22,7 +22,7 @@ import gregtech.api.util.GTUtility;
  */
 public class MTEVoidFluidDrillers {
 
-    /** Iron 阶段：LV，产出系数 x1。 */
+    /** Iron 阶段：LV，产出系数 x16（数值加强前为 x1）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerIron extends MTEVoidFluidDrillerBase<VoidFluidDrillerIron> {
 
@@ -51,7 +51,7 @@ public class MTEVoidFluidDrillers {
 
         @Override
         public int getVoltageFactor() {
-            return 1;
+            return 16;
         }
 
         @Override
@@ -73,7 +73,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Steel 阶段：MV，产出系数 x4。 */
+    /** Steel 阶段：MV，产出系数 x64（数值加强前为 x4）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerSteel extends MTEVoidFluidDrillerBase<VoidFluidDrillerSteel> {
 
@@ -102,7 +102,7 @@ public class MTEVoidFluidDrillers {
 
         @Override
         public int getVoltageFactor() {
-            return 4;
+            return 64;
         }
 
         @Override
@@ -124,7 +124,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Titanium 阶段：HV，产出系数 x16。 */
+    /** Titanium 阶段：HV，产出系数 x256（数值加强前为 x16）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerTitanium extends MTEVoidFluidDrillerBase<VoidFluidDrillerTitanium> {
 
@@ -153,7 +153,7 @@ public class MTEVoidFluidDrillers {
 
         @Override
         public int getVoltageFactor() {
-            return 16;
+            return 256;
         }
 
         @Override
@@ -175,7 +175,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Naquadah 阶段：LuV，产出系数 x64；机壳以钨钢钻井机壳代替（无专用机壳）。 */
+    /** Naquadah 阶段：LuV，产出系数 x1024（数值加强前为 x64）；机壳以钨钢钻井机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerNaquadah extends MTEVoidFluidDrillerBase<VoidFluidDrillerNaquadah> {
 
@@ -204,7 +204,7 @@ public class MTEVoidFluidDrillers {
 
         @Override
         public int getVoltageFactor() {
-            return 64;
+            return 1024;
         }
 
         @Override
@@ -227,7 +227,7 @@ public class MTEVoidFluidDrillers {
     }
 
     /**
-     * Infinity 阶段：UV，产出系数 x256；机壳以中子素采矿机壳代替（无专用机壳）。
+     * Infinity 阶段：UV，产出系数 x4096（数值加强前为 x256）；机壳以中子素采矿机壳代替（无专用机壳）。
      * 并行随电压提升：parallel = 8^(输入等级 - UV)（UHV=8 … MAX=262144），EU/t 多安培倍增。
      */
     @IMetaTileEntity.SkipGenerateName
@@ -258,7 +258,7 @@ public class MTEVoidFluidDrillers {
 
         @Override
         public int getVoltageFactor() {
-            return 256;
+            return 4096;
         }
 
         @Override

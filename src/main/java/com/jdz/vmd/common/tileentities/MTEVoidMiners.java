@@ -11,6 +11,8 @@ import gregtech.api.util.GTUtility;
 
 /**
  * 三个 EX 虚空采矿机阶段（EX I/II/III），构建在 GT 虚空采矿机多方块（{@link MTEVoidMinerEXBase}）之上。
+ * 构造传入的 TIER_MULTIPLIER（4/8/16）保持上游档位语义；实际产出在该值之上于输出端统一 ×16 加强
+ * （等效 32×TIER_MULTIPLIER ores/s，EX1/2/3 = 128/256/512），见 {@link MTEVoidMinerEXBase#addOutputPartial}。
  * 每个具体类须显式携带 {@link IMetaTileEntity.SkipGenerateName}（注解不继承），显示名来自 lang 键。
  */
 public class MTEVoidMiners {

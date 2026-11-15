@@ -32,10 +32,24 @@ import gregtech.api.util.GTUtility;
 import gregtech.api.util.MultiblockTooltipBuilder;
 import gregtech.common.tileentities.machines.multi.MTEDrillerBase;
 
+/**
+ * EX 系列虚空采矿机基类：在 GT 虚空采矿机（{@link MTEVoidMinerBase}）之上定制结构与文案。
+ * 产出加强：父类 {@code TIER_MULTIPLIER} 为 byte（上限 127），无法直接传入 ×16 后的产出档位，
+ * 因此在最终输出入口 {@link #addOutputPartial} 处将产出堆叠数量统一 ×16
+ * （见 {@link #OUTPUT_ENHANCEMENT_FACTOR}），惰性气体加成与批量模式均不受影响。
+ */
 public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extends MTEVoidMinerBase<T> {
 
     /** 惰性气体供给速率（L/s），复刻父类 MTEVoidMinerBase 的私有常量 NOBLE_GAS_CONSUMPTION_PER_TIER（不可直接访问）。 */
     private static final int NOBLE_GAS_SUPPLY_RATE_PER_SECOND = 2;
+
+    /**
+     * EX 系列产出加强系数（数值加强）：父类 handleOutputs 对每个输出堆设置
+     * {@code stackSize = multiplier}（TIER_MULTIPLIER × 惰性气体加成）后经
+     * {@code addOutputPartial(ItemStack)} 弹出，这是本机器唯一的物品输出入口；
+     * 本类在弹出前将最终值 ×16。数值上限：TIER_MULTIPLIER(16) × 氪气加成(64) × 16 = 16384，int 安全。
+     */
+    private static final int OUTPUT_ENHANCEMENT_FACTOR = 16;
 
     public MTEVoidMinerEXBase(int aID, String aName, String aNameRegional, int multiplier) {
         super(aID, aName, aNameRegional, multiplier);
@@ -93,7 +107,7 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
                 createGasString(EnumChatFormatting.DARK_AQUA, StatCollector.translateToLocal("vmd.ex.gas.xenon"), 16))
             .addInfo(
                 createGasString(EnumChatFormatting.BLUE, StatCollector.translateToLocal("vmd.ex.gas.oganesson"), 64))
-            .addInfo(StatCollector.translateToLocalFormatted("vmd.ex.output", 2 * this.TIER_MULTIPLIER))
+            .addInfo(StatCollector.translateToLocalFormatted("vmd.ex.output", 32 * this.TIER_MULTIPLIER))
             .addInfo(StatCollector.translateToLocal("vmd.ex.whitelist.item"))
             .addInfo(StatCollector.translateToLocal("vmd.ex.whitelist.toggle"))
             .addInfo(StatCollector.translateToLocal("vmd.ex.blacklist.warn"))
@@ -141,6 +155,18 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
     @Override
     protected List<IHatchElement<? super MTEDrillerBase>> getAllowedHatches() {
         return ImmutableList.of(InputBus, OutputBus, Maintenance, Energy);
+    }
+
+    /**
+     * 产出加强 ×16 的注入点：将父类已按 TIER_MULTIPLIER 与惰性气体加成计算好的产出堆叠数量
+     * 再乘以 {@link #OUTPUT_ENHANCEMENT_FACTOR} 后交由父类弹出。
+     * 父类 handleOutputs 中的过滤器匹配发生在本方法之前，×16 不影响白/黑名单判定；
+     * 父类 checkProcessing 中的气体消耗按周期扣减，同样不受影响。
+     */
+    @Override
+    public void addOutputPartial(ItemStack stack) {
+        if (stack != null) stack.stackSize *= OUTPUT_ENHANCEMENT_FACTOR;
+        super.addOutputPartial(stack);
     }
 
     /** 复刻 GT5u 5.09.51.x 的气体提示行构建（该方法在 5.09.55.x 中被移除）。 */

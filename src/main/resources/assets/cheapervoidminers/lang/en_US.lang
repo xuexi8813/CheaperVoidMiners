@@ -25,7 +25,7 @@ vmd.mbtt.info.2=Put a Dimension Display block into the controller slot to select
 vmd.mbtt.info.3=A programming circuit (configuration 1..N) must be inserted into the input bus to select the N-th fluid of that dimension's fluid table; the machine does not start without an inserted programming circuit.
 vmd.mbtt.info.4=A circuit configuration beyond the fluid count of the dimension fails the cycle with an error message.
 vmd.mbtt.info.5=Drill heads in the input bus boost the output: Iron x1.25, Steel x1.5, Titanium x1.75, Naquadah x2.0, Infinity x3.0 (highest present applies). Each finished cycle consumes one drill head with a 0.1% chance.
-vmd.mbtt.info.6=Produces 1000mB x voltage factor x drill bonus x parallel count per 100 tick cycle.
+vmd.mbtt.info.6=Produces 1000mB x voltage factor (LV=x16, MV=x64, HV=x256, LuV=x1024, UV=x4096) x drill bonus x parallel count per 100 tick cycle.
 vmd.mbtt.info.7=The Infinity stage scales its parallel count with the input voltage: 8^(tier - UV), i.e. UHV=8, UEV=64, UIV=512, UMV=4096, UXV=32768, MAX=262144; the EU/t draw is multiplied by the parallel count.
 vmd.mbtt.structure.front_bottom_center=Controller, front bottom center
 vmd.mbtt.structure.center_shaft_frame=Frame Blocks (shaft below the controller)

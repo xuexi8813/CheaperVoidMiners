@@ -145,7 +145,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     /** 最低能源仓等级；同时决定每周期 EU/t 与输出电压系数档位。 */
     protected abstract int getMinTier();
 
-    /** 电压系数，乘到基础产出（LV=1、MV=4、HV=16、LuV=64、UV=256）。 */
+    /** 电压系数，乘到基础产出（LV=16、MV=64、HV=256、LuV=1024、UV=4096）。 */
     public abstract int getVoltageFactor();
 
     /** 控制器正面贴图索引，兼作仓体基础机壳贴图。 */
