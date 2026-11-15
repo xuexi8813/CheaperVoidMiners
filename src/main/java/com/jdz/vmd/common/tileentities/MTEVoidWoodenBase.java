@@ -35,6 +35,12 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     public static final int PRODUCTION_AMOUNT_MB = 100;
     public static final int TANK_CAPACITY_MB = 8000;
 
+    /**
+     * 物品类木制虚空机器（采矿机/挖掘机）的输出缓冲槽数：6 槽缓冲，落槽规则为
+     * "同物品可堆叠优先、其次空槽放入"，全部输出槽无法容纳产出时机器待机。
+     */
+    public static final int OUTPUT_SLOT_COUNT = 6;
+
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
 
     public MTEVoidWoodenBase(int aID, String aName, String aNameRegional, String aDescription, int aInputSlotCount,
@@ -294,6 +300,47 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
      */
     @Override
     public abstract int checkRecipe();
+
+    /**
+     * 输出缓冲空间检查：任一输出槽为空，或已有同物品同 NBT 堆叠且合并后不超过单格上限，即视为有空间。
+     * 接受条件与基类周期结束搬运（{@code onPostTick} → {@code BaseMetaTileEntity.addStackToSlot}
+     * 依次尝试全部输出槽）完全一致，用于替代 GT 原版 {@code canOutput(ItemStack...)} 的
+     * "产出[i] 只配输出槽[i]"位置对应检查——加权随机产出多种资源时，位置对应制会因输出槽 0
+     * 恰好堆着不同资源而误判满仓停滞。
+     *
+     * @param output 本周期将产出的单件物品堆叠（{@code null} 视为无产出，恒有空间，与基类一致）
+     * @return 至少一个输出槽能容纳该产出时为 {@code true}；全部输出槽都无法容纳时为 {@code false}
+     */
+    protected boolean hasRoomFor(@Nullable ItemStack output) {
+        if (output == null) return true;
+        final int stackLimit = getInventoryStackLimit();
+        for (ItemStack slot : getAllOutputs()) {
+            if (slot == null) return true;
+            if (GTUtility.areStacksEqual(slot, output, false)
+                && slot.stackSize + output.stackSize <= Math.min(slot.getMaxStackSize(), stackLimit)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 预订本周期产出：写入 {@code mOutputItems[0]}，实际落槽复用基类周期结束的搬运循环——该循环对
+     * 全部输出槽按槽序尝试 {@code addStackToSlot}（同物品可合并的槽优先命中，否则放入遇到的第一个
+     * 空槽），天然满足"同物品可堆叠优先、其次空槽放入"的缓冲语义。不直接写输出槽：在配方调度时直接
+     * 落槽会让产出在周期开始就出现在输出槽中（破坏"周期结束时落产出"的既有语义），并绕过
+     * {@code mOutputItems} 通道上的矿物字典统一化与堆叠数钳制。
+     *
+     * 不变量：每次 {@code checkRecipe} 进入时 {@code mOutputItems[0]} 必为 {@code null}
+     * （周期结束与配方失败两条路径都会清空 mOutputItems）；非 {@code null} 属于不变量破坏，
+     * 返回 {@code false} 让机器待机而不是覆盖丢失产出。
+     *
+     * @param output 本周期将产出的物品堆叠
+     * @return 产出已成功进入 mOutputItems 通道时为 {@code true}
+     */
+    protected boolean tryStoreOutput(ItemStack output) {
+        if (mOutputItems[0] != null) return false;
+        mOutputItems[0] = output;
+        return true;
+    }
 
     /** 生产周期 tick 数；采矿机速度是泵的两倍。 */
     protected int getProductionCycleTicks() {

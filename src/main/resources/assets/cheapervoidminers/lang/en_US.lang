@@ -80,7 +80,7 @@ gt.blockmachines.voidminerwooden.name=Wooden Void Miner
 
 # Wooden Void Miner tooltip
 vmd.miner.desc.1=Non-electric wooden miner that pulls ore items from the Overworld ore generation tables without breaking blocks.
-vmd.miner.desc.2=Produces 1 ore item every 100 ticks into its output slot; a full slot stalls the machine, take the output out manually or with a conveyor.
+vmd.miner.desc.2=Produces 1 ore item every 100 ticks into one of its 6 output slots (same items stack up); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
 vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein; configuration N+1 selects the poor (small) ore pool.
 vmd.miner.desc.4=Configuration 0 or no circuit mixes all veins and poor ores into one weighted pool (weights = generation weights).
 vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the circuit slot (first input slot) only accepts programmed circuits.
@@ -105,7 +105,7 @@ gt.blockmachines.voidexcavatorinfinity.name=Void Excavator (Infinity)
 # Wooden Void Excavator tooltip
 vmd.excavator.desc.1=Non-electric wooden excavator that digs plain (non ore) resource blocks of a chosen dimension out of the void; the resource tables are config driven.
 vmd.excavator.desc.2=The second input slot takes a dimension display block to select the dimension (not consumed); an empty slot means the Overworld default resources.
-vmd.excavator.desc.3=Produces 1 resource block every 200 ticks into its output slot; a full slot stalls the machine, take the output out manually or with a conveyor.
+vmd.excavator.desc.3=Produces 1 resource block every 200 ticks into one of its 6 output slots (same items stack up); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
 vmd.excavator.desc.4=Programmed circuit (configuration 1..N) in the circuit slot (first input slot) selects the N-th resource of that dimension's table; configuration 0 or no circuit = weighted random (weights = table weights).
 vmd.excavator.desc.5=A circuit configuration beyond the resource count idles the machine; resource tables are configured in cheapervoidminers.cfg, category excavator_resources.
 vmd.excavator.desc.selection=Current selection: %s

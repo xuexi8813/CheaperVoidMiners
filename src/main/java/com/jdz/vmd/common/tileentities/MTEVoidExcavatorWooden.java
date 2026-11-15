@@ -30,11 +30,11 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
     private static final Set<String> WARNED_EMPTY_DIMENSIONS = new HashSet<>();
 
     public MTEVoidExcavatorWooden(int aID, String aName, String aNameRegional) {
-        super(aID, aName, aNameRegional, "", 2, 1);
+        super(aID, aName, aNameRegional, "", 2, OUTPUT_SLOT_COUNT);
     }
 
     public MTEVoidExcavatorWooden(String aName, ITexture[][][] aTextures) {
-        super(aName, new String[] { "" }, aTextures, 2, 1);
+        super(aName, new String[] { "" }, aTextures, 2, OUTPUT_SLOT_COUNT);
     }
 
     @Override
@@ -86,10 +86,11 @@ public class MTEVoidExcavatorWooden extends MTEVoidWoodenBase {
         }
 
         final ItemStack output = singleOutput(pick.stack());
-        // 输出槽满或存有不同资源时停滞，直到该槽被清空。
-        if (!canOutput(output)) return DID_NOT_FIND_RECIPE;
+        // 6 槽缓冲：任一输出槽为空或同物品未满即可继续生产（不再要求产出与输出槽 0 位置对应）；
+        // 全部输出槽都无法容纳该产出时待机，直到玩家或传送带腾出空间。
+        if (!hasRoomFor(output)) return DID_NOT_FIND_RECIPE;
+        if (!tryStoreOutput(output)) return DID_NOT_FIND_RECIPE;
 
-        mOutputItems[0] = output;
         mMaxProgresstime = getProductionCycleTicks();
         return FOUND_AND_SUCCESSFULLY_USED_RECIPE;
     }

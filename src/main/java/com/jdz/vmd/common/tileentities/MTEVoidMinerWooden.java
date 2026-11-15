@@ -72,11 +72,11 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
     private List<WeightedOre> mixedPool = new ArrayList<>();
 
     public MTEVoidMinerWooden(int aID, String aName, String aNameRegional) {
-        super(aID, aName, aNameRegional, "", 1, 1);
+        super(aID, aName, aNameRegional, "", 1, OUTPUT_SLOT_COUNT);
     }
 
     public MTEVoidMinerWooden(String aName, ITexture[][][] aTextures) {
-        super(aName, new String[] { "" }, aTextures, 1, 1);
+        super(aName, new String[] { "" }, aTextures, 1, OUTPUT_SLOT_COUNT);
     }
 
     @Override
@@ -121,10 +121,11 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         if (pool.isEmpty()) return DID_NOT_FIND_RECIPE;
 
         final ItemStack output = singleOutput(weightedPick(pool).stack());
-        // 输出槽满或存有不同矿石时停滞，直到该槽被清空。
-        if (!canOutput(output)) return DID_NOT_FIND_RECIPE;
+        // 6 槽缓冲：任一输出槽为空或同物品未满即可继续生产（不再要求产出与输出槽 0 位置对应）；
+        // 全部输出槽都无法容纳该产出时待机，直到玩家或传送带腾出空间。
+        if (!hasRoomFor(output)) return DID_NOT_FIND_RECIPE;
+        if (!tryStoreOutput(output)) return DID_NOT_FIND_RECIPE;
 
-        mOutputItems[0] = output;
         mMaxProgresstime = getProductionCycleTicks();
         return FOUND_AND_SUCCESSFULLY_USED_RECIPE;
     }
