@@ -14,14 +14,14 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 
 /**
  * Void Fluid Driller（虚空流体钻机）家族的五个阶段，仅差结构材料、机器档位与产量公式中的机器档项
- * （32^(机器档位)，见基类 {@link MTEVoidFluidDrillerBase#computeOutputAmount}）；电压项由能源仓实际
- * 输入电压档驱动，为五档共用逻辑。工作逻辑见 {@link MTEVoidFluidDrillerBase}。每台具体类须显式携带
- * {@link IMetaTileEntity.SkipGenerateName}（注解不继承），显示名来自 lang 键。Naquadah/Infinity 无专用
- * 机壳，复用高级机壳替代。
+ * （16^(机器档位)，见基类 {@link MTEVoidFluidDrillerBase#computeOutputAmount}）；电压项由能源仓实际
+ * GT 输入电压档驱动（无尽钻机电压基数换 16），为五档共用逻辑。工作逻辑见
+ * {@link MTEVoidFluidDrillerBase}。每台具体类须显式携带 {@link IMetaTileEntity.SkipGenerateName}
+ * （注解不继承），显示名来自 lang 键。Naquadah/Infinity 无专用机壳，复用高级机壳替代。
  */
 public class MTEVoidFluidDrillers {
 
-    /** Iron 阶段：LV 机器档，机器档项 32^0=1；EU/t 32。 */
+    /** Iron 阶段：LV 机器档，机器档项 16^0=1；EU/t 32。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerIron extends MTEVoidFluidDrillerBase<VoidFluidDrillerIron> {
 
@@ -62,7 +62,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Steel 阶段：MV 机器档，机器档项 32^1=32；EU/t 128。 */
+    /** Steel 阶段：MV 机器档，机器档项 16^1=16；EU/t 128。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerSteel extends MTEVoidFluidDrillerBase<VoidFluidDrillerSteel> {
 
@@ -100,7 +100,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Titanium 阶段：HV 机器档，机器档项 32^2=1024；EU/t 512。 */
+    /** Titanium 阶段：HV 机器档，机器档项 16^2=256；EU/t 512。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerTitanium extends MTEVoidFluidDrillerBase<VoidFluidDrillerTitanium> {
 
@@ -138,7 +138,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Naquadah 阶段：LuV 机器档，机器档项 32^3=32768；EU/t 32768。机壳以钨钢钻井机壳代替（无专用机壳）。 */
+    /** Naquadah 阶段：LuV 机器档，机器档项 16^3=4096；EU/t 32768。机壳以钨钢钻井机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerNaquadah extends MTEVoidFluidDrillerBase<VoidFluidDrillerNaquadah> {
 
@@ -176,7 +176,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Infinity 阶段：UV 机器档，机器档项 32^4=1048576；EU/t 524288。机壳以中子素采矿机壳代替（无专用机壳）。 */
+    /** Infinity 阶段：UV 机器档，机器档项 16^4=65536，电压项基数换 16（见基类产量公式）；EU/t 524288。机壳以中子素采矿机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerInfinity extends MTEVoidFluidDrillerBase<VoidFluidDrillerInfinity> {
 

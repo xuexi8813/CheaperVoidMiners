@@ -87,16 +87,21 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     protected static final String STRUCTURE_PIECE_MAIN = "main";
 
     /**
-     * 五档钻机的档位阶梯（GT 电压索引，LV..UV）。产量公式的电压项与机器档项均以本阶梯的档位序号
-     * （LV=0..UV=4）驱动；介于阶梯档位之间的能源仓电压（EV/IV/ZPM/UHV 及以上）向下取整到最近的
-     * 阶梯档位，保证任意 ≥LV 的能源仓均有确定产量。
+     * 五档钻机的机器档阶梯（GT 电压索引，LV..UV），仅用于机器档项（16^(机器档−LV)）定位与
+     * 无尽钻机（机器档 UV）电压项分支判定。能源仓电压项不经过本阶梯——直接使用 GT 标准电压档
+     * （{@code getMaxEnergyHatchTier()} 返回的 {@code GTValues} tier，LV..UHV 乃至更高线性计算），
+     * 不做五档归并取整。
      */
     private static final int[] TIER_LADDER = { LV, MV, HV, LuV, UV };
 
-    /** 钻头加成：输入总线中存在钻头（材质不限）时产量统一 ×128。 */
-    private static final long DRILL_BONUS = 128;
+    /**
+     * 产量 long 位移的安全上界：1000（≈2^10）左移 53 位 = 9.007e18 仍在 long 范围内，54 位起回绕。
+     * 超界组合（如 UHV 仓 + 无尽机 + 无尽钻头）按 {@code Long.MAX_VALUE} 饱和，
+     * 最终 int 截断（见 checkProcessing）下输出语义不变，仅防回绕为负。
+     */
+    private static final int MAX_OUTPUT_SHIFT_BITS = 53;
 
-    /** 全阶段共享的钻头材质阶梯：输入总线命中任意材质即视为有钻头；顺序仅影响 GUI 显示。 */
+    /** 全阶段共享的钻头材质阶梯（列表序 = 钻头阶级 0..4）：钻头项 = 4^(阶级+1)；输入总线取阶级最高者。 */
     private static final ImmutableList<Materials> DRILL_MATERIALS = ImmutableList
         .of(Materials.Iron, Materials.Steel, Materials.Titanium, Materials.Naquadah, Materials.Infinity);
 
@@ -104,10 +109,13 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
 
         public final ItemStack stack;
         public final String materialName;
+        /** 钻头阶级（{@link #DRILL_MATERIALS} 列表序 0..4），驱动钻头项 4^(阶级+1)。 */
+        public final int rung;
 
-        DrillSelection(ItemStack stack, String materialName) {
+        DrillSelection(ItemStack stack, String materialName, int rung) {
             this.stack = stack;
             this.materialName = materialName;
+            this.rung = rung;
         }
     }
 
@@ -283,7 +291,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
 
         final DrillSelection drill = findDrill();
 
-        final long outputAmount = computeOutputAmount(getEnergyHatchRung(), drill != null);
+        final long outputAmount = computeOutputAmount(getMaxEnergyHatchTier(), drill == null ? -1 : drill.rung);
         final FluidStack output = new FluidStack(fluid, (int) Math.min(outputAmount, Integer.MAX_VALUE));
         if (protectsExcessFluid() && !canOutputAll(new FluidStack[] { output })) {
             mEUt = 0;
@@ -307,20 +315,26 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     }
 
     /**
-     * 单周期产出 = 1000mB × 16^(能源仓阶梯档位+1) × 32^(机器阶梯档位) × 钻头加成（有钻头时 ×128）。
-     * 电压项由能源仓实际最高输入电压档驱动（LV 仓=16^1 … UV 仓=16^5），机器档项由本机档位驱动
-     * （LV 机=32^0 … UV 机=32^4）。两个阶梯档位均 ≤4，乘积上限 1000 × 2^20 × 2^20 × 2^7 &lt; 2^57，
-     * long 空间内精确无溢出；写入 FluidStack 时再按 int 上限截断（见 checkProcessing）。
+     * 单周期产出 = 1000mB × 电压项 × 机器档项 × 钻头项（全 long 位移计算，4^x=1L&lt;&lt;2x、16^x=1L&lt;&lt;4x）。
+     * 电压项 = 4^(能源仓 GT 电压档 − LV + 1)，按 {@code GTValues.VoltageIndex} 线性顺延：
+     * LV=4、MV=16、HV=64、EV=256、IV=1024、LuV=4096、ZPM=16384、UV=65536、UHV=262144；
+     * 无尽钻机（机器档 UV）电压基数换 16：16^(能源仓 GT 电压档 − LV + 1)。
+     * 机器档项 = 16^(机器档 − LV)（LV 机=1、钢=16、钛=256、硅岩=4096、无尽=65536）。
+     * 钻头项 = 4^(钻头阶级 + 1)（铁=4、钢=16、钛=64、硅岩=256、无尽=1024），无钻头（drillRung &lt; 0）为 1。
+     * 位移之和超过 {@link #MAX_OUTPUT_SHIFT_BITS} 时按 {@code Long.MAX_VALUE} 饱和；
+     * 写入 FluidStack 时再按 int 上限截断（见 checkProcessing）。
      */
-    protected long computeOutputAmount(int energyRung, boolean hasDrill) {
-        long amount = BASE_OUTPUT_MB;
-        // 电压项：能源仓每升一档 ×16。
-        amount *= 1L << (4 * (energyRung + 1));
-        // 机器档项：本机每升一档 ×32。
-        amount *= 1L << (5 * getMachineRung());
-        // 钻头加成：有钻头时统一 ×128。
-        if (hasDrill) amount *= DRILL_BONUS;
-        return amount;
+    protected long computeOutputAmount(int energyTier, int drillRung) {
+        final int machineRung = getMachineRung();
+        // 电压项：每 GT 电压档 ×4（2^2）；无尽钻机（机器档 UV）每档 ×16（2^4），即"无尽流体后电压翻16倍"。
+        final int voltageBits = (machineRung == TIER_LADDER.length - 1 ? 4 : 2) * (energyTier - LV + 1);
+        // 机器档项：每机器档 ×16（2^4）。
+        final int machineBits = 4 * machineRung;
+        // 钻头项：每阶级 ×4（2^2），无钻头为 0。
+        final int drillBits = drillRung < 0 ? 0 : 2 * (drillRung + 1);
+        final int totalBits = voltageBits + machineBits + drillBits;
+        if (totalBits > MAX_OUTPUT_SHIFT_BITS) return Long.MAX_VALUE;
+        return (long) BASE_OUTPUT_MB << totalBits;
     }
 
     /** 每个完成的周期结束时按固定概率消耗一个钻头。 */
@@ -342,26 +356,16 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
 
     // ==== 维度、流体、能源仓与钻头的解析辅助 ====
 
-    /** 能源仓中的最高输入电压档（GT 电压索引）；无有效能源仓时为 -1。 */
+    /**
+     * 能源仓中的最高输入电压档（GT 标准电压索引，LV..UHV 乃至更高，按 {@code GTValues.VoltageIndex}）；
+     * 无有效能源仓时为 -1。产量电压项直接消费本档位线性计算，不做归并。
+     */
     private int getMaxEnergyHatchTier() {
         int maxTier = -1;
         for (MTEHatchEnergy hatch : validMTEList(mEnergyHatches)) {
             maxTier = Math.max(maxTier, (int) hatch.getInputTier());
         }
         return maxTier;
-    }
-
-    /**
-     * 能源仓阶梯档位：能源仓最高输入电压档在 {@link #TIER_LADDER} 中的位置（LV=0..UV=4）；
-     * 介于五档之间的电压档（EV/IV/ZPM/UHV 及以上）向下取整到最近的阶梯档位。
-     * checkMachine 已按"能源仓 ≥LV"拦截，生产路径中恒 ≥0。
-     */
-    private int getEnergyHatchRung() {
-        final int maxTier = getMaxEnergyHatchTier();
-        for (int rung = TIER_LADDER.length - 1; rung >= 0; rung--) {
-            if (maxTier >= TIER_LADDER[rung]) return rung;
-        }
-        return -1;
     }
 
     /** 机器档位：本机 {@link #getMinTier()} 在 {@link #TIER_LADDER} 中的位置（LV=0..UV=4）。 */
@@ -399,19 +403,28 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return 0;
     }
 
-    /** 输入总线中第一个命中钻头材质阶梯的钻头，无则为 null（加成统一 ×128，材质仅影响 GUI 显示）。 */
+    /** 钻头项：4^(阶级+1)（铁=4、钢=16、钛=64、硅岩=256、无尽=1024）。 */
+    private static long drillBonus(int drillRung) {
+        return 1L << (2 * (drillRung + 1));
+    }
+
+    /** 输入总线中钻头阶级最高者，无则为 null（同阶级先到先得，材质名仅影响 GUI 显示）。 */
     @Nullable
     private DrillSelection findDrill() {
+        DrillSelection best = null;
         for (ItemStack input : getStoredInputs()) {
             if (input == null) continue;
-            for (Materials material : DRILL_MATERIALS) {
+            for (int rung = 0; rung < DRILL_MATERIALS.size(); rung++) {
+                final Materials material = DRILL_MATERIALS.get(rung);
                 final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, material, 1);
                 // 正常构建中不会为 null（RecipeLoader 已校验）；GT 数据损坏时跳过而不崩溃。
                 if (drillStack == null) continue;
-                if (input.isItemEqual(drillStack)) return new DrillSelection(input, material.mName);
+                if (input.isItemEqual(drillStack) && (best == null || rung > best.rung)) {
+                    best = new DrillSelection(input, material.mName, rung);
+                }
             }
         }
-        return null;
+        return best;
     }
 
     // ==== GUI 与工具提示 ====
@@ -464,12 +477,13 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return StatCollector.translateToLocal(displayFluidKey);
     }
 
-    /** 钻头行：总线中钻头的材质名称与统一加成（x128），或"无"标签。 */
+    /** 钻头行：总线中钻头的材质名称与阶级加成（x4^(阶级+1)），或"无"标签。 */
     private String resolveDrillDisplayName() {
         if (displayDrillMaterial.isEmpty()) return StatCollector.translateToLocal("vmd.gui.drill.none");
-        for (Materials material : DRILL_MATERIALS) {
+        for (int rung = 0; rung < DRILL_MATERIALS.size(); rung++) {
+            final Materials material = DRILL_MATERIALS.get(rung);
             if (material.mName.equals(displayDrillMaterial)) {
-                return material.mDefaultLocalName + " (x" + DRILL_BONUS + ")";
+                return material.mDefaultLocalName + " (x" + drillBonus(rung) + ")";
             }
         }
         return displayDrillMaterial;
