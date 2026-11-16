@@ -1,8 +1,6 @@
 package com.jdz.vmd.common.gui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import com.cleanroommc.modularui.screen.ModularPanel;
@@ -37,19 +35,11 @@ public class MTEVoidWoodenBaseGui extends MTEBasicMachineBaseGui<MTEVoidWoodenBa
 
     /**
      * 物品输入网格只渲染真实使用的输入槽：电路迁移至右下角幽灵槽后，首个输入槽（原电路槽）
-     * 已被 {@link MTEVoidWoodenBase#isValidSlot} 封闭，若按基类 maxItemInputs 渲染会得到一个
-     * 任何物品都放不进、也不再承担功能的死槽位。当前仅挖掘机保留输入槽 1（维度显示方块），
-     * 其槽位索引由网格中的展平位置决定（getInputSlot() + 列号），故以空列占位保持绑定正确。
+     * 已被 {@link MTEVoidWoodenBase#isValidSlot} 封闭，且当前没有任何木制机器使用物品输入槽，
+     * 若按基类 maxItemInputs 渲染会得到一个任何物品都放不进、也不再承担功能的死槽位，故返回空矩阵。
      */
     @Override
     protected List<CharList> mapInSlotsToMatrix() {
-        final int dimensionSlot = machine.getDimensionDisplaySlot();
-        if (dimensionSlot < 0) return new ArrayList<>();
-
-        final int offset = dimensionSlot - machine.getInputSlot();
-        final char[] row = new char[offset + 1];
-        Arrays.fill(row, ' ');
-        row[offset] = 'c';
-        return Collections.singletonList(CharList.of(row));
+        return new ArrayList<>();
     }
 }

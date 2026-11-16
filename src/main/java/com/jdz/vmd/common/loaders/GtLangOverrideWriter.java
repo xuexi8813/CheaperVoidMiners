@@ -42,7 +42,7 @@ public final class GtLangOverrideWriter {
     private static final String TARGET_LANGUAGE = "zh_CN";
 
     /**
-     * 16 台机器的语言条目，每行依次为：GT 语言键、GT 英文占位值、中文显示名。
+     * 10 台机器的语言条目，每行依次为：GT 语言键、GT 英文占位值、中文显示名。
      * 键 = "gt.blockmachines." + mName（注册名，GT 构造器强制全小写）+ ".name"；
      * 英文占位值为注册时传入的 aRegionalName——zh_CN 覆盖文件先于机器键存在时，GT 会把该
      * 英文占位写进文件，检测到现值等于占位值则覆盖回中文；其余非中文值视为用户自定义，
@@ -58,13 +58,7 @@ public final class GtLangOverrideWriter {
         { "gt.blockmachines.voidfluiddrillernaquadah.name", "Void Fluid Driller (Naquadah)", "虚空液体钻机（硅岩）" },
         { "gt.blockmachines.voidfluiddrillerinfinity.name", "Void Fluid Driller (Infinity)", "虚空液体钻机（无尽）" },
         { "gt.blockmachines.voidfluidpumpwooden.name", "Wooden Void Fluid Pump", "木质虚空流体泵" },
-        { "gt.blockmachines.voidminerwooden.name", "Wooden Void Miner", "木质虚空矿机" },
-        { "gt.blockmachines.voidexcavatorwooden.name", "Wooden Void Excavator", "木质虚空挖土机" },
-        { "gt.blockmachines.voidexcavatoriron.name", "Void Excavator (Iron)", "虚空挖土机（铁）" },
-        { "gt.blockmachines.voidexcavatorsteel.name", "Void Excavator (Steel)", "虚空挖土机（钢）" },
-        { "gt.blockmachines.voidexcavatortitanium.name", "Void Excavator (Titanium)", "虚空挖土机（钛）" },
-        { "gt.blockmachines.voidexcavatornaquadah.name", "Void Excavator (Naquadah)", "虚空挖土机（硅岩）" },
-        { "gt.blockmachines.voidexcavatorinfinity.name", "Void Excavator (Infinity)", "虚空挖土机（无尽）" } };
+        { "gt.blockmachines.voidminerwooden.name", "Wooden Void Miner", "木质虚空矿机" } };
 
     private GtLangOverrideWriter() {}
 

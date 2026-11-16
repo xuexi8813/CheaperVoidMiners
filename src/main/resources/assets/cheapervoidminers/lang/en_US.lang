@@ -34,17 +34,14 @@ vmd.gui.fluid=Fluid: %s
 vmd.gui.fluid.none=None
 vmd.gui.parallel=Parallel: %s
 vmd.gui.drill=Drill: %s
-vmd.gui.weighted_random=Weighted Random
 vmd.gui.planet.unknown=Unknown
 vmd.gui.drill.none=None
-vmd.gui.resource=Resource: %s
 
 # Tooltip ownership line
 vmd.credit.added_by=Added by %s
 
 # NEI output recipe maps (tab names)
 vmd.recipe.voidfluiddriller=Void Fluid Driller
-vmd.recipe.voidexcavator=Void Excavator
 vmd.recipe.woodenminer=Wooden Void Miner
 
 # Recipe check result messages (SimpleCheckRecipeResult keys)
@@ -52,10 +49,6 @@ GT5U.gui.text.recipe_result.vmd_drilling=Extracting underground fluids
 GT5U.gui.text.recipe_result.vmd_no_fluid_data=No underground fluid data for this dimension
 GT5U.gui.text.recipe_result.vmd_circuit_required=No programming circuit inserted
 GT5U.gui.text.recipe_result.vmd_output_full=Fluid output full
-GT5U.gui.text.recipe_result.vmd_excavator_digging=Digging resources from the void
-GT5U.gui.text.recipe_result.vmd_excavator_no_resources=No resource data for this dimension
-GT5U.gui.text.recipe_result.vmd_excavator_circuit_out_of_range=Circuit configuration exceeds the resource count of this dimension
-GT5U.gui.text.recipe_result.vmd_excavator_output_full=Item output full
 
 # Wooden Void Fluid Pump tooltip
 vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground fluids.
@@ -79,33 +72,6 @@ vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the progr
 vmd.miner.desc.selection=Current selection: %s
 vmd.miner.selection.poor=Poor ore pool
 vmd.miner.selection.mixed=All ores (weighted)
-
-# Void Excavator machine names
-gt.blockmachines.voidexcavatorwooden.name=Wooden Void Excavator
-gt.blockmachines.voidexcavatoriron.name=Void Excavator (Iron)
-gt.blockmachines.voidexcavatorsteel.name=Void Excavator (Steel)
-gt.blockmachines.voidexcavatortitanium.name=Void Excavator (Titanium)
-gt.blockmachines.voidexcavatornaquadah.name=Void Excavator (Naquadah)
-gt.blockmachines.voidexcavatorinfinity.name=Void Excavator (Infinity)
-
-# Wooden Void Excavator tooltip
-vmd.excavator.desc.1=Non-electric wooden excavator that digs plain (non ore) resource blocks of a chosen dimension out of the void; the resource tables are config driven.
-vmd.excavator.desc.2=The second input slot takes a dimension display block to select the dimension (not consumed); an empty slot means the Overworld default resources.
-vmd.excavator.desc.3=Produces 1 resource block every 200 ticks into one of its 6 output slots (same items stack up); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
-vmd.excavator.desc.4=The programmed circuit (configuration 1..N) can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there) to select the N-th resource of that dimension's table; configuration 0 or no circuit = weighted random (weights = table weights).
-vmd.excavator.desc.5=A circuit configuration beyond the resource count idles the machine; resource tables are configured in cheapervoidminers.cfg, category excavator_resources.
-vmd.excavator.desc.selection=Current selection: %s
-
-# Void Excavator tooltip (multiblock)
-vmd.mbe.machine_type=Void Excavator
-vmd.mbe.info.1=Digs plain (non ore) resource blocks of a chosen dimension out of the void; the resource tables are config driven (cheapervoidminers.cfg, category excavator_resources).
-vmd.mbe.info.2=The dimension display block in the controller slot selects the dimension; leave the slot empty to use the dimension the machine is built in.
-vmd.mbe.info.3=A programmed circuit (configuration 1..N) in the input bus selects the N-th resource of that dimension's table; configuration 0 or no circuit picks a resource by weighted random (weights = table weights).
-vmd.mbe.info.4=A circuit configuration beyond the resource count of the dimension fails the cycle with an error message.
-vmd.mbe.info.5=Drill heads in the input bus boost the output: Iron x1.25, Steel x1.5, Titanium x1.75, Naquadah x2.0, Infinity x3.0 (highest present applies). Each finished cycle consumes one drill head with a 0.1% chance.
-vmd.mbe.info.6=Produces %s resource block(s) x parallel count x drill bonus per 100 tick cycle.
-vmd.mbe.structure.input_bus=Input Bus (dimension display, drill head and programmed circuit)
-vmd.mbe.structure.output_bus=Output Bus (resource output, required)
 
 # Void Miner EX tooltip
 vmd.ex.machine_type=Miner

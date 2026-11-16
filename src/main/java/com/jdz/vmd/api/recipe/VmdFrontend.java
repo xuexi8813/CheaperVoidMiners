@@ -13,11 +13,11 @@ import gregtech.api.recipe.RecipeMapFrontend;
 import gregtech.api.util.MethodsReturnNonnullByDefault;
 
 /**
- * 本模组三个产出配方表（虚空流体钻机 / 虚空挖掘机 / 木制虚空采矿机）的自定义 NEI 输出布局前端。
+ * 本模组产出配方表（虚空流体钻机 / 木制虚空采矿机）的自定义 NEI 输出布局前端。
  * <p>
  * 动机：GT5u 5.09.54.264 的默认前端 {@code UIHelper.getFluidOutputPositions} 将全部流体输出槽
  * 排成 y=62 固定、x 每槽 +18 的单行且无换行；GT 原版配方最多 1-2 个输出故从未暴露问题，而本模组
- * 每条配方有 4-6 个输出（流体钻机每维度 ≤5 种流体，挖掘机/木矿机每维度 ≤6 种资源），第 4-5 个槽位
+ * 每条配方有多个输出（流体钻机每维度 ≤5 种流体，木矿机矿脉条目含大矿与归属贫矿），第 4-5 个槽位
  * 起被 NEI 页面右边缘裁切。物品输出默认网格在超出常规数量时同样无法保证不出界。
  * <p>
  * 方案：仿照 GT 自带的 {@code DistillationTowerFrontend}（3 列向上堆叠）改为 <b>3 列 × N 行网格、
@@ -54,7 +54,7 @@ public class VmdFrontend extends RecipeMapFrontend {
      * 物品输出槽位置：3 列 × N 行网格、向上堆叠。
      * <p>
      * i 从 1 开始计数：x = 106 + ((i - 1) % 4) * 18，y = 62 - ((i - 1) / 4) * 18。
-     * 本模组每条配方最多 6 种资源，第 2 行（y=44）以内即可全部容纳。
+     * 木制采矿机矿脉条目数不定，3 列网格按行向上扩展容纳。
      */
     @Override
     public List<Pos2d> getItemOutputPositions(int itemOutputCount) {

@@ -16,15 +16,13 @@ import com.jdz.vmd.common.gui.MTEVoidWoodenBaseGui;
 
 import gregtech.api.enums.ItemList;
 import gregtech.api.interfaces.ITexture;
-import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.implementations.MTEBasicMachine;
 import gregtech.api.recipe.BasicUIProperties;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GTUtility;
-import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 
 /**
- * 木制、无电力虚空机器（泵/采矿机/挖掘机）的共享基类，构建在 {@link MTEBasicMachine}（tier 0 / 电流 1）
+ * 木制、无电力虚空机器（泵/采矿机）的共享基类，构建在 {@link MTEBasicMachine}（tier 0 / 电流 1）
  * 之上以获得标准机器 GUI 与配方循环；产出由各机器在 {@link #checkRecipe()} 中选择。
  * 产物留在机器内部直到被取出，不自动输出。
  * <p>
@@ -32,7 +30,6 @@ import gtneioreplugin.plugin.item.ItemDimensionDisplay;
  * 位于输入槽之前的专用 OTHER 槽位（5.09.54.x 默认布局）；原"第一个输入槽兼电路槽"方案在幽灵模式下
  * 不可行——基类 onPostTick 在每次配方成功后会清空输入槽范围内 stackSize<=0 的堆叠，幽灵电路会被误清，
  * 故电路槽必须独立于输入槽范围，且原首输入槽对 GUI 与自动化一并封闭。
- * 挖掘机另有输入槽 1（偏移 1）放维度显示方块。
  */
 public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
 
@@ -41,7 +38,7 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     public static final int TANK_CAPACITY_MB = 8000;
 
     /**
-     * 物品类木制虚空机器（采矿机/挖掘机）的输出缓冲槽数：6 槽缓冲，落槽规则为
+     * 物品类木制虚空机器（采矿机）的输出缓冲槽数：6 槽缓冲，落槽规则为
      * "同物品可堆叠优先、其次空槽放入"，全部输出槽无法容纳产出时机器待机。
      */
     public static final int OUTPUT_SLOT_COUNT = 6;
@@ -86,38 +83,14 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     }
 
     /**
-     * 封闭首个输入槽（getInputSlot()）：电路迁移至专用幽灵槽后，三台木制机器的该槽位均无物品用途
-     * （挖掘机的维度显示方块在输入槽 1）。若不封闭，isValidSlot 返回 true 会让管道经
-     * canInsertItem（以 isValidSlot 为门）把杂物无声塞进 GUI 已不再渲染的死槽位。
+     * 封闭首个输入槽（getInputSlot()）：电路迁移至专用幽灵槽后，两台木制机器的该槽位均无物品用途。
+     * 若不封闭，isValidSlot 返回 true 会让管道经 canInsertItem（以 isValidSlot 为门）把杂物
+     * 无声塞进 GUI 已不再渲染的死槽位。
      */
     @Override
     public boolean isValidSlot(int aIndex) {
         if (aIndex == getInputSlot()) return false;
         return super.isValidSlot(aIndex);
-    }
-
-    /** 维度显示方块槽位相对 {@link #getInputSlot()} 的偏移；无该槽为 -1（挖掘机为 1）。 */
-    protected int getDimensionDisplaySlotOffset() {
-        return -1;
-    }
-
-    public int getDimensionDisplaySlot() {
-        final int offset = getDimensionDisplaySlotOffset();
-        return offset >= 0 ? getInputSlot() + offset : -1;
-    }
-
-    protected static boolean isDimensionDisplayItem(@Nullable ItemStack stack) {
-        return ItemDimensionDisplay.getDimension(stack) != null;
-    }
-
-    @Override
-    public boolean allowPutStack(IGregTechTileEntity aBaseMetaTileEntity, int aIndex, ForgeDirection side,
-        ItemStack aStack) {
-        // 槽位专属内容过滤，叠加在标准朝向/过滤逻辑之上。电路槽（isValidSlot 已封闭）与
-        // 首个输入槽（同被封闭）不会进入此路径，仅维度显示方块槽需要类型过滤。
-        final int dimensionSlot = getDimensionDisplaySlot();
-        if (dimensionSlot >= 0 && aIndex == dimensionSlot && !isDimensionDisplayItem(aStack)) return false;
-        return super.allowPutStack(aBaseMetaTileEntity, aIndex, side, aStack);
     }
 
     // ==== 无电力机器配置（青铜机器模式） ====

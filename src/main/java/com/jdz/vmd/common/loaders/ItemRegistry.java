@@ -10,8 +10,6 @@ import net.minecraft.item.ItemStack;
 
 import com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler;
 import com.jdz.vmd.api.enums.MetaTileEntityIDs;
-import com.jdz.vmd.common.tileentities.MTEVoidExcavatorWooden;
-import com.jdz.vmd.common.tileentities.MTEVoidExcavators;
 import com.jdz.vmd.common.tileentities.MTEVoidFluidDrillers;
 import com.jdz.vmd.common.tileentities.MTEVoidFluidPumpWooden;
 import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
@@ -35,12 +33,6 @@ public class ItemRegistry {
     public static ItemStack VoidFluidDrillerInfinity;
     public static ItemStack VoidFluidPumpWooden;
     public static ItemStack VoidMinerWooden;
-    public static ItemStack VoidExcavatorWooden;
-    public static ItemStack VoidExcavatorIron;
-    public static ItemStack VoidExcavatorSteel;
-    public static ItemStack VoidExcavatorTitanium;
-    public static ItemStack VoidExcavatorNaquadah;
-    public static ItemStack VoidExcavatorInfinity;
 
     public static void run() {
         ItemRegistry.VoidMinerEX1 = new MTEVoidMiners.VMLV(VoidMinerEX1Controller.ID, "VoidMinerEX1", "Void Miner EX I")
@@ -85,32 +77,6 @@ public class ItemRegistry {
             "VoidMinerWooden",
             "Wooden Void Miner").getStackForm(1L);
 
-        ItemRegistry.VoidExcavatorWooden = new MTEVoidExcavatorWooden(
-            MetaTileEntityIDs.VoidExcavatorWooden.ID,
-            "VoidExcavatorWooden",
-            "Wooden Void Excavator").getStackForm(1L);
-
-        ItemRegistry.VoidExcavatorIron = new MTEVoidExcavators.VoidExcavatorIron(
-            MetaTileEntityIDs.VoidExcavatorIron.ID,
-            "VoidExcavatorIron",
-            "Void Excavator (Iron)").getStackForm(1L);
-        ItemRegistry.VoidExcavatorSteel = new MTEVoidExcavators.VoidExcavatorSteel(
-            MetaTileEntityIDs.VoidExcavatorSteel.ID,
-            "VoidExcavatorSteel",
-            "Void Excavator (Steel)").getStackForm(1L);
-        ItemRegistry.VoidExcavatorTitanium = new MTEVoidExcavators.VoidExcavatorTitanium(
-            MetaTileEntityIDs.VoidExcavatorTitanium.ID,
-            "VoidExcavatorTitanium",
-            "Void Excavator (Titanium)").getStackForm(1L);
-        ItemRegistry.VoidExcavatorNaquadah = new MTEVoidExcavators.VoidExcavatorNaquadah(
-            MetaTileEntityIDs.VoidExcavatorNaquadah.ID,
-            "VoidExcavatorNaquadah",
-            "Void Excavator (Naquadah)").getStackForm(1L);
-        ItemRegistry.VoidExcavatorInfinity = new MTEVoidExcavators.VoidExcavatorInfinity(
-            MetaTileEntityIDs.VoidExcavatorInfinity.ID,
-            "VoidExcavatorInfinity",
-            "Void Excavator (Infinity)").getStackForm(1L);
-
         registerOwnershipTooltips();
     }
 
@@ -127,8 +93,7 @@ public class ItemRegistry {
 
         for (ItemStack stack : new ItemStack[] { VoidMinerEX1, VoidMinerEX2, VoidMinerEX3, VoidFluidDrillerIron,
             VoidFluidDrillerSteel, VoidFluidDrillerTitanium, VoidFluidDrillerNaquadah, VoidFluidDrillerInfinity,
-            VoidFluidPumpWooden, VoidMinerWooden, VoidExcavatorWooden, VoidExcavatorIron, VoidExcavatorSteel,
-            VoidExcavatorTitanium, VoidExcavatorNaquadah, VoidExcavatorInfinity }) {
+            VoidFluidPumpWooden, VoidMinerWooden }) {
             AnimatedTooltipHandler.addItemTooltip(
                 stack,
                 AnimatedTooltipHandler.chain(AnimatedTooltipHandler.text(AnimatedTooltipHandler.BLUE), creditLine));

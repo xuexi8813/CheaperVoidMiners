@@ -14,10 +14,8 @@ import net.minecraftforge.fluids.FluidStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jdz.vmd.Config;
 import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
-import com.jdz.vmd.common.tileentities.VoidExcavatorResourceTable;
 import com.jdz.vmd.common.tileentities.VoidFluidTableHelper;
 
 import gregtech.api.enums.ItemList;
@@ -32,7 +30,12 @@ import gtneioreplugin.util.DimensionHelper;
  * 注册本模组的 NEI 产出配方：遵循 GT 虚空采矿机（{@code VoidMinerRecipes}）模式
  * （维度显示方块作输入，带权重输出，权重为 0.01% 概率单位、按权重降序）。
  * 木制采矿机额外按机器编程电路切分条目：混合奖池一条（无电路）+ 每条主世界矿脉一条（电路 1..N，
- * 贫矿按材料归属并入对应矿脉）。须在向 GT 掉落表追加贫矿之后调用，木制采矿机奖池才会包含贫矿。
+ * 贫矿按材料归属并入对应矿脉）。调用时机为 {@code GregTechAPI.sAfterGTPostload}（GT postInit 末尾）：
+ * GT 地下流体表（GT preInit）、矿脉/贫矿世界生成表（{@code WorldgenGTOreLayer}/
+ * {@code WorldgenGTOreSmallPieces}.sList，GT postInit 经 GTWorldgenloader 填充）与 GTNEI 维度显示方块
+ * （其 init）此时均已就绪。与向 GT 虚空采矿机掉落表追加贫矿
+ * （{@code VoidOreTableHelper#appendPoorOresToVoidMinerDropMaps}）互不依赖：
+ * 木制采矿机奖池直接读取 WorldgenGTOreSmallPieces.sList，贫矿是否已追加进掉落表不影响奖池内容。
  */
 public final class VmdOutputRecipeLoader {
 
@@ -40,6 +43,9 @@ public final class VmdOutputRecipeLoader {
 
     /** 单条流体输出的展示数量（mB）；机器实际产出量由其自身决定。 */
     private static final int FLUID_DISPLAY_AMOUNT_MB = 1000;
+
+    /** 主世界的 GTNEI 维度缩写：木制采矿机固定开采主世界。 */
+    private static final String OVERWORLD_DIMENSION_ABBREVIATION = "Ow";
 
     private static boolean registered = false;
 
@@ -50,7 +56,6 @@ public final class VmdOutputRecipeLoader {
         registered = true;
 
         registerFluidDrillerRecipes();
-        registerExcavatorRecipes();
         registerWoodenMinerRecipe();
     }
 
@@ -95,27 +100,6 @@ public final class VmdOutputRecipeLoader {
         }
     }
 
-    /** 虚空/木制挖掘机：每个已配置且在 GTNEI 有显示方块的维度一条配方（无显示方块则无法选中，跳过）。 */
-    private static void registerExcavatorRecipes() {
-        for (String dimAbbreviation : Config.getExcavatorResourceTables()
-            .keySet()) {
-            final Block marker = ModBlocks.blocks.get(dimAbbreviation);
-            if (marker == null) continue;
-
-            final List<VoidExcavatorResourceTable.WeightedResource> resources = VoidExcavatorResourceTable
-                .getResources(dimAbbreviation);
-            if (resources.isEmpty()) continue;
-
-            final List<ItemStack> stacks = new ArrayList<>(resources.size());
-            final List<Float> weights = new ArrayList<>(resources.size());
-            for (VoidExcavatorResourceTable.WeightedResource resource : resources) {
-                stacks.add(resource.stack());
-                weights.add(resource.weight());
-            }
-            addItemWeightedRecipe(VmdRecipeMaps.voidExcavatorRecipes, marker, stacks, weights);
-        }
-    }
-
     /**
      * 木制采矿机：与机器编程电路选择语义对应的 NEI 条目——混合奖池一条（配置 0/无电路，输入仅维度显示方块），
      * 以及每条主世界矿脉一条（配置 1..N，输入附配置 i 的编程电路）。
@@ -123,7 +107,7 @@ public final class VmdOutputRecipeLoader {
      * {@link MTEVoidMinerWooden#buildOverworldPools} 统一构建，机器与 NEI 消费同一份数据，不会漂移。
      */
     private static void registerWoodenMinerRecipe() {
-        final Block marker = ModBlocks.blocks.get(VoidExcavatorResourceTable.DEFAULT_DIMENSION);
+        final Block marker = ModBlocks.blocks.get(OVERWORLD_DIMENSION_ABBREVIATION);
         if (marker == null) {
             LOG.error("No GTNEI dimension display block for the Overworld, Wooden Void Miner NEI recipe skipped");
             return;

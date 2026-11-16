@@ -3,7 +3,6 @@ package com.jdz.vmd.common.loaders;
 import static gregtech.api.enums.GTValues.RA;
 import static gregtech.api.recipe.RecipeMaps.assemblerRecipes;
 
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
@@ -27,8 +26,6 @@ public class RecipeLoader {
         registerDrillerAssemblerRecipes();
         registerWoodenPumpCraftingRecipe();
         registerWoodenMinerCraftingRecipe();
-        registerWoodenExcavatorCraftingRecipe();
-        registerExcavatorAssemblerRecipes();
     }
 
     private static void registerVoidMinerConversionRecipes() {
@@ -101,7 +98,7 @@ public class RecipeLoader {
             1600);
     }
 
-    /** 校验共用钻头物品堆的存在性，缺失时输出错误日志。 */
+    /** 校验钻机装配机配方所需钻头物品堆的存在性，缺失时输出错误日志。 */
     private static void validateDrillHeads() {
         for (Materials material : new Materials[] { Materials.Iron, Materials.Steel, Materials.Titanium,
             Materials.Naquadah, Materials.Infinity }) {
@@ -175,97 +172,6 @@ public class RecipeLoader {
             GTModHandler.RecipeBits.BUFFERED | GTModHandler.RecipeBits.DO_NOT_CHECK_FOR_COLLISIONS,
             new Object[] { "LFL", "LSL", "LFL", 'L', OrePrefixes.log.get(Materials.Wood), 'F',
                 new ItemStack(Items.flint, 1, 32767), 'S', "stickWood" });
-    }
-
-    /** 木制虚空挖掘机的有序合成配方（原木 + 燧石 + 泥土），写法同上述木制配方。 */
-    private static void registerWoodenExcavatorCraftingRecipe() {
-        GTModHandler.addCraftingRecipe(
-            ItemRegistry.VoidExcavatorWooden,
-            GTModHandler.RecipeBits.BUFFERED | GTModHandler.RecipeBits.DO_NOT_CHECK_FOR_COLLISIONS,
-            new Object[] { "LFL", "LDL", "LFL", 'L', OrePrefixes.log.get(Materials.Wood), 'F',
-                new ItemStack(Items.flint, 1, 32767), 'D', new ItemStack(Blocks.dirt, 1, 0) });
-    }
-
-    /**
-     * 五个虚空挖掘机阶段的装配机配方，统一模式：机壳 x4 + frameGt（Naquadah/Infinity 为 x8）
-     * + 钻头 + 传送带模块 x2 + 电路 12，传送带等级与机器电压匹配。
-     * 输入注册前校验，GT 物品缺失时记错误日志并跳过。
-     */
-    private static void registerExcavatorAssemblerRecipes() {
-        addExcavatorAssemblerRecipe(
-            ItemRegistry.VoidExcavatorIron,
-            ItemList.Casing_ULV,
-            Materials.Iron,
-            4,
-            ItemList.Conveyor_Module_LV,
-            TierEU.RECIPE_LV,
-            100);
-        addExcavatorAssemblerRecipe(
-            ItemRegistry.VoidExcavatorSteel,
-            ItemList.Casing_SolidSteel,
-            Materials.Steel,
-            4,
-            ItemList.Conveyor_Module_MV,
-            TierEU.RECIPE_MV,
-            200);
-        addExcavatorAssemblerRecipe(
-            ItemRegistry.VoidExcavatorTitanium,
-            ItemList.Casing_StableTitanium,
-            Materials.Titanium,
-            4,
-            ItemList.Conveyor_Module_HV,
-            TierEU.RECIPE_HV,
-            400);
-        addExcavatorAssemblerRecipe(
-            ItemRegistry.VoidExcavatorNaquadah,
-            // 不存在专用的 Naquadah 机器机壳；以钨钢钻井机壳代替。
-            ItemList.Casing_RobustTungstenSteel,
-            Materials.Naquadah,
-            8,
-            ItemList.Conveyor_Module_LuV,
-            TierEU.RECIPE_LuV,
-            800);
-        addExcavatorAssemblerRecipe(
-            ItemRegistry.VoidExcavatorInfinity,
-            // 不存在专用的 Infinity 机器机壳；以中子素采矿机壳代替。
-            ItemList.Casing_MiningNeutronium,
-            Materials.Infinity,
-            8,
-            ItemList.Conveyor_Module_UV,
-            TierEU.RECIPE_UV,
-            1600);
-    }
-
-    /** 注册一条挖掘机装配机配方；钻头材料与框架材料一致，共用校验见 {@link #validateDrillHeads()}。 */
-    private static void addExcavatorAssemblerRecipe(ItemStack output, ItemList casing, Materials frameMaterial,
-        int frameCount, ItemList conveyor, long euTier, int durationTicks) {
-        final ItemStack casingStack = casing.get(4);
-        final ItemStack frameStack = GTOreDictUnificator.get(OrePrefixes.frameGt, frameMaterial, frameCount);
-        final ItemStack conveyorStack = conveyor.get(2);
-        final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, frameMaterial, 1);
-        final ItemStack circuitStack = ItemList.Circuit_Integrated.getWithDamage(1L, 12L);
-
-        if (casingStack == null || frameStack == null
-            || conveyorStack == null
-            || drillStack == null
-            || circuitStack == null) {
-            LOG.error(
-                "Cannot register assembler recipe for {}: a required GT item stack is missing (casing={}, frame={}, conveyor={}, drill={}, circuit={})",
-                output.getDisplayName(),
-                casingStack != null,
-                frameStack != null,
-                conveyorStack != null,
-                drillStack != null,
-                circuitStack != null);
-            return;
-        }
-
-        RA.stdBuilder()
-            .itemInputs(casingStack, frameStack, conveyorStack, drillStack, circuitStack)
-            .itemOutputs(output)
-            .duration(durationTicks)
-            .eut(euTier)
-            .addTo(assemblerRecipes);
     }
 
     private static ItemStack getFiredClayBucket() {
