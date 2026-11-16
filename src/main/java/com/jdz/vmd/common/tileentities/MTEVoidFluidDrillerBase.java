@@ -520,10 +520,10 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
                 StatCollector
                     .translateToLocalFormatted("vmd.mbtt.structure.any_bottom_casing_min_tier", GTValues.VN[LV]),
                 1)
-            .addMaintenanceHatch(StatCollector.translateToLocal("vmd.mbtt.structure.any_bottom_casing"))
-            .addInputBus(StatCollector.translateToLocal("vmd.mbtt.structure.input_bus"))
-            .addOutputBus(StatCollector.translateToLocal("vmd.mbtt.structure.output_bus"))
-            .addOutputHatch(StatCollector.translateToLocal("vmd.mbtt.structure.output_hatch"))
+            .addMaintenanceHatch("1", StatCollector.translateToLocal("vmd.mbtt.structure.any_bottom_casing"), 1)
+            .addInputBus("1+", StatCollector.translateToLocal("vmd.mbtt.structure.input_bus"), 1)
+            .addOutputBus("1+", StatCollector.translateToLocal("vmd.mbtt.structure.output_bus"), 1)
+            .addOutputHatch("1+", StatCollector.translateToLocal("vmd.mbtt.structure.output_hatch"), 1)
             .toolTipFinisher();
         return tt;
     }
@@ -548,11 +548,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     @Override
     public int getDamageToComponent(ItemStack aStack) {
         return 0;
-    }
-
-    @Override
-    public boolean explodesOnComponentBreak(ItemStack aStack) {
-        return false;
     }
 
     @Override

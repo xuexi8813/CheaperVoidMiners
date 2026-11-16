@@ -136,11 +136,13 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
                     GTOreDictUnificator.get(OrePrefixes.frameGt, getMaterials(), 1)
                         .getDisplayName()))
             .addEnergyHatch(
-                StatCollector.translateToLocalFormatted("vmd.ex.structure.energy_hatch", VN[this.getMinTier()]))
-            .addMaintenanceHatch(StatCollector.translateToLocal("vmd.ex.structure.maintenance_hatch"))
-            .addInputBus(StatCollector.translateToLocal("vmd.ex.structure.input_bus"))
-            .addInputHatch(StatCollector.translateToLocal("vmd.ex.structure.input_hatch"))
-            .addOutputBus(StatCollector.translateToLocal("vmd.ex.structure.output_bus"))
+                "1+",
+                StatCollector.translateToLocalFormatted("vmd.ex.structure.energy_hatch", VN[this.getMinTier()]),
+                1)
+            .addMaintenanceHatch("1", StatCollector.translateToLocal("vmd.ex.structure.maintenance_hatch"), 1)
+            .addInputBus("1+", StatCollector.translateToLocal("vmd.ex.structure.input_bus"), 1)
+            .addInputHatch("1+", StatCollector.translateToLocal("vmd.ex.structure.input_hatch"), 1)
+            .addOutputBus("1+", StatCollector.translateToLocal("vmd.ex.structure.output_bus"), 1)
             .toolTipFinisher();
         return tt;
     }
