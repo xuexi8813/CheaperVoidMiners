@@ -27,10 +27,12 @@ import gtneioreplugin.plugin.block.ModBlocks;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * 注册本模组的 NEI 产出配方：遵循 GT 虚空采矿机（{@code VoidMinerRecipes}）模式
- * （维度显示方块作输入，带权重输出，权重为 0.01% 概率单位、按权重降序）。
- * 木制采矿机额外按机器编程电路切分条目：混合奖池一条（无电路）+ 每条主世界矿脉一条（电路 1..N，
- * 贫矿按材料归属并入对应矿脉）。调用时机为 {@code GregTechAPI.sAfterGTPostload}（GT postInit 末尾）：
+ * 注册本模组的 NEI 产出配方。流体钻机配方：维度显示方块作输入，该维度全部候选流体按规范排序
+ * （{@code VoidFluidTableHelper#CANDIDATE_ORDER}，与机器电路 N 选择同源同序）作无概率输出。
+ * 木制采矿机配方遵循 GT 虚空采矿机（{@code VoidMinerRecipes}）模式：维度显示方块作输入，带权重输出
+ * （权重为 0.01% 概率单位、按权重降序），并按机器编程电路切分条目：混合奖池一条（无电路）+
+ * 每条主世界矿脉一条（电路 1..N，贫矿按材料归属并入对应矿脉）。调用时机为
+ * {@code GregTechAPI.sAfterGTPostload}（GT postInit 末尾）：
  * GT 地下流体表（GT preInit）、矿脉/贫矿世界生成表（{@code WorldgenGTOreLayer}/
  * {@code WorldgenGTOreSmallPieces}.sList，GT postInit 经 GTWorldgenloader 填充）与 GTNEI 维度显示方块
  * （其 init）此时均已就绪。与向 GT 虚空采矿机掉落表追加贫矿
@@ -59,7 +61,12 @@ public final class VmdOutputRecipeLoader {
         registerWoodenMinerRecipe();
     }
 
-    /** 虚空流体钻机 / 木制流体泵：每个有地下流体表的维度一条配方，按生成概率列出流体。 */
+    /**
+     * 虚空流体钻机 / 木制流体泵：每个有地下流体表的维度一条配方，列出该维度全部候选流体
+     * （固定 {@value #FLUID_DISPLAY_AMOUNT_MB}mB 展示，无概率标记——机器实际产出量由其自身决定）。
+     * 候选列表经 {@link VoidFluidTableHelper#getFluidCandidates} 按规范排序，与机器编程电路 N 的
+     * 选择同源同序，NEI 中第 N 位即电路 N 的产出。
+     */
     private static void registerFluidDrillerRecipes() {
         for (String dimAbbreviation : DimensionHelper.getAllDisplayedNames()) {
             final Block marker = ModBlocks.blocks.get(dimAbbreviation);
@@ -69,31 +76,18 @@ public final class VmdOutputRecipeLoader {
             final List<GTUOFluid> candidates = VoidFluidTableHelper.getFluidCandidates(dimension);
             if (candidates.isEmpty()) continue;
 
-            long totalWeight = 0;
-            for (GTUOFluid candidate : candidates) {
-                totalWeight += Math.max(0, candidate.Chance);
+            final FluidStack[] outputs = new FluidStack[candidates.size()];
+            for (int i = 0; i < candidates.size(); i++) {
+                outputs[i] = new FluidStack(
+                    candidates.get(i)
+                        .getFluid(),
+                    FLUID_DISPLAY_AMOUNT_MB);
             }
 
-            // 权重降序，并列按流体 id，与 GT 虚空采矿机排序一致。
-            final List<GTUOFluid> sorted = new ArrayList<>(candidates);
-            sorted.sort(
-                Comparator.comparingInt((GTUOFluid candidate) -> candidate.Chance)
-                    .reversed()
-                    .thenComparingInt(
-                        candidate -> candidate.getFluid()
-                            .getID()));
-
-            final FluidStack[] outputs = new FluidStack[sorted.size()];
-            final int[] chances = new int[sorted.size()];
-            for (int i = 0; i < sorted.size(); i++) {
-                final GTUOFluid candidate = sorted.get(i);
-                outputs[i] = new FluidStack(candidate.getFluid(), FLUID_DISPLAY_AMOUNT_MB);
-                chances[i] = toChance(candidate.Chance, totalWeight, sorted.size());
-            }
-
+            // 单参 fluidOutputs 重载：GTRecipeBuilder 默认全部 10000（100%），NEI 不显示概率。
             RA.stdBuilder()
                 .itemInputs(toMarkerStack(marker))
-                .fluidOutputs(outputs, chances)
+                .fluidOutputs(outputs)
                 .duration(1)
                 .eut(0)
                 .addTo(VmdRecipeMaps.voidFluidDrillerRecipes);

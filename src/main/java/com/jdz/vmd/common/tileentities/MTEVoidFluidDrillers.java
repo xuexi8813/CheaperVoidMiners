@@ -3,7 +3,6 @@ package com.jdz.vmd.common.tileentities;
 import static gregtech.api.enums.VoltageIndex.HV;
 import static gregtech.api.enums.VoltageIndex.LV;
 import static gregtech.api.enums.VoltageIndex.LuV;
-import static gregtech.api.enums.VoltageIndex.MAX;
 import static gregtech.api.enums.VoltageIndex.MV;
 import static gregtech.api.enums.VoltageIndex.UV;
 
@@ -12,16 +11,17 @@ import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
-import gregtech.api.util.GTUtility;
 
 /**
- * Void Fluid Driller（虚空流体钻机）家族的五个阶段，仅差结构材料、电压、产出系数与并行规则；
- * 工作逻辑见 {@link MTEVoidFluidDrillerBase}。每台具体类须显式携带 {@link IMetaTileEntity.SkipGenerateName}
- * （注解不继承），显示名来自 lang 键。Naquadah/Infinity 无专用机壳，复用高级机壳替代。
+ * Void Fluid Driller（虚空流体钻机）家族的五个阶段，仅差结构材料、机器档位与产量公式中的机器档项
+ * （32^(机器档位)，见基类 {@link MTEVoidFluidDrillerBase#computeOutputAmount}）；电压项由能源仓实际
+ * 输入电压档驱动，为五档共用逻辑。工作逻辑见 {@link MTEVoidFluidDrillerBase}。每台具体类须显式携带
+ * {@link IMetaTileEntity.SkipGenerateName}（注解不继承），显示名来自 lang 键。Naquadah/Infinity 无专用
+ * 机壳，复用高级机壳替代。
  */
 public class MTEVoidFluidDrillers {
 
-    /** Iron 阶段：LV，产出系数 x16（数值加强前为 x1）。 */
+    /** Iron 阶段：LV 机器档，机器档项 32^0=1；EU/t 32。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerIron extends MTEVoidFluidDrillerBase<VoidFluidDrillerIron> {
 
@@ -49,11 +49,6 @@ public class MTEVoidFluidDrillers {
         }
 
         @Override
-        public int getVoltageFactor() {
-            return 16;
-        }
-
-        @Override
         protected int getControllerTextureIndex() {
             // ULV 机壳贴图 id 为 0，被 casingIndex>0 契约保留为"未设置"（投影仪构建即抛
             // IllegalArgumentException），改用相邻 LV 机壳贴图；仅影响投影全息提示渲染，
@@ -67,7 +62,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Steel 阶段：MV，产出系数 x64（数值加强前为 x4）。 */
+    /** Steel 阶段：MV 机器档，机器档项 32^1=32；EU/t 128。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerSteel extends MTEVoidFluidDrillerBase<VoidFluidDrillerSteel> {
 
@@ -95,11 +90,6 @@ public class MTEVoidFluidDrillers {
         }
 
         @Override
-        public int getVoltageFactor() {
-            return 64;
-        }
-
-        @Override
         protected int getControllerTextureIndex() {
             return Casings.SolidSteelMachineCasing.getTextureId();
         }
@@ -110,7 +100,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Titanium 阶段：HV，产出系数 x256（数值加强前为 x16）。 */
+    /** Titanium 阶段：HV 机器档，机器档项 32^2=1024；EU/t 512。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerTitanium extends MTEVoidFluidDrillerBase<VoidFluidDrillerTitanium> {
 
@@ -138,11 +128,6 @@ public class MTEVoidFluidDrillers {
         }
 
         @Override
-        public int getVoltageFactor() {
-            return 256;
-        }
-
-        @Override
         protected int getControllerTextureIndex() {
             return Casings.StableTitaniumMachineCasing.getTextureId();
         }
@@ -153,7 +138,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Naquadah 阶段：LuV，产出系数 x1024（数值加强前为 x64）；机壳以钨钢钻井机壳代替（无专用机壳）。 */
+    /** Naquadah 阶段：LuV 机器档，机器档项 32^3=32768；EU/t 32768。机壳以钨钢钻井机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerNaquadah extends MTEVoidFluidDrillerBase<VoidFluidDrillerNaquadah> {
 
@@ -181,11 +166,6 @@ public class MTEVoidFluidDrillers {
         }
 
         @Override
-        public int getVoltageFactor() {
-            return 1024;
-        }
-
-        @Override
         protected int getControllerTextureIndex() {
             return Casings.RobustTungstenSteelMachineCasing.getTextureId();
         }
@@ -196,10 +176,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /**
-     * Infinity 阶段：UV，产出系数 x4096（数值加强前为 x256）；机壳以中子素采矿机壳代替（无专用机壳）。
-     * 并行随电压提升：parallel = 8^(输入等级 - UV)（UHV=8 … MAX=262144），EU/t 多安培倍增。
-     */
+    /** Infinity 阶段：UV 机器档，机器档项 32^4=1048576；EU/t 524288。机壳以中子素采矿机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerInfinity extends MTEVoidFluidDrillerBase<VoidFluidDrillerInfinity> {
 
@@ -224,18 +201,6 @@ public class MTEVoidFluidDrillers {
         @Override
         protected int getMinTier() {
             return UV;
-        }
-
-        @Override
-        public int getVoltageFactor() {
-            return 4096;
-        }
-
-        @Override
-        protected int calculateParallel(int inputTier) {
-            // 8^(等级 - UV)，截断到 MAX；GTUtility.powInt 对每个可达指数结果精确。
-            final int exponent = Math.min(inputTier, MAX) - UV;
-            return (int) GTUtility.powInt(8, exponent);
         }
 
         @Override

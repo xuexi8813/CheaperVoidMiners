@@ -13,18 +13,17 @@ gt.blockmachines.voidfluidpumpwooden.name=木质虚空流体泵
 vmd.mbtt.machine_type=虚空液体钻机
 vmd.mbtt.info.1=无需钻杆、也不会耗尽区块矿脉，直接抽取所选维度的地下流体。
 vmd.mbtt.info.2=在控制器槽位放入维度显示方块以选择星球；留空则使用机器所在维度。
-vmd.mbtt.info.3=必须放入编程电路（配置 1..N）选择该维度流体表的第 N 项流体；未插入电路时机器不会启动。
+vmd.mbtt.info.3=必须放入编程电路（配置 1..N）选择该维度地下流体列表的第 N 项（顺序与 NEI 展示一致）；未插入电路时机器不会启动。
 vmd.mbtt.info.4=电路配置超出该维度流体数量时，本周期失败并给出错误提示。
-vmd.mbtt.info.5=输入总线中的钻头提升产量：铁 x1.25、钢 x1.5、钛 x1.75、硅岩 x2.0、无尽 x3.0（取存在的最高档）。每完成一个周期有 0.1% 概率消耗 1 个钻头。
-vmd.mbtt.info.6=每 100 tick 产出 1000mB × 电压系数（LV=x16、MV=x64、HV=x256、LuV=x1024、UV=x4096）× 钻头加成 × 并行数。
-vmd.mbtt.info.7=无尽版并行数随输入电压增长：8^(电压档 - UV)，即 UHV=8、UEV=64、UIV=512、UMV=4096、UXV=32768、MAX=262144；总能耗按并行数成倍增加。
+vmd.mbtt.info.5=输入总线中放入钻头使产量 x128（材质不限）。每完成一个周期有 0.1% 概率消耗 1 个钻头。
+vmd.mbtt.info.6=每 100 tick 产出 1000mB × 16^(能源仓电压档 - LV + 1) × 32^(机器档 - LV) × 钻头加成（有钻头时 x128）。
+vmd.mbtt.info.7=能源仓接受 LV（最低机器电压）起的任意电压档；产量按实际可用的最高输入电压档计算，介于五档（LV/MV/HV/LuV/UV）之间的电压档按低一档计。
 vmd.mbtt.structure.front_bottom_center=控制器，前下方中心
 vmd.mbtt.structure.center_shaft_frame=框架方块（控制器正下方立柱）
 vmd.mbtt.structure.frame=%s个框架方块（中部十字层）
 vmd.mbtt.structure.any_bottom_casing_min_tier=任意机壳，最低 %s 电压档
 vmd.mbtt.structure.any_bottom_casing=任意机壳
 vmd.mbtt.structure.input_bus=输入总线（钻头与编程电路）
-vmd.mbtt.structure.input_hatch=输入仓（可选）
 vmd.mbtt.structure.output_bus=输出总线（可选）
 vmd.mbtt.structure.output_hatch=输出仓（流体输出，必需）
 
@@ -32,7 +31,6 @@ vmd.mbtt.structure.output_hatch=输出仓（流体输出，必需）
 vmd.gui.planet=星球：%s
 vmd.gui.fluid=流体：%s
 vmd.gui.fluid.none=无
-vmd.gui.parallel=并行：%s
 vmd.gui.drill=钻头：%s
 vmd.gui.planet.unknown=未知
 vmd.gui.drill.none=无
@@ -53,7 +51,7 @@ GT5U.gui.text.recipe_result.vmd_output_full=流体输出已满
 # 木质虚空流体泵 tooltip
 vmd.pump.desc.1=无需电力的木质泵，抽取主世界地下流体。
 vmd.pump.desc.2=每 200 tick 产出 100mB 存入内部输出罐；罐满或流体不兼容时待机，请用管道从非主面抽取。
-vmd.pump.desc.3=必须放入编程电路（配置 1..N）选择主世界流体表第 N 项流体，否则待机。
+vmd.pump.desc.3=必须放入编程电路（配置 1..N）选择主世界地下流体列表的第 N 项（顺序与 NEI 展示一致），否则待机。
 vmd.pump.desc.4=内部流体罐不混装流体；请在罐排空后再更换电路。
 vmd.pump.desc.5=编程电路可直接在 GUI 的电路槽中点选配置（或放入真实编程电路）。
 vmd.pump.desc.selection=当前选择：%s

@@ -1,6 +1,7 @@
 package com.jdz.vmd.common.tileentities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -128,7 +129,24 @@ public final class VoidFluidTableHelper {
         return value;
     }
 
-    /** 维度可抽取的流体列表，保持表内顺序，跳过 FluidRegistry 未收录的流体；无数据时为空列表。 */
+    /**
+     * 流体候选的规范排序：Chance 降序，并列按流体 id 升序（与 GT 虚空采矿机及本模组 NEI 产出配方的
+     * 展示排序一致）。编程电路配置 N 的语义为"候选列表第 N 项"，机器侧（流体钻机 / 木制流体泵）与
+     * NEI 注册侧（{@code VmdOutputRecipeLoader}）均经 {@link #getFluidCandidates} 消费本顺序，
+     * 两侧同源同序，杜绝再次漂移（旧实现机器侧走 HashBiMap 哈希迭代序、NEI 侧自行排序，导致电路 1
+     * 在机器与 NEI 中指向不同流体）。
+     */
+    public static final Comparator<GTUOFluid> CANDIDATE_ORDER = Comparator
+        .comparingInt((GTUOFluid fluid) -> fluid.Chance)
+        .reversed()
+        .thenComparingInt(
+            fluid -> fluid.getFluid()
+                .getID());
+
+    /**
+     * 维度可抽取的流体列表，按 {@link #CANDIDATE_ORDER} 规范排序（不再保持表内哈希迭代序），
+     * 编程电路 N 即列表第 N 项且与 NEI 展示同源一致；跳过 FluidRegistry 未收录的流体；无数据时为空列表。
+     */
     public static List<GTUOFluid> getFluidCandidates(@Nullable GTUODimension dimension) {
         final List<GTUOFluid> candidates = new ArrayList<>();
         if (dimension == null) return candidates;
@@ -136,6 +154,7 @@ public final class VoidFluidTableHelper {
             .values()) {
             if (fluid.getFluid() != null) candidates.add(fluid);
         }
+        candidates.sort(CANDIDATE_ORDER);
         return candidates;
     }
 }

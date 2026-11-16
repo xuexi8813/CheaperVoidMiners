@@ -13,18 +13,17 @@ gt.blockmachines.voidfluidpumpwooden.name=Wooden Void Fluid Pump
 vmd.mbtt.machine_type=Void Fluid Driller
 vmd.mbtt.info.1=Taps the underground fluids of a chosen dimension without drilling pipes and without depleting chunk veins.
 vmd.mbtt.info.2=Put a Dimension Display block into the controller slot to select the dimension; leave the slot empty to use the dimension the machine is built in.
-vmd.mbtt.info.3=A programming circuit (configuration 1..N) must be inserted into the input bus to select the N-th fluid of that dimension's fluid table; the machine does not start without an inserted programming circuit.
+vmd.mbtt.info.3=A programming circuit (configuration 1..N) must be inserted into the input bus to select the N-th entry of that dimension's fluid list (same order as shown in NEI); the machine does not start without an inserted programming circuit.
 vmd.mbtt.info.4=A circuit configuration beyond the fluid count of the dimension fails the cycle with an error message.
-vmd.mbtt.info.5=Drill heads in the input bus boost the output: Iron x1.25, Steel x1.5, Titanium x1.75, Naquadah x2.0, Infinity x3.0 (highest present applies). Each finished cycle consumes one drill head with a 0.1% chance.
-vmd.mbtt.info.6=Produces 1000mB x voltage factor (LV=x16, MV=x64, HV=x256, LuV=x1024, UV=x4096) x drill bonus x parallel count per 100 tick cycle.
-vmd.mbtt.info.7=The Infinity stage scales its parallel count with the input voltage: 8^(tier - UV), i.e. UHV=8, UEV=64, UIV=512, UMV=4096, UXV=32768, MAX=262144; the EU/t draw is multiplied by the parallel count.
+vmd.mbtt.info.5=A drill head in the input bus multiplies the output by x128 (any material). Each finished cycle consumes one drill head with a 0.1% chance.
+vmd.mbtt.info.6=Produces 1000mB x 16^(energy hatch tier - LV + 1) x 32^(machine tier - LV) x drill bonus (x128 with a drill head) per 100 tick cycle.
+vmd.mbtt.info.7=Energy hatches of any tier from LV (the lowest machine voltage) up are accepted; the output scales with the highest available input voltage tier. Tiers between the five machine tiers (LV/MV/HV/LuV/UV) count as the next lower tier.
 vmd.mbtt.structure.front_bottom_center=Controller, front bottom center
 vmd.mbtt.structure.center_shaft_frame=Frame Blocks (shaft below the controller)
 vmd.mbtt.structure.frame=%s Frame Blocks (plus-shaped middle layers)
 vmd.mbtt.structure.any_bottom_casing_min_tier=Any casing, min tier %s
 vmd.mbtt.structure.any_bottom_casing=Any casing
 vmd.mbtt.structure.input_bus=Input Bus (drill head and programmed circuit)
-vmd.mbtt.structure.input_hatch=Input Hatch (optional)
 vmd.mbtt.structure.output_bus=Output Bus (optional)
 vmd.mbtt.structure.output_hatch=Output Hatch (fluid output, required)
 
@@ -32,7 +31,6 @@ vmd.mbtt.structure.output_hatch=Output Hatch (fluid output, required)
 vmd.gui.planet=Planet: %s
 vmd.gui.fluid=Fluid: %s
 vmd.gui.fluid.none=None
-vmd.gui.parallel=Parallel: %s
 vmd.gui.drill=Drill: %s
 vmd.gui.planet.unknown=Unknown
 vmd.gui.drill.none=None
@@ -53,7 +51,7 @@ GT5U.gui.text.recipe_result.vmd_output_full=Fluid output full
 # Wooden Void Fluid Pump tooltip
 vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground fluids.
 vmd.pump.desc.2=Produces 100mB every 200 ticks into its internal output tank; a full or incompatible tank stalls the machine, draw the fluid out with pipes from any non-main face.
-vmd.pump.desc.3=A programming circuit (configuration 1..N) must be inserted to select the N-th Overworld fluid; without it the pump idles.
+vmd.pump.desc.3=A programming circuit (configuration 1..N) must be inserted to select the N-th entry of the Overworld fluid list (same order as shown in NEI); without it the pump idles.
 vmd.pump.desc.4=The internal tank never mixes fluids; switch the circuit only after it is drained.
 vmd.pump.desc.5=The programmed circuit can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there).
 vmd.pump.desc.selection=Current selection: %s
