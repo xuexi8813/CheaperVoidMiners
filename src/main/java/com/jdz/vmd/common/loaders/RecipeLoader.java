@@ -38,7 +38,8 @@ public class RecipeLoader {
 
     /**
      * 五个虚空流体钻机阶段的装配机配方；输入物品堆注册前校验，GT 物品缺失时记错误日志并跳过，
-     * 不生成损坏配方。均消耗配置 12 的编程电路，框架数与时长随阶段递增。
+     * 不生成损坏配方。配置 12 的编程电路为不消耗的配置标记（GT5u notConsumable 惯例：stackSize=0
+     * 的输入仍为启动必需项，但配方执行与 SingleRecipeCheck 消耗阶段均跳过 0 消耗量），框架数与时长随阶段递增。
      */
     private static void registerDrillerAssemblerRecipes() {
         // 钻头为全系列共用，缺一则整个阶梯失效。
@@ -117,7 +118,9 @@ public class RecipeLoader {
         final ItemStack tankStack = superTank.get(1);
         final ItemStack pumpStack = pump.get(1);
         final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, drillMaterial, 1);
-        final ItemStack circuitStack = ItemList.Circuit_Integrated.getWithDamage(1L, 12L);
+        // 数量 0 = notConsumable 标记：电路仍为启动必需的配置标记（NEI 电路槽位显示），
+        // 但装配机运行时不消耗。GT5u 同款惯例见 Shape_Extruder_* 模具配方（get(0L)）。
+        final ItemStack circuitStack = ItemList.Circuit_Integrated.getWithDamage(0L, 12L);
 
         if (casingStack == null || frameStack == null
             || tankStack == null
