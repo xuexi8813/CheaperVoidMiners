@@ -23,6 +23,7 @@ import gregtech.api.objects.GTUODimension;
 import gregtech.api.objects.GTUOFluid;
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.RecipeMapBackend;
+import gregtech.api.util.GTUtility;
 import gtneioreplugin.plugin.block.ModBlocks;
 import gtneioreplugin.util.DimensionHelper;
 
@@ -98,7 +99,9 @@ public final class VmdOutputRecipeLoader {
      * 木制采矿机：与机器编程电路选择语义对应的 NEI 条目——混合奖池一条（配置 0/无电路，输入仅维度显示方块），
      * 以及每条主世界矿脉一条（配置 1..N，输入附配置 i 的编程电路）。
      * 贫矿归属（每个贫矿条目只归第一条材料匹配的矿脉、未归属者仅存贫矿池与混合池）由
-     * {@link MTEVoidMinerWooden#buildOverworldPools} 统一构建，机器与 NEI 消费同一份数据，不会漂移。
+     * {@link MTEVoidMinerWooden#buildOverworldPools} 统一构建，机器与 NEI 消费同一份数据，不会漂移；
+     * 输出堆叠数量亦与机器每周期产出一致（{@link MTEVoidMinerWooden#OUTPUT_PER_CYCLE}，一组 64 件），
+     * 加权概率（outputChances）仅由权重决定，不受展示数量影响。
      */
     private static void registerWoodenMinerRecipe() {
         final Block marker = ModBlocks.blocks.get(OVERWORLD_DIMENSION_ABBREVIATION);
@@ -126,11 +129,15 @@ public final class VmdOutputRecipeLoader {
             pools.unmatchedSmallOrePieces);
     }
 
-    /** 加权条目的输出物品列表。 */
+    /**
+     * 加权条目的输出物品列表：按机器每周期产出（{@link MTEVoidMinerWooden#OUTPUT_PER_CYCLE}，一组 64 件）
+     * 复制展示堆叠，与机器实际产出同源；必须经 {@code GTUtility.copyAmount} 生成新堆叠，
+     * 不得改写奖池中的共享堆叠（机器侧仍在消费同一份数据）。
+     */
     private static List<ItemStack> toStacks(List<MTEVoidMinerWooden.WeightedOre> entries) {
         final List<ItemStack> stacks = new ArrayList<>(entries.size());
         for (MTEVoidMinerWooden.WeightedOre entry : entries) {
-            stacks.add(entry.stack());
+            stacks.add(GTUtility.copyAmount(MTEVoidMinerWooden.OUTPUT_PER_CYCLE, entry.stack()));
         }
         return stacks;
     }

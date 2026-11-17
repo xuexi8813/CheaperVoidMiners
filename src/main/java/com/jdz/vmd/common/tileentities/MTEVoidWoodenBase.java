@@ -322,7 +322,7 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
      * "产出[i] 只配输出槽[i]"位置对应检查——加权随机产出多种资源时，位置对应制会因输出槽 0
      * 恰好堆着不同资源而误判满仓停滞。
      *
-     * @param output 本周期将产出的单件物品堆叠（{@code null} 视为无产出，恒有空间，与基类一致）
+     * @param output 本周期将产出的物品堆叠（{@code null} 视为无产出，恒有空间，与基类一致）
      * @return 至少一个输出槽能容纳该产出时为 {@code true}；全部输出槽都无法容纳时为 {@code false}
      */
     protected boolean hasRoomFor(@Nullable ItemStack output) {
@@ -374,10 +374,6 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
             return circuit.getItemDamage();
         }
         return 0;
-    }
-
-    protected static ItemStack singleOutput(ItemStack stack) {
-        return GTUtility.copyAmount(1, stack);
     }
 
     /** 日志门面：数据问题在此报告而不崩溃。 */

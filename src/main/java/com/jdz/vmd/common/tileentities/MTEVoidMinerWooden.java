@@ -21,6 +21,7 @@ import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.render.TextureFactory;
+import gregtech.api.util.GTUtility;
 import gregtech.common.WorldgenGTOreLayer;
 import gregtech.common.WorldgenGTOreSmallPieces;
 import gtneioreplugin.util.DimensionHelper;
@@ -36,6 +37,13 @@ import gtneioreplugin.util.DimensionHelper;
 public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
 
     public static final int MINER_PRODUCTION_CYCLE_TICKS = 100;
+
+    /**
+     * 每个生产周期的产出数量（一组，64 件）：经 {@code GTUtility.copyAmount} 构造产出堆叠，
+     * NEI 产出配方（{@code VmdOutputRecipeLoader#toStacks}）引用同一常量展示，保证机器实际产出
+     * 与 NEI 展示同源；满堆叠 64 件恰好占满单个输出槽（单格上限同为 64）。
+     */
+    public static final int OUTPUT_PER_CYCLE = 64;
 
     private static final String OVERWORLD_DIM_NAME = DimensionDef.DimNames.OW;
 
@@ -136,8 +144,9 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         }
         if (pool.isEmpty()) return DID_NOT_FIND_RECIPE;
 
-        final ItemStack output = singleOutput(weightedPick(pool).stack());
-        // 6 槽缓冲：任一输出槽为空或同物品未满即可继续生产（不再要求产出与输出槽 0 位置对应）；
+        final ItemStack output = GTUtility.copyAmount(OUTPUT_PER_CYCLE, weightedPick(pool).stack());
+        // 6 槽缓冲：64 件一组恰好占满一个空槽（单格上限 64），同物品残留槽合并会超出上限，
+        // 因此仅空槽可接纳本组产出（不再要求产出与输出槽 0 位置对应）；
         // 全部输出槽都无法容纳该产出时待机，直到玩家或传送带腾出空间。
         if (!hasRoomFor(output)) return DID_NOT_FIND_RECIPE;
         if (!tryStoreOutput(output)) return DID_NOT_FIND_RECIPE;

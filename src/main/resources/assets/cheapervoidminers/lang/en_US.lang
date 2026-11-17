@@ -18,6 +18,7 @@ vmd.mbtt.info.4=A circuit configuration beyond the fluid count of the dimension 
 vmd.mbtt.info.5=Drill heads in the input bus boost the output by drill class: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024 (highest class applies). Each finished cycle consumes one drill head with a 0.1% chance.
 vmd.mbtt.info.6=Produces 1000mB x 4^(energy hatch tier - LV + 1) x 16^(machine tier - LV) x 4^(drill class + 1) per 100 tick cycle; the Infinity driller uses a base of 16 for the voltage term (x16 per tier).
 vmd.mbtt.info.7=Energy hatches of any tier from LV (the lowest machine voltage) up are accepted; the voltage term scales linearly with the raw GT voltage tier (EV/IV/ZPM etc. continue the sequence), using the highest available input voltage tier.
+vmd.mbtt.info.8=Power draw follows the energy hatch tier (1A): LV 32 / MV 128 / HV 512 / EV 2048 / IV 8192 / LuV 32768 / ZPM 131072 / UV 524288 EU/t (x4 per tier beyond UV).
 vmd.mbtt.structure.front_bottom_center=Controller, front bottom center
 vmd.mbtt.structure.center_shaft_frame=Frame Blocks (shaft below the controller)
 vmd.mbtt.structure.frame=%s Frame Blocks (plus-shaped middle layers)
@@ -63,7 +64,7 @@ gt.blockmachines.voidminerwooden.name=Wooden Void Miner
 
 # Wooden Void Miner tooltip
 vmd.miner.desc.1=Non-electric wooden miner that pulls ore items from the Overworld ore generation tables without breaking blocks.
-vmd.miner.desc.2=Produces 1 ore item every 100 ticks into one of its 6 output slots (same items stack up); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
+vmd.miner.desc.2=Produces a stack of 64 ore items every 100 ticks into one of its 6 output slots (a full group fills exactly one slot); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
 vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein (its main ores plus its matching poor/small ores); configuration N+1 selects the full poor (small) ore pool.
 vmd.miner.desc.4=Configuration 0 or no circuit mixes all veins and poor ores into one weighted pool (weights = generation weights).
 vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the programmed circuit can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there).

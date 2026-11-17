@@ -71,7 +71,8 @@ import gtneioreplugin.util.DimensionHelper;
 
 /**
  * Void Fluid Driller（虚空流体钻机）基类：多方块控制器，无需钻井管道、不耗尽区块矿脉，
- * 以固定 EU 成本从 GT 地下流体表抽取已配置维度的流体（对比 {@link gregtech.common.tileentities.machines.multi.MTEOilDrillBase}）。
+ * 以能源仓电压档对应的 EU/t（1 安培）从 GT 地下流体表抽取已配置维度的流体
+ * （对比 {@link gregtech.common.tileentities.machines.multi.MTEOilDrillBase}）。
  * 结构为 {@code MTEDrillerBase} 的 1:1 复刻（3x3x7）；星球/流体/钻头选择见 {@link #createTooltip()}。
  *
  * @param <T> 泛型多方块基类的自身类型
@@ -142,7 +143,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
 
     public abstract Materials getFrameMaterial();
 
-    /** 机器档位（LV..UV，即 {@link #TIER_LADDER} 的五档）；决定每周期 EU/t 与产量公式的机器档项。 */
+    /** 机器档位（LV..UV，即 {@link #TIER_LADDER} 的五档）；决定产量公式的机器档项（EU/t 不随机器档位，见 checkProcessing）。 */
     protected abstract int getMinTier();
 
     /**
@@ -211,7 +212,8 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         if (!checkPiece(STRUCTURE_PIECE_MAIN, 1, 6, 0, errors)) return;
         checkHatches(errors);
         // 能源仓按"≥LV 即可"放宽：五档机器均接受 LV 起的任意电压档能源仓（GT 本身不限制能源仓档位，
-        // 此前按机器档位拦截的是本方法），产量由实际最高输入电压档驱动（见 computeOutputAmount）。
+        // 此前按机器档位拦截的是本方法），EU/t 与产量均由实际最高输入电压档驱动（见 computeOutputAmount
+        // 与 checkProcessing 的 mEUt 赋值）。
         if (getMaxEnergyHatchTier() < LV) {
             errors.add(StructureErrors.energyHatchTierTooLow(LV));
         }
@@ -300,8 +302,11 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         }
 
         mOutputFluids = new FluidStack[] { output };
-        // EUt 维持各档现状：按机器档位取 GT 电压（LV=32 … UV=524288），不随能源仓档位变化。
-        mEUt = (int) -GTValues.V[getMinTier()];
+        // EUt 跟随能源仓实际最高电压档收取 1 安培（不随机器档位）：LV=32、MV=128、HV=512、EV=2048、
+        // IV=8192、LuV=32768、ZPM=131072、UV=524288、UHV=2097152 EU/t（GTValues.V 表，更高档顺延）。
+        // 本行仅在 mMachine=true 时可达（checkProcessing 由 runMachine→checkRecipe 触发，而 mMachine
+        // 要求 checkMachine 通过——后者已校验能源仓 ≥LV），故 getMaxEnergyHatchTier() 必为有效档位。
+        mEUt = (int) -GTValues.V[getMaxEnergyHatchTier()];
         mMaxProgresstime = CYCLE_TICKS;
         mEfficiency = getCurrentEfficiency(null);
         mEfficiencyIncrease = 10000;
@@ -500,6 +505,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
             .addInfo(StatCollector.translateToLocal("vmd.mbtt.info.5"))
             .addInfo(StatCollector.translateToLocal("vmd.mbtt.info.6"))
             .addInfo(StatCollector.translateToLocal("vmd.mbtt.info.7"))
+            .addInfo(StatCollector.translateToLocal("vmd.mbtt.info.8"))
             .beginStructureBlock(3, 7, 3, false)
             .addController(StatCollector.translateToLocal("vmd.mbtt.structure.front_bottom_center"))
             .addCasing("3", StatCollector.translateToLocal("vmd.mbtt.structure.center_shaft_frame"), false)
