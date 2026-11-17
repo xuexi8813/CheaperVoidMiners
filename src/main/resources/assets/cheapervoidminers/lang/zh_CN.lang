@@ -2,15 +2,15 @@
 gt.blockmachines.voidminerex1.name=虚空矿机 EX I
 gt.blockmachines.voidminerex2.name=虚空矿机 EX II
 gt.blockmachines.voidminerex3.name=虚空矿机 EX III
-gt.blockmachines.voidfluiddrilleriron.name=虚空液体钻机（铁）
-gt.blockmachines.voidfluiddrillersteel.name=虚空液体钻机（钢）
-gt.blockmachines.voidfluiddrillertitanium.name=虚空液体钻机（钛）
-gt.blockmachines.voidfluiddrillernaquadah.name=虚空液体钻机（硅岩）
-gt.blockmachines.voidfluiddrillerinfinity.name=虚空液体钻机（无尽）
+gt.blockmachines.voidfluiddrilleriron.name=虚空流体钻机（铁）
+gt.blockmachines.voidfluiddrillersteel.name=虚空流体钻机（钢）
+gt.blockmachines.voidfluiddrillertitanium.name=虚空流体钻机（钛）
+gt.blockmachines.voidfluiddrillernaquadah.name=虚空流体钻机（硅岩）
+gt.blockmachines.voidfluiddrillerinfinity.name=虚空流体钻机（无尽）
 gt.blockmachines.voidfluidpumpwooden.name=木质虚空流体泵
 
-# 虚空液体钻机 tooltip
-vmd.mbtt.machine_type=虚空液体钻机
+# 虚空流体钻机 tooltip
+vmd.mbtt.machine_type=虚空流体钻机
 vmd.mbtt.info.1=无需钻杆、也不会耗尽区块矿脉，直接抽取所选维度的地下流体。
 vmd.mbtt.info.2=在控制器槽位放入维度显示方块以选择星球；留空则使用机器所在维度。
 vmd.mbtt.info.3=必须放入编程电路（配置 1..N）选择该维度地下流体列表的第 N 项（顺序与 NEI 展示一致）；未插入电路时机器不会启动。
@@ -28,7 +28,7 @@ vmd.mbtt.structure.input_bus=输入总线（钻头与编程电路）
 vmd.mbtt.structure.output_bus=输出总线（可选）
 vmd.mbtt.structure.output_hatch=输出仓（流体输出，必需）
 
-# 虚空液体钻机 GUI
+# 虚空流体钻机 GUI
 vmd.gui.planet=星球：%s
 vmd.gui.fluid=流体：%s
 vmd.gui.fluid.none=无
@@ -40,13 +40,14 @@ vmd.gui.drill.none=无
 vmd.credit.added_by=由 %s 添加
 
 # NEI 产出配方 map（标签页名）
-vmd.recipe.voidfluiddriller=虚空液体钻机
+vmd.recipe.voidfluiddriller=虚空流体钻机
 vmd.recipe.woodenminer=木质虚空矿机
 
 # 配方检查结果消息（SimpleCheckRecipeResult 键）
 GT5U.gui.text.recipe_result.vmd_drilling=正在抽取地下流体
 GT5U.gui.text.recipe_result.vmd_no_fluid_data=该维度没有地下流体数据
 GT5U.gui.text.recipe_result.vmd_circuit_required=未插入编程电路
+GT5U.gui.text.recipe_result.vmd_circuit_out_of_range=编程电路配置超出该维度流体数量
 GT5U.gui.text.recipe_result.vmd_output_full=流体输出已满
 
 # 木质虚空流体泵 tooltip
@@ -84,8 +85,8 @@ vmd.ex.output=根据所在维度每秒产出 %s 个矿石
 vmd.ex.whitelist.item=将矿石放入输入总线以设置白名单/黑名单（按矿物材料匹配，任意石器/大小矿变体均可）
 vmd.ex.whitelist.toggle=使用螺丝刀切换白名单/黑名单
 vmd.ex.blacklist.warn=黑名单或非白名单矿石将被 §c销毁§r。
-vmd.ex.structure.casing=§65x§7 %s
-vmd.ex.structure.frame=§620x§7 %s
+vmd.ex.structure.casing=§63-8x§7 %s（底部机壳位可替换为仓体）
+vmd.ex.structure.frame=§615x§7 %s
 vmd.ex.structure.energy_hatch=任意基础机壳，最低 %s
 vmd.ex.structure.maintenance_hatch=任意基础机壳
 vmd.ex.structure.input_bus=钻杆或矿石（可选），任意基础机壳

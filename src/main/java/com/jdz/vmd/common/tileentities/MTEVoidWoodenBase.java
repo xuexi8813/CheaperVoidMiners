@@ -2,6 +2,7 @@ package com.jdz.vmd.common.tileentities;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -176,7 +177,7 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
         return new ITexture[] { TextureFactory.of(woodenCasingBlock(), woodenCasingMeta()), getFrontOverlay() };
     }
 
-    private static net.minecraft.block.Block woodenCasingBlock() {
+    private static Block woodenCasingBlock() {
         return ItemList.WoodenCasing.getBlock();
     }
 

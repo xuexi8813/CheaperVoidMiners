@@ -77,7 +77,7 @@ public class RecipeLoader {
             400);
         addDrillerAssemblerRecipe(
             ItemRegistry.VoidFluidDrillerNaquadah,
-            // 不存在专用的 Naquadah 机器机壳；以钨钢钻井机壳代替。
+            // 不存在专用的 Naquadah 机器机壳；以坚固钨钢机器机壳代替。
             ItemList.Casing_RobustTungstenSteel,
             Materials.Naquadah,
             8,

@@ -47,6 +47,7 @@ vmd.recipe.woodenminer=Wooden Void Miner
 GT5U.gui.text.recipe_result.vmd_drilling=Extracting underground fluids
 GT5U.gui.text.recipe_result.vmd_no_fluid_data=No underground fluid data for this dimension
 GT5U.gui.text.recipe_result.vmd_circuit_required=No programming circuit inserted
+GT5U.gui.text.recipe_result.vmd_circuit_out_of_range=Circuit configuration exceeds the fluid count of this dimension
 GT5U.gui.text.recipe_result.vmd_output_full=Fluid output full
 
 # Wooden Void Fluid Pump tooltip
@@ -80,12 +81,12 @@ vmd.ex.gas.neon=Neon
 vmd.ex.gas.krypton=Krypton
 vmd.ex.gas.xenon=Xenon
 vmd.ex.gas.oganesson=Oganesson
-vmd.ex.output=Will output %s Ores per Second depending on the Dimension it is build in
+vmd.ex.output=Will output %s Ores per Second depending on the Dimension it is built in
 vmd.ex.whitelist.item=Put the Ore into the input bus to set the Whitelist/Blacklist (matched by material, any variant)
 vmd.ex.whitelist.toggle=Use a screwdriver to toggle Whitelist/Blacklist
 vmd.ex.blacklist.warn=Blacklist or non Whitelist Ore will be §4VOIDED§r.
-vmd.ex.structure.casing=§65x§7 %s
-vmd.ex.structure.frame=§620x§7 %s
+vmd.ex.structure.casing=§63-8x§7 %s (bottom casing slots may be replaced by hatches)
+vmd.ex.structure.frame=§615x§7 %s
 vmd.ex.structure.energy_hatch=%s+, Any base casing
 vmd.ex.structure.maintenance_hatch=Any base casing
 vmd.ex.structure.input_bus=Mining Pipes or Ores, optional, any base casing

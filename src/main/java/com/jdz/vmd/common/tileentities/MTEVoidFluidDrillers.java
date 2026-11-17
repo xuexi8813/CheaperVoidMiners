@@ -138,7 +138,7 @@ public class MTEVoidFluidDrillers {
         }
     }
 
-    /** Naquadah 阶段：LuV 机器档，机器档项 16^3=4096；EU/t 32768。机壳以钨钢钻井机壳代替（无专用机壳）。 */
+    /** Naquadah 阶段：LuV 机器档，机器档项 16^3=4096；EU/t 32768。机壳以坚固钨钢机器机壳代替（无专用机壳）。 */
     @IMetaTileEntity.SkipGenerateName
     public static class VoidFluidDrillerNaquadah extends MTEVoidFluidDrillerBase<VoidFluidDrillerNaquadah> {
 

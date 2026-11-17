@@ -25,7 +25,7 @@ import cpw.mods.fml.relauncher.Side;
  * 副本（assets/.../lang/zh_CN.lang）只对 vanilla 通道生效，WAILA 显示名必须写入上述覆盖
  * 文件才能汉化。
  * <p>
- * 需求：仅客户端且当前语言为 zh_CN 时，幂等写入 16 台机器的中文显示名；dedicated server
+ * 需求：仅客户端且当前语言为 zh_CN 时，幂等写入 10 台机器的中文显示名；dedicated server
  * 与其他语言直接跳过，不创建文件。GT5u 在下一次语言重载/启动时读取该文件生效。
  * 写入时机为 postInit：此时写文件不会触发新的 GT 类加载（LoadComplete 之后写入会在 RFB
  * 环境触发类加载崩溃，勿迁移时机）。
@@ -52,11 +52,11 @@ public final class GtLangOverrideWriter {
         { "gt.blockmachines.voidminerex1.name", "Void Miner EX I", "虚空矿机 EX I" },
         { "gt.blockmachines.voidminerex2.name", "Void Miner EX II", "虚空矿机 EX II" },
         { "gt.blockmachines.voidminerex3.name", "Void Miner EX III", "虚空矿机 EX III" },
-        { "gt.blockmachines.voidfluiddrilleriron.name", "Void Fluid Driller (Iron)", "虚空液体钻机（铁）" },
-        { "gt.blockmachines.voidfluiddrillersteel.name", "Void Fluid Driller (Steel)", "虚空液体钻机（钢）" },
-        { "gt.blockmachines.voidfluiddrillertitanium.name", "Void Fluid Driller (Titanium)", "虚空液体钻机（钛）" },
-        { "gt.blockmachines.voidfluiddrillernaquadah.name", "Void Fluid Driller (Naquadah)", "虚空液体钻机（硅岩）" },
-        { "gt.blockmachines.voidfluiddrillerinfinity.name", "Void Fluid Driller (Infinity)", "虚空液体钻机（无尽）" },
+        { "gt.blockmachines.voidfluiddrilleriron.name", "Void Fluid Driller (Iron)", "虚空流体钻机（铁）" },
+        { "gt.blockmachines.voidfluiddrillersteel.name", "Void Fluid Driller (Steel)", "虚空流体钻机（钢）" },
+        { "gt.blockmachines.voidfluiddrillertitanium.name", "Void Fluid Driller (Titanium)", "虚空流体钻机（钛）" },
+        { "gt.blockmachines.voidfluiddrillernaquadah.name", "Void Fluid Driller (Naquadah)", "虚空流体钻机（硅岩）" },
+        { "gt.blockmachines.voidfluiddrillerinfinity.name", "Void Fluid Driller (Infinity)", "虚空流体钻机（无尽）" },
         { "gt.blockmachines.voidfluidpumpwooden.name", "Wooden Void Fluid Pump", "木质虚空流体泵" },
         { "gt.blockmachines.voidminerwooden.name", "Wooden Void Miner", "木质虚空矿机" } };
 

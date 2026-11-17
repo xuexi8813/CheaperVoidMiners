@@ -32,13 +32,12 @@ A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from 
 ## 多方块结构
 
 - 流体钻机 / EX 矿机均为 3×3×7 立柱结构，与 GT 原版流体钻井机同形（控制器位于正面底层中央）。
-- 机壳与 GT 框架随档位变化：铁（ULV 机壳）/ 钢 / 钛 / 硅岩 / 无尽档对应各自主机壳与框架材料；硅岩 / 无尽档无专用机壳，分别以钨钢钻井机壳与中子素采矿机壳代替。
+- 机壳与 GT 框架随档位变化：铁（ULV 机壳）/ 钢 / 钛 / 硅岩 / 无尽档对应各自主机壳与框架材料；硅岩 / 无尽档无专用机壳，分别以坚固钨钢机器机壳与中子素采矿机壳代替。
 - 主机制造走组装机配方：机壳 ×4、GT 框架 ×4-8、超级缸、电泵、钻头与配置 12 编程电路（电路为不消耗的配置标记，不会作为材料被消耗）；框架数与时长随档位递增。
 
 ## 内置维度覆写（合并自 Void-Miner-Tweak-Mod）
 
 - 在控制器槽位放入 GTNEI 维度显示方块，即可让 EX 矿机挖取任意维度的矿表——包括没有 GalacticGreg 注册的私人/个人维度（空矿表时过滤按钮仍可用）。
-- 每个维度需要先到访一次（原版虚空矿机机制），否则 GUI 显示警告。
 - 独立版 vmtweak 在场时本 mod 的注入自动让位，行为与 vmtweak 一致；卸载 vmtweak 后自动接管，旧存档 NBT 键自动迁移。
 
 ## 过滤器：按矿物材料宽匹配
@@ -64,8 +63,8 @@ A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from 
 ## 构建
 
 ```bash
-gradle build        # 完整构建（发布 jar）
-gradle runServer    # 开发环境服务器冒烟
+./gradlew build        # 完整构建（发布 jar）
+./gradlew runServer    # 开发环境服务器冒烟
 ```
 
 - 需要 JDK 21+（GTNH 标准工具链，经 Jabel 以 Java 8 字节码输出，兼容 1.7.10 运行时）。
@@ -73,7 +72,7 @@ gradle runServer    # 开发环境服务器冒烟
 
 ## CI
 
-- push / PR 到 master 自动构建与测试。
+- push / PR 到 master / main 自动构建与测试。
 - 版本 tag 触发 GitHub Release 发布。
 
 ## 致谢

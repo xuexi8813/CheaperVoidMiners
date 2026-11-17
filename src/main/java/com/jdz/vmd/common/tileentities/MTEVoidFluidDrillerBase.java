@@ -283,10 +283,17 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         // 必须由编程电路（配置 1..N）选定候选列表第 N 项（规范排序与 NEI 展示同源一致，见
         // VoidFluidTableHelper#CANDIDATE_ORDER）：未插入电路、配置 0 或超出范围时一律不启动。
         final int circuitConfig = readCircuitConfig();
-        if (circuitConfig < 1 || circuitConfig > candidates.size()) {
+        if (circuitConfig < 1) {
+            // 未插入编程电路或配置 0：视为未配置。
             mEUt = 0;
             mMaxProgresstime = 0;
             return SimpleCheckRecipeResult.ofFailure("vmd_circuit_required");
+        }
+        if (circuitConfig > candidates.size()) {
+            // 配置超出该维度候选流体数量：与"未插电路"区分，给出针对性错误提示。
+            mEUt = 0;
+            mMaxProgresstime = 0;
+            return SimpleCheckRecipeResult.ofFailure("vmd_circuit_out_of_range");
         }
         final GTUOFluid selectedFluid = candidates.get(circuitConfig - 1);
         final Fluid fluid = selectedFluid.getFluid();
@@ -316,6 +323,19 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         displayFluidKey = fluid.getUnlocalizedName();
         displayDrillMaterial = drill == null ? "" : drill.materialName;
 
+        // 钻头消耗时点 = 周期启动成功时（全部失败返回分支之后）：多方块周期一经启动必完成
+        // （断电仅暂停进度，不取消周期），故"每周期启动成功"与"每完成周期"一一对应，
+        // 单周期至多消耗 1 个，概率不变（DRILL_CONSUMPTION_CHANCE）。必须在配方窗口内
+        // （checkRecipe 先以 startRecipeProcessing 开窗、后以 endRecipeProcessing 关窗）扣减：
+        // 普通输入总线中 drill.stack 为库存槽位活跃引用，扣减即生效；ME 输入总线中 drill.stack
+        // 为窗口内提取出的 slot.extracted 活跃引用，扣减后由窗口关闭时的差额结算
+        // （extractedAmount − stackSize，MTEHatchInputBusME.endRecipeProcessing）自动从 AE 网络补扣
+        // ——原实现（周期完成时经 outputAfterRecipe 消耗）在窗口关闭后执行，ME 总线的
+        // getStackInSlot 已返回 null，导致加成生效而钻头永不消耗。
+        if (drill != null && XSTR_INSTANCE.nextFloat() < DRILL_CONSUMPTION_CHANCE) {
+            consumeDrillHead(drill.stack);
+        }
+
         return SimpleCheckRecipeResult.ofSuccess("vmd_drilling");
     }
 
@@ -342,15 +362,13 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         return (long) BASE_OUTPUT_MB << totalBits;
     }
 
-    /** 每个完成的周期结束时按固定概率消耗一个钻头。 */
-    @Override
-    protected void outputAfterRecipe() {
-        final DrillSelection drill = findDrill();
-        if (drill == null) return;
-        if (XSTR_INSTANCE.nextFloat() >= DRILL_CONSUMPTION_CHANCE) return;
-
-        // getStoredInputs() 返回输入总线库存的活跃引用（直接修改即生效）。
-        ItemStack stack = drill.stack;
+    /**
+     * 扣减一个钻头（周期启动成功时调用，见 checkProcessing 内消耗时点说明）。
+     * 直接修改传入的活跃引用：普通输入总线的槽位库存、ME 输入总线的 slot.extracted 快照
+     * （{@code MTEHatchInputBusME} 在 {@code startRecipeProcessing} 时从 AE 网络模拟提取，
+     * {@code endRecipeProcessing} 按 extractedAmount − stackSize 的差额对网络补扣真实提取量）。
+     */
+    private void consumeDrillHead(ItemStack stack) {
         if (stack.stackSize <= 1) {
             stack.stackSize = 0;
         } else {

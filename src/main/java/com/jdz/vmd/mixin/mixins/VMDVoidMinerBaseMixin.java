@@ -8,6 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StatCollector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -69,6 +71,13 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     // endregion
 
     // region 维度覆写的独有状态
+
+    /**
+     * 本 mixin 自身的日志器。静态字段不参与 @Shadow/@Unique 合并到目标类的成员注入，
+     * 仅存在于 mixin 类内供日志使用。
+     */
+    @Unique
+    private static final Logger VMD$LOG = LogManager.getLogger("CheaperVoidMiners");
 
     /** 覆写失败时在 GUI 显示的警告消息（lang 键原文）。 */
     @Unique
@@ -190,6 +199,9 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
                 .map(ItemDimensionDisplay::getDimension)
                 .orElse("None");
         } catch (Exception e) {
+            // 1:1 移植 vmtweak 的回退语义：读取槽位失败视为无覆写（可恢复异常），不中断机器运行，
+            // 仅记录 WARN 便于排查异常的槽位数据。
+            VMD$LOG.warn("Failed to read the dimension override slot, falling back to no override", e);
             dimAbbr = "None";
         }
 

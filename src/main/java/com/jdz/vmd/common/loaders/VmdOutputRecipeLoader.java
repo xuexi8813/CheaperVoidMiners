@@ -31,8 +31,8 @@ import gtneioreplugin.util.DimensionHelper;
  * 注册本模组的 NEI 产出配方。流体钻机配方：维度显示方块作输入，该维度全部候选流体按规范排序
  * （{@code VoidFluidTableHelper#CANDIDATE_ORDER}，与机器电路 N 选择同源同序）作无概率输出。
  * 木制采矿机配方遵循 GT 虚空采矿机（{@code VoidMinerRecipes}）模式：维度显示方块作输入，带权重输出
- * （权重为 0.01% 概率单位、按权重降序），并按机器编程电路切分条目：混合奖池一条（无电路）+
- * 每条主世界矿脉一条（电路 1..N，贫矿按材料归属并入对应矿脉）。调用时机为
+ * （权重为 0.01% 概率单位、按权重降序），并按机器编程电路切分条目：每条主世界矿脉一条
+ * （电路 1..N，贫矿按材料归属并入对应矿脉）。调用时机为
  * {@code GregTechAPI.sAfterGTPostload}（GT postInit 末尾）：
  * GT 地下流体表（GT preInit）、矿脉/贫矿世界生成表（{@code WorldgenGTOreLayer}/
  * {@code WorldgenGTOreSmallPieces}.sList，GT postInit 经 GTWorldgenloader 填充）与 GTNEI 维度显示方块
@@ -96,8 +96,8 @@ public final class VmdOutputRecipeLoader {
     }
 
     /**
-     * 木制采矿机：与机器编程电路选择语义对应的 NEI 条目——混合奖池一条（配置 0/无电路，输入仅维度显示方块），
-     * 以及每条主世界矿脉一条（配置 1..N，输入附配置 i 的编程电路）。
+     * 木制采矿机：与机器编程电路选择语义对应的 NEI 条目——每条主世界矿脉一条
+     * （配置 1..N，输入附配置 i 的编程电路）。
      * 贫矿归属（每个贫矿条目只归第一条材料匹配的矿脉、未归属者仅存贫矿池与混合池）由
      * {@link MTEVoidMinerWooden#buildOverworldPools} 统一构建，机器与 NEI 消费同一份数据，不会漂移；
      * 输出堆叠数量亦与机器每周期产出一致（{@link MTEVoidMinerWooden#OUTPUT_PER_CYCLE}，一组 64 件），

@@ -46,7 +46,7 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
      * EX 系列产出加强系数（数值加强）：父类 handleOutputs 对每个输出堆设置
      * {@code stackSize = multiplier}（TIER_MULTIPLIER × 惰性气体加成）后经
      * {@code addOutputPartial(ItemStack)} 弹出，这是本机器唯一的物品输出入口；
-     * 本类在弹出前将最终值 ×16。数值上限：TIER_MULTIPLIER(16) × 氪气加成(64) × 16 = 16384，int 安全。
+     * 本类在弹出前将最终值 ×16。数值上限：TIER_MULTIPLIER(16) × 鿫加成(64) × 16 = 16384，int 安全。
      */
     private static final int OUTPUT_ENHANCEMENT_FACTOR = 16;
 
@@ -111,7 +111,7 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
         tt.addMachineType(StatCollector.translateToLocal("vmd.ex.machine_type"))
             .addInfo(
                 StatCollector
-                    .translateToLocalFormatted("vmd.ex.eu", numberFormat.format(GTValues.V[this.getMinTier()])))
+                    .translateToLocalFormatted("vmd.ex.eu", numberFormat.format(GTValues.VP[this.getMinTier()])))
             .addInfo(StatCollector.translateToLocalFormatted("vmd.ex.gas.intro", NOBLE_GAS_SUPPLY_RATE_PER_SECOND))
             .addInfo(
                 createGasString(EnumChatFormatting.LIGHT_PURPLE, StatCollector.translateToLocal("vmd.ex.gas.neon"), 4))
