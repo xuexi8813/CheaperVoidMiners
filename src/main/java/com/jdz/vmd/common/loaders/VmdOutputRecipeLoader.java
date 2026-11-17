@@ -151,12 +151,6 @@ public final class VmdOutputRecipeLoader {
         return weights;
     }
 
-    /** 构建并添加带权重的物品输出配方（仅维度显示方块输入）；总权重 <= 0 时回退为均匀分配。 */
-    private static void addItemWeightedRecipe(RecipeMap<RecipeMapBackend> recipeMap, Block marker,
-        List<ItemStack> stacks, List<Float> weights) {
-        addItemWeightedRecipe(recipeMap, new ItemStack[] { toMarkerStack(marker) }, stacks, weights);
-    }
-
     /** 构建并添加带权重的物品输出配方（输入数组可附加编程电路）；总权重 <= 0 时回退为均匀分配。 */
     private static void addItemWeightedRecipe(RecipeMap<RecipeMapBackend> recipeMap, ItemStack[] inputs,
         List<ItemStack> stacks, List<Float> weights) {

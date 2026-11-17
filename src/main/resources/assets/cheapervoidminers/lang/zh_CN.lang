@@ -11,7 +11,7 @@ gt.blockmachines.voidfluidpumpwooden.name=木质虚空流体泵
 
 # 虚空流体钻机 tooltip
 vmd.mbtt.machine_type=虚空流体钻机
-vmd.mbtt.info.1=无需钻杆、也不会耗尽区块矿脉，直接抽取所选维度的地下流体。
+vmd.mbtt.info.1=无需钻杆、也不会耗尽区块流体，直接抽取所选维度的地下流体。
 vmd.mbtt.info.2=在控制器槽位放入维度显示方块以选择星球；留空则使用机器所在维度。
 vmd.mbtt.info.3=必须放入编程电路（配置 1..N）选择该维度地下流体列表的第 N 项（顺序与 NEI 展示一致）；未插入电路时机器不会启动。
 vmd.mbtt.info.4=电路配置超出该维度流体数量时，本周期失败并给出错误提示。
@@ -20,7 +20,7 @@ vmd.mbtt.info.6=每 100 tick 产出 1000mB × 4^(能源仓电压档 - LV + 1) ×
 vmd.mbtt.info.7=能源仓接受 LV（最低机器电压）起的任意电压档；电压项直接按 GT 电压档线性计算（EV/IV/ZPM 等顺延），取实际可用的最高输入电压档。
 vmd.mbtt.info.8=耗电跟随能源仓电压档（1A）：LV 32 / MV 128 / HV 512 / EV 2048 / IV 8192 / LuV 32768 / ZPM 131072 / UV 524288 EU/t（UHV 起每档 ×4）。
 vmd.mbtt.structure.front_bottom_center=控制器，前下方中心
-vmd.mbtt.structure.center_shaft_frame=框架方块（控制器正下方立柱）
+vmd.mbtt.structure.center_shaft_frame=框架方块（控制器正上方立柱）
 vmd.mbtt.structure.frame=%s个框架方块（中部十字层）
 vmd.mbtt.structure.any_bottom_casing_min_tier=任意机壳，最低 %s 电压档
 vmd.mbtt.structure.any_bottom_casing=任意机壳
@@ -72,6 +72,7 @@ vmd.miner.desc.5=电路配置超出 N+1 时机器静默待机；编程电路可�
 vmd.miner.desc.selection=当前选择：%s
 vmd.miner.selection.poor=贫瘠矿池
 vmd.miner.selection.mixed=全部矿物（加权随机）
+vmd.miner.selection.invalid=无效电路配置
 
 # 虚空矿机 EX tooltip（多方块）
 vmd.ex.machine_type=采矿机

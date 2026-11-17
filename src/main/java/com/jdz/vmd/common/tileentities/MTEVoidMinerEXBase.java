@@ -140,8 +140,8 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
                 StatCollector.translateToLocalFormatted("vmd.ex.structure.energy_hatch", VN[this.getMinTier()]),
                 1)
             .addMaintenanceHatch("1", StatCollector.translateToLocal("vmd.ex.structure.maintenance_hatch"), 1)
-            .addInputBus("1+", StatCollector.translateToLocal("vmd.ex.structure.input_bus"), 1)
-            .addInputHatch("1+", StatCollector.translateToLocal("vmd.ex.structure.input_hatch"), 1)
+            .addInputBus("0-1", StatCollector.translateToLocal("vmd.ex.structure.input_bus"), 1)
+            .addInputHatch("0-1", StatCollector.translateToLocal("vmd.ex.structure.input_hatch"), 1)
             .addOutputBus("1+", StatCollector.translateToLocal("vmd.ex.structure.output_bus"), 1)
             .toolTipFinisher();
         return tt;
@@ -179,7 +179,7 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
         super.addOutputPartial(stack);
     }
 
-    /** 复刻 GT5u 5.09.51.x 的气体提示行构建（该方法在 5.09.55.x 中被移除）。 */
+    /** 复刻 GT5u 5.09.51.x 的气体提示行构建（钉定版本 5.09.54.265 已改用 markdown 描述页，该方法不复存在）。 */
     private String createGasString(EnumChatFormatting color, String gas, int boost) {
         return String.format(
             "%s%s%s : %s%dx%s",

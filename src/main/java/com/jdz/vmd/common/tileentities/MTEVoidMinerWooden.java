@@ -315,6 +315,6 @@ public class MTEVoidMinerWooden extends MTEVoidWoodenBase {
         if (config == 0) {
             return StatCollector.translateToLocal("vmd.miner.selection.mixed");
         }
-        return StatCollector.translateToLocal("vmd.pump.selection.invalid");
+        return StatCollector.translateToLocal("vmd.miner.selection.invalid");
     }
 }

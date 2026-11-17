@@ -13,7 +13,8 @@ import gregtech.api.recipe.RecipeMapBuilder;
 public final class VmdRecipeMaps {
 
     /**
-     * 物品输出上限（9 行 × 8 列 = 72，与 GT5u 5.09.55.x 的 VoidMinerFrontend 一致）。
+     * 物品输出上限（9 行 × 8 列 = 72，与 GT5u 5.09.55.x 引入的 VoidMinerFrontend 上限一致；
+     * 本项目钉定的 5.09.54.265 尚无该前端与对应的 NEI 配方表）。
      * 这是配方表（RecipeMap 后端）的容量上限；实际每条配方的物品输出数为该维度条目数
      * （≤6 种资源），NEI 页面由 {@link VmdFrontend} 的 3 列 × N 行向上网格渲染，足够容纳。
      */

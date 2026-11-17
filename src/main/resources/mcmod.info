@@ -8,7 +8,7 @@
 		"mcversion": "${minecraftVersion}",
 		"updateUrl": "",
 		"authorList": ["xuexi8813"],
-		"credits": "",
+		"credits": "Based on kuolemax/CheaperVoidMiners; dimension override merged from reobf/Void-Miner-Tweak-Mod",
 		"logoFile": "",
 		"screenshots": [],
 		"parent": "",

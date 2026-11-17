@@ -11,7 +11,7 @@ gt.blockmachines.voidfluidpumpwooden.name=Wooden Void Fluid Pump
 
 # Void Fluid Driller tooltip
 vmd.mbtt.machine_type=Void Fluid Driller
-vmd.mbtt.info.1=Taps the underground fluids of a chosen dimension without drilling pipes and without depleting chunk veins.
+vmd.mbtt.info.1=Taps the underground fluids of a chosen dimension without drilling pipes and without depleting the chunk's fluids.
 vmd.mbtt.info.2=Put a Dimension Display block into the controller slot to select the dimension; leave the slot empty to use the dimension the machine is built in.
 vmd.mbtt.info.3=A programming circuit (configuration 1..N) must be inserted into the input bus to select the N-th entry of that dimension's fluid list (same order as shown in NEI); the machine does not start without an inserted programming circuit.
 vmd.mbtt.info.4=A circuit configuration beyond the fluid count of the dimension fails the cycle with an error message.
@@ -20,7 +20,7 @@ vmd.mbtt.info.6=Produces 1000mB x 4^(energy hatch tier - LV + 1) x 16^(machine t
 vmd.mbtt.info.7=Energy hatches of any tier from LV (the lowest machine voltage) up are accepted; the voltage term scales linearly with the raw GT voltage tier (EV/IV/ZPM etc. continue the sequence), using the highest available input voltage tier.
 vmd.mbtt.info.8=Power draw follows the energy hatch tier (1A): LV 32 / MV 128 / HV 512 / EV 2048 / IV 8192 / LuV 32768 / ZPM 131072 / UV 524288 EU/t (x4 per tier beyond UV).
 vmd.mbtt.structure.front_bottom_center=Controller, front bottom center
-vmd.mbtt.structure.center_shaft_frame=Frame Blocks (shaft below the controller)
+vmd.mbtt.structure.center_shaft_frame=Frame Blocks (shaft above the controller)
 vmd.mbtt.structure.frame=%s Frame Blocks (plus-shaped middle layers)
 vmd.mbtt.structure.any_bottom_casing_min_tier=Any casing, min tier %s
 vmd.mbtt.structure.any_bottom_casing=Any casing
@@ -72,6 +72,7 @@ vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the progr
 vmd.miner.desc.selection=Current selection: %s
 vmd.miner.selection.poor=Poor ore pool
 vmd.miner.selection.mixed=All ores (weighted)
+vmd.miner.selection.invalid=Invalid circuit configuration
 
 # Void Miner EX tooltip
 vmd.ex.machine_type=Miner

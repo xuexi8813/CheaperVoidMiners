@@ -535,7 +535,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
                         .getDisplayName()),
                 false)
             .addCasing(
-                "7-8",
+                "3-7",
                 getCasingBlock().get(0)
                     .getDisplayName(),
                 false)
@@ -546,7 +546,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
                 1)
             .addMaintenanceHatch("1", StatCollector.translateToLocal("vmd.mbtt.structure.any_bottom_casing"), 1)
             .addInputBus("1+", StatCollector.translateToLocal("vmd.mbtt.structure.input_bus"), 1)
-            .addOutputBus("1+", StatCollector.translateToLocal("vmd.mbtt.structure.output_bus"), 1)
+            .addOutputBus("0-1", StatCollector.translateToLocal("vmd.mbtt.structure.output_bus"), 1)
             .addOutputHatch("1+", StatCollector.translateToLocal("vmd.mbtt.structure.output_hatch"), 1)
             .toolTipFinisher();
         return tt;

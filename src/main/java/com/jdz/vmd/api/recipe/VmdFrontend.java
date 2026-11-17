@@ -15,7 +15,7 @@ import gregtech.api.util.MethodsReturnNonnullByDefault;
 /**
  * 本模组产出配方表（虚空流体钻机 / 木制虚空采矿机）的自定义 NEI 输出布局前端。
  * <p>
- * 动机：GT5u 5.09.54.264 的默认前端 {@code UIHelper.getFluidOutputPositions} 将全部流体输出槽
+ * 动机：GT5u 5.09.54.265 的默认前端 {@code UIHelper.getFluidOutputPositions} 将全部流体输出槽
  * 排成 y=62 固定、x 每槽 +18 的单行且无换行；GT 原版配方最多 1-2 个输出故从未暴露问题，而本模组
  * 每条配方有多个输出（流体钻机每维度 ≤5 种流体，木矿机矿脉条目含大矿与归属贫矿），第 4-5 个槽位
  * 起被 NEI 页面右边缘裁切。物品输出默认网格在超出常规数量时同样无法保证不出界。
