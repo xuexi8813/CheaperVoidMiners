@@ -13,12 +13,17 @@ import gregtech.api.recipe.RecipeMapBuilder;
 public final class VmdRecipeMaps {
 
     /**
-     * 物品输出上限（9 行 × 8 列 = 72，与 GT5u 5.09.55.x 引入的 VoidMinerFrontend 上限一致；
-     * 本项目钉定的 5.09.54.265 尚无该前端与对应的 NEI 配方表）。
-     * 这是配方表（RecipeMap 后端）的容量上限；实际每条配方的物品输出数为该维度条目数
-     * （≤6 种资源），NEI 页面由 {@link VmdFrontend} 的 3 列 × N 行向上网格渲染，足够容纳。
+     * 物品输出槽容量（NEI 模板槽位数）。{@code RecipeMapBuilder#maxIO} 不限制配方注册的输出数，
+     * 只决定 NEI 页面预建的幻影槽位数；基类标准物品输出网格（{@code UIHelper.getItemOutputPositions}）
+     * 在超过 6 个输出时按 3 列、自 y=6 起向下排布，170x82 的 NEI 背景恰好容纳 3 行（y=6/24/42，
+     * 第 4 行起越出背景下沿），故安全容量为 3 列 × 3 行 = 9——与 GT 5.09.54.265 全部配方表的
+     * 最大物品输出数一致（如电弧炉 {@code maxIO(2, 9, 2, 1)}）。5.09.55 的 VoidMinerFrontend 取 72
+     * 是因其自带更大的 NEI 页面，本项目钉定的 265 没有该前端，取 72 会让模板按 3 列预建 24 行槽位、
+     * 从 GUI 顶溢出（本次修复的 bug）。实际每条矿脉配方的物品输出数为 4 种矿脉材料 + 归属贫矿
+     * （各 1 条，主世界仅 Stone 一种石类型），理论上限 8、实测 6；即便超出容量，超出部分仍会经
+     * GTNEIDefaultHandler 的"超出常规数量"路径在背景区内补画（无槽位贴图），NEI 展示不会截断。
      */
-    public static final int MAX_ITEM_OUTPUTS = 72;
+    public static final int MAX_ITEM_OUTPUTS = 9;
 
     /**
      * 流体输出上限：GTNH 2.9.0 的 UndergroundFluids.cfg 每维度最多 5 种流体（23 个维度），
@@ -46,7 +51,8 @@ public final class VmdRecipeMaps {
      * {@code MTEVoidMinerWooden#buildOverworldPools} 统一构建，未被归属的贫矿仅保留在机器侧的
      * 贫矿池与混合奖池中，不单独成 NEI 条目。
      * 物品输入上限为 2：编程电路作为第二输入；机器 {@code checkRecipe} 自行选择奖池、不走该表的配方匹配，
-     * 输入上限仅约束 NEI 展示与注册校验，故无运行时副作用，minInputs 保持 (1, 0)。
+     * 输入上限仅决定 NEI 模板槽位数、不约束配方注册（见 {@link #MAX_ITEM_OUTPUTS} 说明），
+     * 故无运行时副作用，minInputs 保持 (1, 0)。
      * 与 voidFluidDrillerRecipes 相同，不配置 NEI 进度条以避免贴图解析失败刷屏。
      */
     public static final RecipeMap<RecipeMapBackend> woodenMinerRecipes = RecipeMapBuilder.of("vmd.recipe.woodenminer")
