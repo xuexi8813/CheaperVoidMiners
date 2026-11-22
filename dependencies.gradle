@@ -35,12 +35,12 @@
  */
 
 dependencies {
-    api("com.github.GTNewHorizons:GTNHLib:0.11.54:dev")
-    // 对齐整合包实际版本（gregtech-5.09.54.265.jar）。265 dev jar 曾因 nexus 直连限速改分段下载。
-    // MTEVoidWoodenBase.getInventoryStackLimit 显式声明修复跨 264/265 发布环境均有效，见该类 javadoc。
-    api("com.github.GTNewHorizons:GT5-Unofficial:5.09.54.265:dev")
+    api("com.github.GTNewHorizons:GTNHLib:0.11.58:dev")
+    // 对齐整合包实际版本（2.9.1：gregtech-5.09.54.275.jar；2.9.0 为 265）。
+    // MTEVoidWoodenBase.getInventoryStackLimit 显式声明修复跨发布环境均有效，见该类 javadoc。
+    api("com.github.GTNewHorizons:GT5-Unofficial:5.09.54.275:dev")
 
-    // 开发运行时对齐整合包实际版本；发布钉定仍随 GT5u pom（265 钉 2.8.160），
+    // 开发运行时对齐整合包实际版本；发布钉定仍随 GT5u pom，
     // gradle 冲突解析取本声明高版本。此处仅影响 dev 运行环境（runtimeOnlyNonPublishable 不参与发布）。
-    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.171-GTNH:dev")
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.175-GTNH:dev")
 }

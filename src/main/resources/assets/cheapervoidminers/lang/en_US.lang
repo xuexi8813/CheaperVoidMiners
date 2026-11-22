@@ -67,7 +67,7 @@ vmd.siphon.info.4=EU/t = Depth x 4^(planet tier + 2) with the vanilla perfect ov
 vmd.siphon.info.5=Drill heads in the input bus boost the output like the Void Fluid Driller: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024 (highest class applies). Each finished cycle consumes one drill head with a 1% chance.
 vmd.siphon.info.6=Mining Pipes: keep at least Depth x 64 pipes in the input bus (they are not consumed). Heating Coil: +10% speed per tier; batch mode is supported like the vanilla Siphon.
 vmd.siphon.info.7=Gas table: circuits 1-4 Jupiter (T3): Hydrogen/Helium/Nitrogen/Oxygen; 5-8 Saturn (T5): Hydrogen/Helium/Oxygen/Liquid Oxygen; 9-12 Uranus (T5): Deuterium/Neon/Argon/Krypton; 13-16 Neptune (T6): Tritium/Helium-3/Ammonia/Xenon.
-vmd.siphon.structure.controller=Controller, front center of the main body
+vmd.siphon.structure.controller=Controller, front center of the main body, 16th layer
 vmd.siphon.structure.siphon_casing=Planetary Siphon Casings
 vmd.siphon.structure.frame=Tungstensteel Frame Box
 vmd.siphon.structure.rebolted_casing=Rebolted Rhodium-Plated Palladium Casing

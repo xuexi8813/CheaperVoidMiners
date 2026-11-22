@@ -25,7 +25,7 @@ import cpw.mods.fml.relauncher.Side;
  * 副本（assets/.../lang/zh_CN.lang）只对 vanilla 通道生效，WAILA 显示名必须写入上述覆盖
  * 文件才能汉化。
  * <p>
- * 需求：仅客户端且当前语言为 zh_CN 时，幂等写入 10 台机器的中文显示名；dedicated server
+ * 需求：仅客户端且当前语言为 zh_CN 时，幂等写入 11 台机器的中文显示名；dedicated server
  * 与其他语言直接跳过，不创建文件。GT5u 在下一次语言重载/启动时读取该文件生效。
  * 写入时机为 postInit：此时写文件不会触发新的 GT 类加载（LoadComplete 之后写入会在 RFB
  * 环境触发类加载崩溃，勿迁移时机）。
@@ -42,7 +42,7 @@ public final class GtLangOverrideWriter {
     private static final String TARGET_LANGUAGE = "zh_CN";
 
     /**
-     * 10 台机器的语言条目，每行依次为：GT 语言键、GT 英文占位值、中文显示名。
+     * 11 台机器的语言条目，每行依次为：GT 语言键、GT 英文占位值、中文显示名。
      * 键 = "gt.blockmachines." + mName（注册名，GT 构造器强制全小写）+ ".name"；
      * 英文占位值为注册时传入的 aRegionalName——zh_CN 覆盖文件先于机器键存在时，GT 会把该
      * 英文占位写进文件，检测到现值等于占位值则覆盖回中文；其余非中文值视为用户自定义，
@@ -58,7 +58,8 @@ public final class GtLangOverrideWriter {
         { "gt.blockmachines.voidfluiddrillernaquadah.name", "Void Fluid Driller (Naquadah)", "虚空流体钻机（硅岩）" },
         { "gt.blockmachines.voidfluiddrillerinfinity.name", "Void Fluid Driller (Infinity)", "虚空流体钻机（无尽）" },
         { "gt.blockmachines.voidfluidpumpwooden.name", "Wooden Void Fluid Pump", "木质虚空流体泵" },
-        { "gt.blockmachines.voidminerwooden.name", "Wooden Void Miner", "木质虚空矿机" } };
+        { "gt.blockmachines.voidminerwooden.name", "Wooden Void Miner", "木质虚空矿机" },
+        { "gt.blockmachines.surfaceplanetarygassiphon.name", "Surface Planetary Gas Siphon", "地表行星气体钻机" } };
 
     private GtLangOverrideWriter() {}
 

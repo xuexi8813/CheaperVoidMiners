@@ -290,6 +290,7 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
         }
 
         // Mining Pipes 常备量校验（原版 1:1：Depth × 64 根，仅要求常备、不消耗）。
+        // 与原版的唯一扫描差异：本机扫描范围限输入总线（原版还扫描控制器槽）。
         final ItemStack miningPipe = GTModHandler.getIC2Item("miningPipe", 0);
         if (miningPipe == null) {
             LOG.error("IC2 mining pipe item is missing, the pipe requirement cannot be satisfied");

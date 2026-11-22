@@ -1,10 +1,10 @@
 # Cheaper Void Miners for GTNH
 
-A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from early game, with five-tier void fluid drillers, three enhanced Void Miner EX stages, two non-electric wooden machines and a Surface Planetary Gas Siphon.
+A GTNH 2.9.0/2.9.1 fork of Cheaper Void Miners that makes void mining accessible from early game, with five-tier void fluid drillers, three enhanced Void Miner EX stages, two non-electric wooden machines and a Surface Planetary Gas Siphon.
 
 ## 项目定位
 
-本项目是 GTNH 2.9.0（MC 1.7.10）环境下 kuolemax/CheaperVoidMiners 的降档加强分支：在游戏早期即可获得低门槛的虚空采矿能力，并通过逐档加强把产能延伸到中后期。衍生出的虚空流体钻机、虚空矿机 EX、木质两机与地表行星气体钻机覆盖了流体与矿石两类虚空产出。
+本项目是 GTNH 2.9.0/2.9.1（MC 1.7.10）环境下（开发运行时对齐 2.9.1）kuolemax/CheaperVoidMiners 的降档加强分支：在游戏早期即可获得低门槛的虚空采矿能力，并通过逐档加强把产能延伸到中后期。衍生出的虚空流体钻机、虚空矿机 EX、木质两机与地表行星气体钻机覆盖了流体与矿石两类虚空产出。
 
 ## 机器清单（11 台）
 
@@ -34,7 +34,7 @@ A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from 
 ### 地表行星气体钻机（多方块）
 
 - GT5u 原版行星气体钻机（Planetary Gas Siphon）的"地表"加强版：任意维度的地表均可搭建，摆脱原版"必须建在环绕气态行星的空间站轨道"的限制；结构（13×23×13、Siphon 机壳 + 钨钢框架 + 再紧固镀铑钯机壳 + 加热线圈层）与原版 1:1。
-- 不做维度选择：原版 Siphon 全部可抽气体（4 行星 × 4 深度共 16 种）汇总为一张全局表，按行星 Tier 升序编号，编程电路（配置 1..N）选第 N 项；必须插电路且配置有效才会启动。
+- 不做维度选择：原版 Siphon 全部可抽气体（4 行星 × 4 深度共 16 种）汇总为一张全局表，按行星 Tier 升序编号（同 Tier 行星按内部 id 字典序排列），编程电路（配置 1..N）选第 N 项；必须插电路且配置有效才会启动。
 - 产量 = 原版基础产量 × 16^max(0, 机器电压档 − 行星 Tier)；行星 Tier 高于机器电压档的气体不可选。EU/t = Depth × 4^(行星 Tier + 2) 按原版公式与完美超频规则（每级产量 ×2、耗电 ×4），**不随 16^ 产量加成放大**。
 - 钻头加成与虚空流体钻机同款（铁 ×4 / 钢 ×16 / 钛 ×64 / 硅岩 ×256 / 无尽 ×1024 取最高阶级），每完成一个周期有 1% 概率消耗 1 个钻头。
 - Mining Pipes 需求、Heating Coil 加速（每级 +10%）、批量模式、流体输出保护均与原版 1:1；原版的轨道空间站 chunk loading 随空间站限制一并移除。
@@ -81,7 +81,7 @@ A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from 
 ./gradlew runServer    # 开发环境服务器冒烟
 ```
 
-- 需要 JDK 21+（GTNH 标准工具链，经 Jabel 以 Java 8 字节码输出，兼容 1.7.10 运行时）。
+- 需要 JDK 25（由 gradle/gradle-daemon-jvm.properties 声明，Gradle daemon JVM criteria 自动选定/供给；经 Jabel 以 Java 8 字节码输出，兼容 1.7.10 运行时）。
 - 依赖 GT5u / ModularUI2 / NEI 等 GTNH maven 产物，开发运行时对齐整合包实际版本。
 
 ## CI

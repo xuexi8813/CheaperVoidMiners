@@ -109,7 +109,7 @@ public final class PlanetaryGasTableHelper {
                         depth);
                     continue;
                 }
-                // 深拷贝快照：消费方（机器/NEI）不得改写 GT5u 的共享配方数据。
+                // 浅拷贝快照（本表气体均无 NBT，共享 tag 引用无风险）：消费方（机器/NEI）不得改写 GT5u 的共享配方数据。
                 entries.add(new GasEntry(new FluidStack(fluid, fluid.amount), recipe.tier, depth, planet.getKey()));
             }
         }
