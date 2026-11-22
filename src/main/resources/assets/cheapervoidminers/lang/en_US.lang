@@ -61,11 +61,11 @@ GT5U.gui.text.recipe_result.vmd_siphon_no_mining_pipe=Not enough Mining Pipes in
 # Surface Planetary Gas Siphon tooltip
 vmd.siphon.machine_type=Surface Gas Siphon
 vmd.siphon.info.1=A surface-strengthened variant of the vanilla Planetary Gas Siphon: builds on the ground in any dimension, without the orbiting space station requirement.
-vmd.siphon.info.2=A programming circuit (configuration 1..N) selects the N-th entry of the global gas table (every gas the vanilla Siphon can pump, sorted by planet tier in ascending order); the machine does not start without an inserted circuit, with configuration 0, or with an out-of-range configuration.
+vmd.siphon.info.2=A programming circuit (configuration 1..N) selects the N-th entry of the global gas table (every gas the vanilla Siphon can pump, sorted by planet tier in ascending order); the machine does not start without an inserted circuit, with configuration 0, or with an out-of-range configuration. The Drilling Depth (1-4) is the depth index of the selected gas within its planet, set automatically by the circuit selection.
 vmd.siphon.info.3=Output = vanilla base amount x 16^max(0, machine voltage tier - planet tier); gases whose planet tier is higher than the machine voltage tier cannot be selected.
-vmd.siphon.info.4=EU/t = Depth x 4^(planet tier + 2) with the vanilla perfect overclock rules (each OC level: output x2, EU/t x4); EU/t is NOT scaled by the 16^ output boost.
+vmd.siphon.info.4=EU/t = Drilling Depth x 4^(planet tier + 2) with the vanilla perfect overclock rules (each OC level: output x2, EU/t x4); EU/t is NOT scaled by the 16^ output boost.
 vmd.siphon.info.5=Drill heads in the input bus boost the output like the Void Fluid Driller: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024 (highest class applies). Each finished cycle consumes one drill head with a 1% chance.
-vmd.siphon.info.6=Mining Pipes: keep at least Depth x 64 pipes in the input bus (they are not consumed). Heating Coil: +10% speed per tier; batch mode is supported like the vanilla Siphon.
+vmd.siphon.info.6=Mining Pipes: keep at least Drilling Depth x 64 pipes in the input bus (they are not consumed). Heating Coil: +10% speed per tier; batch mode is supported like the vanilla Siphon.
 vmd.siphon.structure.controller=Controller, front center of the main body, 16th layer
 vmd.siphon.structure.siphon_casing=Planetary Siphon Casings
 vmd.siphon.structure.frame=Tungstensteel Frame Box
