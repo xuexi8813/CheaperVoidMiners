@@ -20,6 +20,7 @@ import static gregtech.api.util.GTUtility.validMTEList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.item.ItemStack;
@@ -49,6 +50,7 @@ import gregtech.api.enums.GTValues;
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.OrePrefixes;
+import gregtech.api.enums.VoidingMode;
 import gregtech.api.interfaces.IHatchElement;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
@@ -583,5 +585,32 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     @Override
     public boolean supportsSingleRecipeLocking() {
         return false;
+    }
+
+    // ==== GT5u 销毁模式（Voiding Mode）====
+
+    @Override
+    public boolean supportsVoidProtection() {
+        // 开启 GT5u 销毁模式切换（控制器 GUI 左下按钮，先例 MTEFusionComputer）：销毁档下
+        // {@code protectsExcessFluid()} 为 false，checkProcessing 不再因输出仓满失败（vmd_output_full），
+        // 周期完成时过量流体由 GT 倾倒逻辑（FluidEjectionHelper）销毁，机器持续运行；
+        // 保护档下输出仓满时本周期不启动，待输出腾空后自动恢复。
+        return true;
+    }
+
+    @Override
+    public Set<VoidingMode> getAllowedVoidingModes() {
+        // 本机无物品输出，仅暴露流体相关两档（GT5u 为无物品输出机器准备的集合，
+        // 先例 MTEFusionComputer#getAllowedVoidingModes）：VOID_FLUID 销毁过量流体 / VOID_NONE 全保护。
+        return VoidingMode.FLUID_ONLY_MODES;
+    }
+
+    @Override
+    public VoidingMode getDefaultVoidingMode() {
+        // 默认"销毁过量流体"：GT5u 对开启保护机器的默认值 VOID_NONE 会让输出仓满时钻机停待，
+        // 与本机此前（不支持切换时 GT5u 默认 VOID_ALL）"销毁过量继续运行"的行为不符；
+        // VOID_FLUID（protectFluid=false）对纯流体产出的本机与之等效，且处于
+        // {@link #getAllowedVoidingModes()} 集合内，用户切换后可循环切回。
+        return VoidingMode.VOID_FLUID;
     }
 }
