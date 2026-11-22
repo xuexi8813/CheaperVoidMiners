@@ -1,6 +1,7 @@
 package com.jdz.vmd.common.loaders;
 
 import static gregtech.api.enums.GTValues.RA;
+import static gtnhintergalactic.recipe.GasSiphonRecipes.calculateEUt;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.jdz.vmd.api.recipe.VmdRecipeMaps;
+import com.jdz.vmd.common.tileentities.MTESurfacePlanetaryGasSiphon;
 import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
 import com.jdz.vmd.common.tileentities.PlanetaryGasTableHelper;
 import com.jdz.vmd.common.tileentities.VoidFluidTableHelper;
@@ -69,10 +71,16 @@ public final class VmdOutputRecipeLoader {
     /**
      * 地表行星气体钻机：全局气体表（{@code PlanetaryGasTableHelper}，源自 GT5u 原版
      * {@code GasSiphonRecipes} 各行星大气气体清单）每气体一条——输入 = 配置 N 的编程电路标记
-     * （stackSize=0，与机器电路选择同源同序）+ 单根 Mining Pipes 标记（stackSize=0，GT 标准的
-     * "必需不消耗"惯例，与电路标记同款语义：机器只要求输入总线常备 Depth × 64 根、实际不消耗，
-     * 具体数量由 tooltip/lang 描述行 {@code vmd.siphon.info.6} 承载，NEI 不展示消耗堆）
-     * → 输出 = 该气体的原版基础产量（机器实际产出在其上叠加 16^ 电压加成、钻头加成与完美超频）。
+     * （stackSize=0，与机器电路选择同源同序）+ 该气体 Depth × 64 的 Mining Pipes 需求展示
+     * （机器侧常备不消耗：NEI 展示原版 1:1 需求量即常备量，经 {@code GTUtility.copyAmountUnsafe}
+     * 保留 128/192/256 等超 64 数量显示——普通 {@code copyAmount} 会截断到 64；"不消耗"语义由
+     * 机器 tooltip 描述行 {@code vmd.siphon.info.6} 承载）→ 输出 = 该气体的原版基础产量
+     * （机器实际产出在其上叠加 16^ 电压加成、钻头加成与完美超频）。
+     * <p>
+     * 时长与 EUt 为原版机器真值：duration 取无线圈基准周期（{@code MTESurfacePlanetaryGasSiphon
+     * #BASE_PROCESS_TIME_TICKS}，速度公式在无线圈下的取整结果，线圈可加速故 NEI 显示基准）；
+     * EUt 取原版公式 {@code calculateEUt(depth, planetTier)}（gtnhintergalactic 静态方法，机器
+     * 运行期同款），与原版 Siphon NEI 面板（GasSiphonRecipeHandler）的 EUt 口径一致。
      * <p>
      * 注册时机为本 mod 的 postInit（GT5u 气体清单由 gtnhintergalactic 的 postInit 填充，本 mod
      * 声明 {@code after:gtnhintergalactic} 使其先于本 postInit），并在 GT-PostLoad 链
@@ -106,13 +114,16 @@ public final class VmdOutputRecipeLoader {
                 .itemInputs(
                     // 电路标记（stackSize=0）：配置 i+1 对应全局表第 i+1 项（与机器选择同源同序）。
                     ItemList.Circuit_Integrated.getWithDamage(0L, i + 1L),
-                    // Mining Pipes 标记（stackSize=0，GT 标准"必需不消耗"惯例，与电路标记同款语义）：
-                    // 机器要求总线常备 Depth × 64 根但不消耗（原版 1:1），NEI 按非消耗输入渲染，
-                    // 具体常备数量由 tooltip/lang 描述行承载，不在条目里展示消耗堆。
-                    GTUtility.copyAmount(0, getMiningPipeStack()))
+                    // Mining Pipes 需求展示（Depth × 64 根，与机器常备校验同常量、原版 1:1）：
+                    // 经 copyAmountUnsafe 保留超 64 数量显示（copyAmount 会截断到 64）；机器仅要求
+                    // 总线常备该数量、实际不消耗（本表不做配方匹配，仅供 NEI 展示）。
+                    GTUtility.copyAmountUnsafe(
+                        gas.depth * MTESurfacePlanetaryGasSiphon.MINING_PIPES_PER_DEPTH,
+                        getMiningPipeStack()))
                 .fluidOutputs(new FluidStack(gas.fluid, gas.fluid.amount))
-                .duration(1)
-                .eut(0)
+                // 原版机器真值：无线圈基准周期（ticks）与原版 EUt 公式，见方法 javadoc。
+                .duration(MTESurfacePlanetaryGasSiphon.BASE_PROCESS_TIME_TICKS)
+                .eut(calculateEUt(gas.depth, gas.planetTier))
                 .addTo(VmdRecipeMaps.surfaceGasSiphonRecipes);
         }
 
@@ -121,7 +132,8 @@ public final class VmdOutputRecipeLoader {
 
     /**
      * IC2 Mining Pipe 物品堆（与原版 Siphon 的判定物品一致）；缺失时 Fail Fast 抛出。
-     * NEI 条目中仅作 stackSize=0 的"必需不消耗"标记使用（数量经 {@code GTUtility.copyAmount} 归零）。
+     * NEI 条目中以 Depth × 64 的需求量展示（数量由调用方经 {@code GTUtility.copyAmountUnsafe} 设定，
+     * 机器侧仅要求常备、实际不消耗）。
      */
     private static ItemStack getMiningPipeStack() {
         final ItemStack pipe = GTModHandler.getIC2Item("miningPipe", 0);

@@ -93,7 +93,21 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
     private static final int OFFSET_Z = 5;
     private static final double SPEED_PER_COIL = 0.10;
     private static final double LOG4 = Math.log10(4);
-    private static final int MINING_PIPES_PER_DEPTH = 64;
+
+    /**
+     * 单位钻井深度的 Mining Pipes 常备量（原版 Siphon 1:1：Depth × 64，仅要求常备、不消耗）。
+     * 机器校验（{@link #checkProcessing}）与 NEI 需求展示（{@code VmdOutputRecipeLoader}）共用本
+     * 常量，单一数据源防止两处漂移。
+     */
+    public static final int MINING_PIPES_PER_DEPTH = 64;
+
+    /**
+     * 无线圈基准周期时长（ticks）：速度公式 {@link #speedBoost}（每级加热线圈 +10% 速度）在
+     * 无线圈（max(1, ·) = 1）下的取整结果，即 {@code (int)(20 / 2.1) = 9}。NEI 条目展示该基准值——
+     * 玩家可经加热线圈加速，机器运行期按实际线圈档计算（{@code checkProcessing}）；本常量经
+     * {@link #speedBoost} 与机器运行期同源，公式变更时自动跟随，不另立副本。
+     */
+    public static final int BASE_PROCESS_TIME_TICKS = (int) (20 * speedBoost(0));
 
     /** 本机钻头消耗概率：每周期启动成功 1%（虚空流体钻机为 0.1%，按需求独立成常量）。 */
     public static final double DRILL_CONSUMPTION_CHANCE = 0.01;
@@ -440,8 +454,12 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
         return this.coilLevel == null ? 0 : (int) this.coilLevel.getTier() + 1;
     }
 
-    /** 周期时长系数（原版 1:1）：1 / (2 + 0.1 × max(1, 线圈档))，即每级线圈 +10% 速度。 */
-    public float speedBoost(int coilTier) {
+    /**
+     * 周期时长系数（原版 1:1）：1 / (2 + 0.1 × max(1, 线圈档))，即每级线圈 +10% 速度。
+     * 纯参数函数（不读实例状态），供机器运行期与 NEI 基准时长常量 {@link #BASE_PROCESS_TIME_TICKS}
+     * 共用同一公式实现。
+     */
+    public static float speedBoost(int coilTier) {
         return (float) 1 / (2 + (float) SPEED_PER_COIL * Math.max(1, coilTier));
     }
 
