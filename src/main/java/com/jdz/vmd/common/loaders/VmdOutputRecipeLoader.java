@@ -75,7 +75,7 @@ public final class VmdOutputRecipeLoader {
      * （机器侧常备不消耗：NEI 展示原版 1:1 需求量即常备量，经 {@code GTUtility.copyAmountUnsafe}
      * 保留 128/192/256 等超 64 数量显示——普通 {@code copyAmount} 会截断到 64；"不消耗"语义由
      * 机器 tooltip 描述行 {@code vmd.siphon.info.6} 承载）→ 输出 = 该气体的原版基础产量
-     * （机器实际产出在其上叠加 16^ 电压加成、钻头加成与完美超频）。
+     * （机器实际产出在其上叠加 16^ 电压加成、钻头加成与无损超频）。
      * <p>
      * 时长与 EUt 为原版机器真值：duration 取无线圈基准周期（{@code MTESurfacePlanetaryGasSiphon
      * #BASE_PROCESS_TIME_TICKS}，速度公式在无线圈下的取整结果，线圈可加速故 NEI 显示基准）；

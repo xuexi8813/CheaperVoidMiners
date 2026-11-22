@@ -70,13 +70,13 @@ import gtnhintergalactic.client.IGTextures;
  * 编程电路 1..N 选第 N 项（钻机同款语义：未插电路、配置 0 或超范围 → 失败提示）。</li>
  * <li>产量电压公式：产量 = 原版基础产量 × 16^max(0, 机器电压档 − 该气体行星 Tier)；
  * 机器电压档低于行星 Tier 的气体不可选（失败提示）。EU/t 仍按原版公式（Depth × 4^(行星Tier+2)）
- * 与原版完美超频规则运行，<b>不随 16^ 产量加成放大</b>。</li>
+ * 与原版无损超频规则运行，<b>不随 16^ 产量加成放大</b>。</li>
  * <li>钻头加成：与虚空流体钻机同款阶级制（铁×4/钢×16/钛×64/硅岩×256/无尽×1024，取最高阶级），
  * 每周期启动成功 1% 概率消耗 1 个钻头（钻机为 0.1%，独立常量；判定/扣减共用
  * {@link DrillSelection}）。</li>
  * </ul>
  * 其余机制与原版 1:1：Heating Coil 每级 +10% 速度（{@link #speedBoost}）、Mining Pipes 需求
- * （Depth × 64 根常备、不消耗）、完美超频（产量 ×2^oc、EUt ×4^oc）、批量模式、流体输出保护
+ * （Depth × 64 根常备、不消耗）、无损超频（产量 ×2^oc、EUt ×4^oc）、批量模式、流体输出保护
  * （supportsVoidProtection）。原版的轨道空间站 chunk loading（IChunkLoader + 焊接枪切换）随空间站
  * 限制一并移除——地表多方块随所在区块正常加载/暂停，GT 标准行为。
  */
@@ -332,7 +332,7 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
             return CheckRecipeResultRegistry.FLUID_OUTPUT_FULL;
         }
 
-        // EUt = 原版公式 Depth × 4^(行星Tier+2)（不随 16^ 电压加成放大），完美超频规则与原版一致：
+        // EUt = 原版公式 Depth × 4^(行星Tier+2)（不随 16^ 电压加成放大），无损超频规则与原版一致：
         // oc = floor(log4(输入电压 / EUt))，oc ≥ 1 时产量 ×2^oc、EUt ×4^oc。
         final int recipeEUt = calculateEUt(gas.depth, gas.planetTier);
         final int ocLevel = MathHelper.floor_double(Math.log10((double) maxInputVoltage / recipeEUt) / LOG4);
