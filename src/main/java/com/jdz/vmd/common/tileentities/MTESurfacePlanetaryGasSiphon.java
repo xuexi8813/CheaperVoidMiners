@@ -30,6 +30,7 @@ import com.gtnewhorizon.structurelib.alignment.constructable.ISurvivalConstructa
 import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
 import com.gtnewhorizon.structurelib.structure.ISurvivalBuildEnvironment;
 import com.gtnewhorizon.structurelib.structure.StructureDefinition;
+import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 
 import bartworks.system.material.WerkstoffLoader;
 import gregtech.api.GregTechAPI;
@@ -42,6 +43,7 @@ import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.implementations.MTEExtendedPowerMultiBlockBase;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.check.CheckRecipeResult;
 import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.recipe.check.SimpleCheckRecipeResult;
@@ -379,6 +381,20 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
     private void resetMachine() {
         lEUt = 0;
         mEfficiency = 0;
+    }
+
+    /**
+     * 关联 NEI 展示用配方表。基类 {@code getRecipeMap()} 默认返回 null，{@code RecipeMapWorkable#getAvailableRecipeMaps}
+     * 由此得空列表，而 GT5u 的 NEI catalyst 索引（{@code NEIGTConfig#generateRecipeCatalystIndex}）只为
+     * 可用配方表非空的机器注册 catalyst——缺省则本机不会出现在 {@code surfaceGasSiphonRecipes} 页签的
+     * catalyst 列表，NEI 用法页（点本机控制器）无对应条目，且该页签的 HandlerInfo 显示栈
+     * （{@code NEIGTConfig#createHandlerInfoBuilderTemplate}）同样取自 catalyst、落为 null，页签整体缺失。
+     * 本机配方选择完全由 {@link #checkProcessing()} 自定义逻辑完成、不查该表，故该关联仅服务 NEI 展示，
+     * 与虚空流体钻机、木制虚空采矿机的形态一致。
+     */
+    @Override
+    public RecipeMap<?> getRecipeMap() {
+        return VmdRecipeMaps.surfaceGasSiphonRecipes;
     }
 
     /**
