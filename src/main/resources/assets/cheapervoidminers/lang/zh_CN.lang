@@ -61,12 +61,11 @@ GT5U.gui.text.recipe_result.vmd_siphon_no_mining_pipe=输入总线的 Mining Pip
 # 地表行星气体钻机 tooltip
 vmd.siphon.machine_type=地表气体钻机
 vmd.siphon.info.1=原版行星气体钻机的"地表"加强版：任意维度的地表均可搭建，无需环绕气态行星的空间站轨道。
-vmd.siphon.info.2=必须插入编程电路（配置 1..N）选择全局气体表第 N 项（原版 Siphon 全部可抽气体按行星 Tier 升序编号，顺序与 NEI 展示一致）；未插电路、配置 0 或超出范围时机器不启动。
+vmd.siphon.info.2=必须插入编程电路（配置 1..N）选择全局气体表第 N 项（原版 Siphon 全部可抽气体按行星 Tier 升序编号）；未插电路、配置 0 或超出范围时机器不启动。
 vmd.siphon.info.3=产量 = 原版基础产量 × 16^max(0, 机器电压档 − 行星 Tier)；行星 Tier 高于机器电压档的气体不可选。
 vmd.siphon.info.4=EU/t = Depth × 4^(行星 Tier + 2)，超频规则与原版一致（每级完美超频产量 ×2、耗电 ×4）；EU/t 不随 16^ 产量加成放大。
 vmd.siphon.info.5=输入总线中的钻头按阶级提升产量（与虚空流体钻机同款）：铁 x4、钢 x16、钛 x64、硅岩 x256、无尽 x1024（取最高阶级）。每完成一个周期有 1% 概率消耗 1 个钻头。
 vmd.siphon.info.6=Mining Pipes：输入总线需常备 Depth × 64 根钻杆（不消耗）。Heating Coil 每级 +10% 速度；支持批量模式（与原版一致）。
-vmd.siphon.info.7=气体表：电路 1-4 木星（T3）氢/氦/氮/氧；5-8 土星（T5）氢/氦/氧/液氧；9-12 天王星（T5）氘/氖/氩/氪；13-16 海王星（T6）氚/氦-3/氨/氙。
 vmd.siphon.structure.controller=控制器，主体正面中部第 16 层
 vmd.siphon.structure.siphon_casing=行星 Siphon 机壳
 vmd.siphon.structure.frame=钨钢框架方块

@@ -473,7 +473,6 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
             .addInfo(StatCollector.translateToLocal("vmd.siphon.info.4"))
             .addInfo(StatCollector.translateToLocal("vmd.siphon.info.5"))
             .addInfo(StatCollector.translateToLocal("vmd.siphon.info.6"))
-            .addInfo(StatCollector.translateToLocal("vmd.siphon.info.7"))
             .beginStructureBlock(13, 23, 13, false)
             .addController(StatCollector.translateToLocal("vmd.siphon.structure.controller"))
             .addCasing("184", StatCollector.translateToLocal("vmd.siphon.structure.siphon_casing"), false)
