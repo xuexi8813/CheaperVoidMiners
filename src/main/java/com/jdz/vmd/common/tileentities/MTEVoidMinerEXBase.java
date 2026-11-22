@@ -25,6 +25,7 @@ import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
+import gregtech.api.metatileentity.implementations.MTEHatchEnergy;
 import gregtech.api.structure.error.StructureError;
 import gregtech.api.structure.error.StructureErrors;
 import gregtech.api.util.GTOreDictUnificator;
@@ -35,7 +36,8 @@ import gregtech.api.util.MultiblockTooltipBuilder;
  * EX 系列虚空采矿机基类：在 GT 虚空采矿机（{@link MTEVoidMinerBase}）之上定制结构与文案。
  * 产出加强：父类 {@code TIER_MULTIPLIER} 为 byte（上限 127），无法直接传入 ×16 后的产出档位，
  * 因此在最终输出入口 {@link #addOutputPartial} 处将产出堆叠数量统一 ×16
- * （见 {@link #OUTPUT_ENHANCEMENT_FACTOR}），惰性气体加成与批量模式均不受影响。
+ * （见 {@link #OUTPUT_ENHANCEMENT_FACTOR}）；再叠加电压产量加成（见 {@link #getVoltageYieldFactor}）。
+ * 惰性气体加成与批量模式均不受影响，各项加成全部叠乘。
  */
 public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extends MTEVoidMinerBase<T> {
 
@@ -46,7 +48,9 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
      * EX 系列产出加强系数（数值加强）：父类 handleOutputs 对每个输出堆设置
      * {@code stackSize = multiplier}（TIER_MULTIPLIER × 惰性气体加成）后经
      * {@code addOutputPartial(ItemStack)} 弹出，这是本机器唯一的物品输出入口；
-     * 本类在弹出前将最终值 ×16。数值上限：TIER_MULTIPLIER(16) × 鿫加成(64) × 16 = 16384，int 安全。
+     * 本类在弹出前将最终值 ×16，再乘以电压产量加成（见 {@link #getVoltageYieldFactor}）。
+     * 数值上限：TIER_MULTIPLIER(16) × 鿫加成(64) × 16 × 4^14 = 2^42，long 空间安全、超 int 上限，
+     * 最终按 int 上限截断（见 {@link #addOutputPartial}）。
      */
     private static final int OUTPUT_ENHANCEMENT_FACTOR = 16;
 
@@ -121,6 +125,7 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
             .addInfo(
                 createGasString(EnumChatFormatting.BLUE, StatCollector.translateToLocal("vmd.ex.gas.oganesson"), 64))
             .addInfo(StatCollector.translateToLocalFormatted("vmd.ex.output", 32 * this.TIER_MULTIPLIER))
+            .addInfo(StatCollector.translateToLocal("vmd.ex.output.voltage"))
             .addInfo(StatCollector.translateToLocal("vmd.ex.whitelist.item"))
             .addInfo(StatCollector.translateToLocal("vmd.ex.whitelist.toggle"))
             .addInfo(StatCollector.translateToLocal("vmd.ex.blacklist.warn"))
@@ -168,15 +173,49 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
     }
 
     /**
-     * 产出加强 ×16 的注入点：将父类已按 TIER_MULTIPLIER 与惰性气体加成计算好的产出堆叠数量
-     * 再乘以 {@link #OUTPUT_ENHANCEMENT_FACTOR} 后交由父类弹出。
-     * 父类 handleOutputs 中的过滤器匹配发生在本方法之前，×16 不影响白/黑名单判定；
-     * 父类 checkProcessing 中的气体消耗按周期扣减，同样不受影响。
+     * 产出加强 ×16 与电压产量加成的注入点：将父类已按 TIER_MULTIPLIER 与惰性气体加成计算好的产出堆叠数量
+     * 再乘以 {@link #OUTPUT_ENHANCEMENT_FACTOR} 与 {@link #getVoltageYieldFactor()} 后交由父类弹出。
+     * 乘法全程在 long 空间进行后按 int 上限截断（stackSize 为 int，超上限的极端组合仅封顶输出、防回绕为负，
+     * 截断语义与流体钻机 FluidStack 的处理一致）。父类 handleOutputs 中的过滤器匹配发生在本方法之前，
+     * 加成不影响白/黑名单判定；父类 checkProcessing 中的气体消耗按周期扣减，同样不受影响。
      */
     @Override
     public void addOutputPartial(ItemStack stack) {
-        if (stack != null) stack.stackSize *= OUTPUT_ENHANCEMENT_FACTOR;
+        if (stack != null) {
+            final long enhanced = (long) stack.stackSize * OUTPUT_ENHANCEMENT_FACTOR * getVoltageYieldFactor();
+            stack.stackSize = (int) Math.min(enhanced, Integer.MAX_VALUE);
+        }
         super.addOutputPartial(stack);
+    }
+
+    /**
+     * 能源仓中的最高单仓输入电压档（GT 标准电压索引，LV..UHV 乃至更高）。
+     * 取"最高单仓档"而非 {@link #getMaxInputVoltage()} 的求和口径——多个低档仓求和会虚增电压档，
+     * 与本 mod 虚空流体钻机 {@code MTEVoidFluidDrillerBase#getMaxEnergyHatchTier()} 同语义；
+     * 无有效能源仓时返回失败档 -1（与钻机一致，见 {@link #getVoltageYieldFactor} 的调用时机论证）。
+     */
+    private int getMaxEnergyHatchTier() {
+        int maxTier = -1;
+        for (MTEHatchEnergy hatch : GTUtility.validMTEList(mEnergyHatches)) {
+            maxTier = Math.max(maxTier, (int) hatch.getInputTier());
+        }
+        return maxTier;
+    }
+
+    /**
+     * 电压产量加成：能源仓电压每高于本机档位（{@link #getMinTier()}）一级，产量 ×4；
+     * 低于或等于本机档位不加成（×1），即 4^max(0, 最高能源仓档 − 本机档)。
+     * 4^diff 用位移实现（每档 ×4 = 2^2，即 1L &lt;&lt; 2·diff）。
+     * 位移上界论证：GT 电压档上界为 15（{@code GTValues.VN} 共 16 项，ULV=0..MAX+=15），
+     * 本机档位下界为 LV=1，故 diff ≤ 14、位移 ≤ 28，long 空间安全。
+     * 调用时机论证：本方法仅经 {@link #addOutputPartial} 被父类 outputAfterRecipe→handleOutputs 触发，
+     * 该路径要求 mMachine=true（checkMachine 已校验能源仓总输入电压档 ≥ 本机档位），正常情况下
+     * 最高单仓档必 ≥ LV；极端情形（多个低档仓求和通过校验、或周期中途结构被拆导致返回失败档 -1）
+     * diff ≤ 0，自然落入"低于本机档位不加成"的既有语义回退 ×1，不中断产出流程。
+     */
+    private long getVoltageYieldFactor() {
+        final int diff = Math.max(0, getMaxEnergyHatchTier() - getMinTier());
+        return 1L << (2L * diff);
     }
 
     /** 复刻 GT5u 5.09.51.x 的气体提示行构建（钉定版本 5.09.54.265 已改用 markdown 描述页，该方法不复存在）。 */

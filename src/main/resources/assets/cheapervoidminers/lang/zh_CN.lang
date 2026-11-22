@@ -83,6 +83,7 @@ vmd.ex.gas.krypton=氪气
 vmd.ex.gas.xenon=氙气
 vmd.ex.gas.oganesson=鿫
 vmd.ex.output=根据所在维度每秒产出 %s 个矿石
+vmd.ex.output.voltage=能源仓电压每高于本机档位一级，产量 ×4（低于或等于本机档位不加成），与气体加成、批量模式叠乘
 vmd.ex.whitelist.item=将矿石放入输入总线以设置白名单/黑名单（按矿物材料匹配，任意石器/大小矿变体均可）
 vmd.ex.whitelist.toggle=使用螺丝刀切换白名单/黑名单
 vmd.ex.blacklist.warn=黑名单或非白名单矿石将被 §c销毁§r。

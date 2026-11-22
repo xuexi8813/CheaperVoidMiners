@@ -83,6 +83,7 @@ vmd.ex.gas.krypton=Krypton
 vmd.ex.gas.xenon=Xenon
 vmd.ex.gas.oganesson=Oganesson
 vmd.ex.output=Will output %s Ores per Second depending on the Dimension it is built in
+vmd.ex.output.voltage=Energy hatches above the machine's own voltage tier boost the output by x4 per tier (no boost at or below it); stacks with the gas boosts and batch mode
 vmd.ex.whitelist.item=Put the Ore into the input bus to set the Whitelist/Blacklist (matched by material, any variant)
 vmd.ex.whitelist.toggle=Use a screwdriver to toggle Whitelist/Blacklist
 vmd.ex.blacklist.warn=Blacklist or non Whitelist Ore will be §4VOIDED§r.
