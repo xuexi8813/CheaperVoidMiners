@@ -218,7 +218,7 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
         return 1L << (2L * diff);
     }
 
-    /** 复刻 GT5u 5.09.51.x 的气体提示行构建（钉定版本 5.09.54.265 已改用 markdown 描述页，该方法不复存在）。 */
+    /** 复刻 GT5u 5.09.51.x 的气体提示行构建（钉定版本 5.09.54.x（275）已改用 markdown 描述页，该方法不复存在）。 */
     private String createGasString(EnumChatFormatting color, String gas, int boost) {
         return String.format(
             "%s%s%s : %s%dx%s",

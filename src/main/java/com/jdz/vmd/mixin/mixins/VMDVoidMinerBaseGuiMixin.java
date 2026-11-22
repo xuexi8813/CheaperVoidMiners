@@ -46,6 +46,11 @@ import gtneioreplugin.util.DimensionHelper;
 @Mixin(value = MTEVoidMinerBaseGui.class, remap = false)
 public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEVoidMinerBase> {
 
+    /**
+     * 本 mixin 自身的日志器。静态字段不参与 @Shadow/@Unique 合并到目标类的成员注入，
+     * 仅存在于 mixin 类内供日志使用。
+     */
+    @Unique
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
 
     @SuppressWarnings("DataFlowIssue")

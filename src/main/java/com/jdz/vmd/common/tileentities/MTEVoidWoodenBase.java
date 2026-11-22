@@ -262,7 +262,7 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
      * GT5u 5.09.54.x 的 {@link MTEBasicMachine} 默认返回 false，即右键 {@code openGui} 走 MUI1 旧
      * GUI 体系（{@code addUIWidgets} 通道）；而本类 GUI 由 MUI2 构建（{@link #buildUI} +
      * {@link MTEVoidWoodenBaseGui}），MUI1 路径不会调用 MUI2 面板，导致 GUI 打不开。
-     * 54.264 中 {@code GTGuis.GLOBAL_SWITCH_MUI2} 默认为 true，覆写后 openGui 进入
+     * 5.09.54.x（钉定 275）中 {@code GTGuis.GLOBAL_SWITCH_MUI2} 默认为 true，覆写后 openGui 进入
      * {@code MetaTileEntityGuiHandler.open} 的 MUI2 分支并调用 {@link #buildUI}。
      */
     @Override
@@ -286,7 +286,7 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
             .build();
     }
 
-    // 54.264 契约：CommonMetaTileEntity.buildUI(PosGuiData, PanelSyncManager, UISettings) 在 useMui2 为 true
+    // 5.09.54.x（钉定 275）契约：CommonMetaTileEntity.buildUI(PosGuiData, PanelSyncManager, UISettings) 在 useMui2 为 true
     // 时由 MetaTileEntityGuiHandler 调用（服务器与客户端两侧），签名与本覆写一致。
     @Override
     public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager syncManager, UISettings uiSettings) {
@@ -307,9 +307,9 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
      * 单格库存上限。显式声明（覆写 {@code CommonMetaTileEntity.getInventoryStackLimit}，其实现恒为 64）
      * 的动机：javac 对 {@code this.getInventoryStackLimit()} 生成 owner 为本类静态类型的符号引用，
      * 发布重映射不会改写无声明 mod 类的调用点，导致发布 jar 中残留 MCP 名；而整合包运行环境
-     * （GT 类一律 SRG 名，5.09.54.265 的 {@code BaseMetaTileEntity.func_70297_j_} 亦同名覆写）
+     * （GT 类一律 SRG 名，5.09.54.x（钉定 275）的 {@code BaseMetaTileEntity.func_70297_j_} 亦同名覆写）
      * 解析不到 MCP 名即抛 NoSuchMethodError（crash-2026-11-15_20.44.54）。声明后声明与调用点
-     * 一起随发布重映射改名，跨 5.09.54.x/265 运行环境均可命中。返回值与上游实现一致取 64。
+     * 一起随发布重映射改名，跨 5.09.54.x（钉定 275）运行环境均可命中。返回值与上游实现一致取 64。
      */
     @Override
     public int getInventoryStackLimit() {

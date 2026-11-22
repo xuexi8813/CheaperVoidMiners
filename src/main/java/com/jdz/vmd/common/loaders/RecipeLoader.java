@@ -29,12 +29,26 @@ public class RecipeLoader {
         registerWoodenMinerCraftingRecipe();
     }
 
+    /**
+     * 三台虚空采矿机的 EX 升级档无序兑换配方（原版对应档机器 → EX 版）；输入物品堆注册前校验，
+     * GT 物品缺失时记错误日志并跳过该条，不生成损坏配方。
+     */
     private static void registerVoidMinerConversionRecipes() {
-        GTModHandler
-            .addShapelessCraftingRecipe(ItemRegistry.VoidMinerEX1, new Object[] { ItemList.Machine_LV_Miner.get(1) });
-        GTModHandler
-            .addShapelessCraftingRecipe(ItemRegistry.VoidMinerEX2, new Object[] { ItemList.Machine_HV_Miner.get(1) });
-        GTModHandler.addShapelessCraftingRecipe(ItemRegistry.VoidMinerEX3, new Object[] { ItemList.OreDrill1.get(1) });
+        addVoidMinerConversionRecipe(ItemRegistry.VoidMinerEX1, ItemList.Machine_LV_Miner);
+        addVoidMinerConversionRecipe(ItemRegistry.VoidMinerEX2, ItemList.Machine_HV_Miner);
+        addVoidMinerConversionRecipe(ItemRegistry.VoidMinerEX3, ItemList.OreDrill1);
+    }
+
+    private static void addVoidMinerConversionRecipe(ItemStack output, ItemList inputMachine) {
+        final ItemStack inputStack = inputMachine.get(1);
+        if (inputStack == null) {
+            LOG.error(
+                "Cannot register shapeless conversion recipe for {}: a required GT item stack is missing (input={})",
+                output.getDisplayName(),
+                inputMachine.name());
+            return;
+        }
+        GTModHandler.addShapelessCraftingRecipe(output, new Object[] { inputStack });
     }
 
     /**

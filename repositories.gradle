@@ -5,12 +5,14 @@
 // 因此直接把该仓库的 URL 重定向到国内镜像（gaytnh.com 对 GTNH Nexus public 的同步镜像）：
 // 它承载的全部 GTNH 官方构件（com.github.GTNewHorizons.*）改走镜像，其余仓库（mojang/forge/sponge/
 // mavenCentral 等）不受影响；镜像缺失个别构件时 Gradle 会自动回落到容器中的后续仓库。
+// 注意：该回落仅覆盖构件缺失级失败；镜像连接级失败（宕机/超时）Gradle 不跨仓库回落，
+// 构建可用性绑定该镜像存活（作者有意为之的取舍）。
 project.afterEvaluate {
     // 主仓库重定向到国内镜像
     project.repositories.matching { it.name == "GTNH Maven" }.configureEach {
         it.url = uri("https://maven.gaytnh.com/gtnh-public")
     }
-    // 回落仓库：镜像同步不完整时（如被 GT5u 钉定的 NEI 2.8.160-GTNH 等旧构件）从原 Nexus 获取
+    // 回落仓库：镜像同步不完整时（如被 GT5u 钉定的 NEI 2.8.175-GTNH 等旧构件）从原 Nexus 获取
     project.repositories.maven {
         it.name = "gtnhNexusFallback"
         it.url = uri("https://nexus.gtnewhorizons.com/repository/public/")
