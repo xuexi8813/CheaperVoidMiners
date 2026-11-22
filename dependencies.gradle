@@ -42,5 +42,9 @@ dependencies {
 
     // 开发运行时对齐整合包实际版本；发布钉定仍随 GT5u pom，
     // gradle 冲突解析取本声明高版本。此处仅影响 dev 运行环境（runtimeOnlyNonPublishable 不参与发布）。
+    // antlr4 工具本体（Java 17 class）的排除见 build.gradle.kts（全局 configurations.all）；
+    // NEI 运行时实际引用的是 antlr4-runtime（Java 8 可读，实锤 NEI jar 仅含 org/antlr/v4/runtime 引用），
+    // 该库原本经 antlr4 传递，排除后需显式补回。
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.175-GTNH:dev")
+    runtimeOnlyNonPublishable("org.antlr:antlr4-runtime:4.13.2")
 }
