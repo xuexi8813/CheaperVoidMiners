@@ -45,6 +45,12 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
     private static final int NOBLE_GAS_SUPPLY_RATE_PER_SECOND = 2;
 
     /**
+     * 上游每秒基础产量系数，复刻父类 MTEVoidMinerBase 的私有常量 BASE_ORE_OUTPUT_PER_SECOND（不可直接访问）。
+     * 语义实锤（GT5u 5.09.54.275 源码）：周期时长 RECIPE_DURATION_TICKS=10 tick，即每秒 2 个产出轮次。
+     */
+    private static final int BASE_ORE_OUTPUT_PER_SECOND = 2;
+
+    /**
      * EX 系列产出加强系数（数值加强）：父类 handleOutputs 对每个输出堆设置
      * {@code stackSize = multiplier}（TIER_MULTIPLIER × 惰性气体加成）后经
      * {@code addOutputPartial(ItemStack)} 弹出，这是本机器唯一的物品输出入口；
@@ -216,6 +222,42 @@ public abstract class MTEVoidMinerEXBase<T extends MTEVoidMinerEXBase<T>> extend
     private long getVoltageYieldFactor() {
         final int diff = Math.max(0, getMaxEnergyHatchTier() - getMinTier());
         return 1L << (2L * diff);
+    }
+
+    /**
+     * 当前每秒矿石产出（GUI 实时产能行的数据源，显示用 long 计算不截断）：
+     * {@link #BASE_ORE_OUTPUT_PER_SECOND} × 运行时倍率 × {@link #OUTPUT_ENHANCEMENT_FACTOR} ×
+     * {@link #getVoltageYieldFactor()}。
+     *
+     * <p>
+     * 公式推导（GT5u 5.09.54.275 源码实锤）：上游一个周期产出 batchMultiplier 组、每组弹出前的堆叠数 =
+     * multiplier（TIER_MULTIPLIER × 惰性气体加成，见上游 handleOutputs 的 {@code stackSize = multiplier}），
+     * 经 {@link #addOutputPartial} 再 ×{@link #OUTPUT_ENHANCEMENT_FACTOR} × 电压因子；周期时长 =
+     * RECIPE_DURATION_TICKS(10) × batchMultiplier tick。每秒产量 = (batchMultiplier × multiplier × 16 × 电压因子)
+     * ÷ (10 × batchMultiplier ÷ 20)，batchMultiplier 约分后 = 2 × multiplier × 16 × 电压因子——
+     * 即批量模式下产量与时长同乘 batchMultiplier，每秒产量不变。
+     * 交叉验证：无气体时 multiplier = TIER_MULTIPLIER，结果 2 × TIER_MULTIPLIER 与上游 tooltip 的
+     * ores_per_second 一致；EX 加强后 32 × TIER_MULTIPLIER 与本类 tooltip（EX I/II/III = 128/256/512）一致。
+     *
+     * <p>
+     * 入参为上游私有字段 multiplier 的运行时值（仅 mixin 可读，经 IVoidMinerOverride 桥接传入）：
+     * 每周期由上游 handleFluidConsumption 写入 TIER_MULTIPLIER × 气体加成（加成最低 4）或无气体时的
+     * TIER_MULTIPLIER；实体构造后未运行过任何周期时为初始值 1（该字段不持久化）。取
+     * max(入参, TIER_MULTIPLIER) 使未运行/未成型状态回落为"无气体的理论产能"口径显示；
+     * 停机后字段保留最后一次运行的值，产能行显示的即为停机前的实际产能口径。
+     *
+     * <p>
+     * 上界论证：最大组合 2 × (16 × 64) × 16 × 4^14 = 2^45，long 空间安全（展示不截断，
+     * 与 {@link #addOutputPartial} 的 int 截断仅是显示与落箱口径差异）。
+     *
+     * @param upstreamMultiplier 上游 MTEVoidMinerBase 私有字段 multiplier 的当前值
+     * @return 当前每秒产出矿石数（含惰性气体与电压产量加成）
+     */
+    public long getCurrentOutputPerSecond(int upstreamMultiplier) {
+        final int effectiveMultiplier = Math.max(upstreamMultiplier, this.TIER_MULTIPLIER);
+        return (long) BASE_ORE_OUTPUT_PER_SECOND * effectiveMultiplier
+            * OUTPUT_ENHANCEMENT_FACTOR
+            * getVoltageYieldFactor();
     }
 
     /** 复刻 GT5u 5.09.51.x 的气体提示行构建（钉定版本 5.09.54.x（275）已改用 markdown 描述页，该方法不复存在）。 */

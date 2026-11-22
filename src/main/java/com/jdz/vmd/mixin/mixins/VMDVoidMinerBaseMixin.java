@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.cleanroommc.modularui.utils.item.ItemStackHandler;
 import com.jdz.vmd.api.IVoidMinerOverride;
+import com.jdz.vmd.common.tileentities.MTEVoidMinerEXBase;
 import com.jdz.vmd.common.tileentities.VoidOreTableHelper;
 
 import bwcrossmod.galacticgreg.MTEVoidMinerBase;
@@ -65,6 +66,14 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
 
     @Shadow(remap = false)
     private boolean canVoidMine;
+
+    /**
+     * 上游每周期产出堆叠数的运行时倍率：handleFluidConsumption 每周期写入
+     * TIER_MULTIPLIER × 惰性气体加成（无气体时为 TIER_MULTIPLIER），构造后未运行时为初始值 1。
+     * EX 产能显示经 {@link #vmd$getCurrentOutputPerSecond()} 读取。
+     */
+    @Shadow(remap = false)
+    private int multiplier;
 
     @Shadow(remap = false)
     public ItemStackHandler selected;
@@ -350,6 +359,22 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
         }
         // 返回原始缩写，由客户端本地化
         return vmd$lastDimOverride;
+    }
+
+    /**
+     * @return EX 系列机型返回当前每秒矿石产出（含惰性气体与电压产量加成，未运行时为无气体的
+     *         理论产能），计算委托 {@link MTEVoidMinerEXBase#getCurrentOutputPerSecond(int)}，
+     *         入参为上游私有字段 multiplier（仅 mixin 可读的桥接点）；非 EX 机型返回 0，
+     *         GUI 产能行据此隐藏。instanceof 经 (Object) 中转：mixin 类与目标子类在编译期
+     *         属无关分支，直接转换无法通过编译。
+     */
+    @Unique
+    @Override
+    public long vmd$getCurrentOutputPerSecond() {
+        if ((Object) this instanceof MTEVoidMinerEXBase) {
+            return ((MTEVoidMinerEXBase<?>) (Object) this).getCurrentOutputPerSecond(this.multiplier);
+        }
+        return 0;
     }
 
     // endregion

@@ -126,3 +126,6 @@ vmd.gui.override.failed=Override not applied. You must visit the target dimensio
 vmd.gui.override.error=You must visit the dimension at least once to enable its ore drops.
 vmd.gui.override.end_asteroids=T0: End Asteroids (same as The End)
 vmd.gui.filter.no_ores=No ores available. Place a dimension block to select a target dimension.
+
+# Void Miner EX GUI real-time output rate line (%s is the thousand-grouped ores per second)
+vmd.gui.output_rate=Output: %s ores/s

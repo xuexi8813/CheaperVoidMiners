@@ -1,5 +1,7 @@
 package com.jdz.vmd.mixin.mixins;
 
+import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.formatNumber;
+
 import java.lang.reflect.Method;
 
 import net.minecraft.item.ItemStack;
@@ -116,6 +118,31 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
             .asWidget()
             .setEnabledIf(w -> {
                 String raw = overrideTextSyncer.getValue();
+                return raw != null && !raw.isEmpty();
+            })
+            .marginBottom(2)
+            .widthRel(1));
+
+        // EX 系列实时产能行：非 EX 机型 vmd$getCurrentOutputPerSecond() 返回 0，同步值恒为空串、行隐藏。
+        // 同步值拆分口径与覆写行一致：服务端传千分位格式化数字（formatNumber 为配置化 locale 的纯文本
+        // 格式化，非本地化语义，双侧可用，且每次调用新建 DecimalFormat，无共享可变状态），
+        // 客户端 lambda 完成模板本地化，保证专服下按客户端语言显示双语。
+        StringSyncValue outputRateSyncer = new StringSyncValue(() -> {
+            long outputPerSecond = ((IVoidMinerOverride) mb).vmd$getCurrentOutputPerSecond();
+            // 0 = 非 EX 机型不支持产能显示；正数产能最大 2^45，不会与 0 冲突
+            return outputPerSecond > 0 ? formatNumber(outputPerSecond) : "";
+        });
+        syncManager.syncValue("vmd$outputRate", outputRateSyncer);
+
+        list.child(IKey.dynamic(() -> {
+            String raw = outputRateSyncer.getValue();
+            if (raw == null || raw.isEmpty()) return "";
+            return StatCollector.translateToLocalFormatted("vmd.gui.output_rate", raw);
+        })
+            .color(Color.WHITE.main)
+            .asWidget()
+            .setEnabledIf(w -> {
+                String raw = outputRateSyncer.getValue();
                 return raw != null && !raw.isEmpty();
             })
             .marginBottom(2)
