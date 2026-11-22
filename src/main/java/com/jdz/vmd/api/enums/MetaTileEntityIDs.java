@@ -17,8 +17,10 @@ public enum MetaTileEntityIDs {
     VoidFluidDrillerNaquadah(26770),
     VoidFluidDrillerInfinity(26771),
     VoidFluidPumpWooden(26772),
-    VoidMinerWooden(26773);
+    VoidMinerWooden(26773),
     // 26774-26779 = 原挖土机六台（VoidExcavatorWooden/Iron/Steel/Titanium/Naquadah/Infinity，已删除），预留勿复用。
+    // 下一可用 id 取"现有最大值 + 1"且跳过上述空洞段：26773 + 1 = 26774 落在空洞内，故取 26780。
+    SurfacePlanetaryGasSiphonController(26780);
 
     public final int ID;
 

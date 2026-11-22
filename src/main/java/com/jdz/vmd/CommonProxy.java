@@ -33,12 +33,24 @@ public class CommonProxy {
 
     public void postInit(FMLPostInitializationEvent event) {
         RecipeLoader.run();
+        // 地表行星气体钻机的 NEI 产出配方主注册点：数据源为 GT5u 原版气体清单
+        // （GasSiphonRecipes.RECIPES），由 gtnhintergalactic 的 postInit 填充。本 mod 已声明
+        // after:gtnhintergalactic 使此处晚于其 postInit；若 FML 实际分发顺序未保证这一点
+        // （本项目实测 FML 对 init/postInit 分发顺序不严格遵循依赖语义），该方法会检测到清单
+        // 仍为空表、不缓存空数据并交由 registerVmdOutputRecipes（GT-PostLoad 兜底）重试——
+        // GT5u 2.9 的 postInit 经调度排在所有普通 mod 之后，届时清单必然就绪。
+        VmdOutputRecipeLoader.registerSurfaceGasSiphonRecipes();
     }
 
     /** NEI 产出配方注册入口（GT postInit 末尾执行），日志如实标注挂载点。 */
     private void registerVmdOutputRecipes() {
         FMLLog.log("CheaperVoidMiners", Level.INFO, "GT-PostLoad: registering NEI output recipes");
         VmdOutputRecipeLoader.register();
+        // 地表行星气体钻机的 NEI 配方兜底注册：主注册点为本 mod postInit（数据源 GasSiphonRecipes
+        // 由 gtnhintergalactic 的 postInit 填充）；若 postInit 分发顺序异常导致本 mod postInit 先于
+        // gtnhintergalactic 执行，此处（GT5u 2.9 的 postInit 调度排在普通 mod 之后）重试补注册。
+        // 已注册时该调用经内部标记直接返回。
+        VmdOutputRecipeLoader.registerSurfaceGasSiphonRecipes();
         FMLLog.log("CheaperVoidMiners", Level.INFO, "GT-PostLoad: NEI output recipes registered");
     }
 

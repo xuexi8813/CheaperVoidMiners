@@ -24,6 +24,7 @@ public class RecipeLoader {
     public static void run() {
         registerVoidMinerConversionRecipes();
         registerDrillerAssemblerRecipes();
+        registerSurfaceGasSiphonAssemblerRecipe();
         registerWoodenPumpCraftingRecipe();
         registerWoodenMinerCraftingRecipe();
     }
@@ -109,6 +110,60 @@ public class RecipeLoader {
                     material.mName);
             }
         }
+    }
+
+    /**
+     * 地表行星气体钻机的装配机配方：硅岩档虚空流体钻机成品 + GT5u 原版行星气体钻机成品
+     * （{@code ItemList.PlanetarySiphon}，gtnhintergalactic 于 init 阶段注册）+ 按项目组装机风格的
+     * 配套材料（坚固钨钢机器机壳、钨钢框架、超级储罐、电泵、硅岩钻头）。配置 1 的编程电路为
+     * 不消耗的配置标记（stackSize=0 的 notConsumable 惯例，与钻机配方一致，语义对应本机电路最低档）。
+     */
+    private static void registerSurfaceGasSiphonAssemblerRecipe() {
+        final ItemStack casingStack = ItemList.Casing_RobustTungstenSteel.get(8);
+        final ItemStack frameStack = GTOreDictUnificator.get(OrePrefixes.frameGt, Materials.TungstenSteel, 8);
+        final ItemStack tankStack = ItemList.Super_Tank_IV.get(1);
+        final ItemStack pumpStack = ItemList.Electric_Pump_LuV.get(1);
+        final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, Materials.Naquadah, 1);
+        final ItemStack vanillaSiphonStack = ItemList.PlanetarySiphon.get(1);
+        final ItemStack drillerStack = ItemRegistry.VoidFluidDrillerNaquadah;
+        // 数量 0 = notConsumable 标记：配置 1 的电路仍为启动必需项，但装配机运行时不消耗。
+        final ItemStack circuitStack = ItemList.Circuit_Integrated.getWithDamage(0L, 1L);
+
+        if (casingStack == null || frameStack == null
+            || tankStack == null
+            || pumpStack == null
+            || drillStack == null
+            || vanillaSiphonStack == null
+            || drillerStack == null
+            || circuitStack == null) {
+            LOG.error(
+                "Cannot register assembler recipe for {}: a required item stack is missing (casing={}, frame={}, tank={}, pump={}, drill={}, vanillaSiphon={}, driller={}, circuit={})",
+                ItemRegistry.SurfacePlanetaryGasSiphon.getDisplayName(),
+                casingStack != null,
+                frameStack != null,
+                tankStack != null,
+                pumpStack != null,
+                drillStack != null,
+                vanillaSiphonStack != null,
+                drillerStack != null,
+                circuitStack != null);
+            return;
+        }
+
+        RA.stdBuilder()
+            .itemInputs(
+                casingStack,
+                frameStack,
+                tankStack,
+                pumpStack,
+                drillStack,
+                vanillaSiphonStack,
+                drillerStack,
+                circuitStack)
+            .itemOutputs(ItemRegistry.SurfacePlanetaryGasSiphon)
+            .duration(1600)
+            .eut(TierEU.RECIPE_UV)
+            .addTo(assemblerRecipes);
     }
 
     private static void addDrillerAssemblerRecipe(ItemStack output, ItemList casing, Materials frameMaterial,

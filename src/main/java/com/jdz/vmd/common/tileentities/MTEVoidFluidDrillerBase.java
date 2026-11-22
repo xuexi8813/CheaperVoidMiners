@@ -13,7 +13,6 @@ import static gregtech.api.enums.VoltageIndex.LV;
 import static gregtech.api.enums.VoltageIndex.LuV;
 import static gregtech.api.enums.VoltageIndex.MV;
 import static gregtech.api.enums.VoltageIndex.UV;
-import static gregtech.api.objects.XSTR.XSTR_INSTANCE;
 import static gregtech.api.util.GTStructureUtility.buildHatchAdder;
 import static gregtech.api.util.GTStructureUtility.ofFrame;
 import static gregtech.api.util.GTUtility.validMTEList;
@@ -103,24 +102,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
      * 最终 int 截断（见 checkProcessing）下输出语义不变，仅防回绕为负。
      */
     private static final int MAX_OUTPUT_SHIFT_BITS = 53;
-
-    /** 全阶段共享的钻头材质阶梯（列表序 = 钻头阶级 0..4）：钻头项 = 4^(阶级+1)；输入总线取阶级最高者。 */
-    private static final ImmutableList<Materials> DRILL_MATERIALS = ImmutableList
-        .of(Materials.Iron, Materials.Steel, Materials.Titanium, Materials.Naquadah, Materials.Infinity);
-
-    private static final class DrillSelection {
-
-        public final ItemStack stack;
-        public final String materialName;
-        /** 钻头阶级（{@link #DRILL_MATERIALS} 列表序 0..4），驱动钻头项 4^(阶级+1)。 */
-        public final int rung;
-
-        DrillSelection(ItemStack stack, String materialName, int rung) {
-            this.stack = stack;
-            this.materialName = materialName;
-            this.rung = rung;
-        }
-    }
 
     // GUI 显示状态，在 drawTexts() 中通过 FakeSyncWidget 同步。
     private String displayDimensionAbbr = "";
@@ -300,7 +281,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         final GTUOFluid selectedFluid = candidates.get(circuitConfig - 1);
         final Fluid fluid = selectedFluid.getFluid();
 
-        final DrillSelection drill = findDrill();
+        final DrillSelection drill = DrillSelection.findDrill(getStoredInputs());
 
         final long outputAmount = computeOutputAmount(getMaxEnergyHatchTier(), drill == null ? -1 : drill.rung);
         final FluidStack output = new FluidStack(fluid, (int) Math.min(outputAmount, Integer.MAX_VALUE));
@@ -334,8 +315,9 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         // （extractedAmount − stackSize，MTEHatchInputBusME.endRecipeProcessing）自动从 AE 网络补扣
         // ——原实现（周期完成时经 outputAfterRecipe 消耗）在窗口关闭后执行，ME 总线的
         // getStackInSlot 已返回 null，导致加成生效而钻头永不消耗。
-        if (drill != null && XSTR_INSTANCE.nextFloat() < DRILL_CONSUMPTION_CHANCE) {
-            consumeDrillHead(drill.stack);
+        // 判定与扣减逻辑自本机与地表行星气体钻机共用后上提至 {@link DrillSelection#consumeIfRolled}。
+        if (drill != null) {
+            drill.consumeIfRolled(DRILL_CONSUMPTION_CHANCE, this);
         }
 
         return SimpleCheckRecipeResult.ofSuccess("vmd_drilling");
@@ -362,21 +344,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         final int totalBits = voltageBits + machineBits + drillBits;
         if (totalBits > MAX_OUTPUT_SHIFT_BITS) return Long.MAX_VALUE;
         return (long) BASE_OUTPUT_MB << totalBits;
-    }
-
-    /**
-     * 扣减一个钻头（周期启动成功时调用，见 checkProcessing 内消耗时点说明）。
-     * 直接修改传入的活跃引用：普通输入总线的槽位库存、ME 输入总线的 slot.extracted 快照
-     * （{@code MTEHatchInputBusME} 在 {@code startRecipeProcessing} 时从 AE 网络模拟提取，
-     * {@code endRecipeProcessing} 按 extractedAmount − stackSize 的差额对网络补扣真实提取量）。
-     */
-    private void consumeDrillHead(ItemStack stack) {
-        if (stack.stackSize <= 1) {
-            stack.stackSize = 0;
-        } else {
-            stack.stackSize--;
-        }
-        updateSlots();
     }
 
     // ==== 维度、流体、能源仓与钻头的解析辅助 ====
@@ -426,30 +393,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
             }
         }
         return 0;
-    }
-
-    /** 钻头项：4^(阶级+1)（铁=4、钢=16、钛=64、硅岩=256、无尽=1024）。 */
-    private static long drillBonus(int drillRung) {
-        return 1L << (2 * (drillRung + 1));
-    }
-
-    /** 输入总线中钻头阶级最高者，无则为 null（同阶级先到先得，材质名仅影响 GUI 显示）。 */
-    @Nullable
-    private DrillSelection findDrill() {
-        DrillSelection best = null;
-        for (ItemStack input : getStoredInputs()) {
-            if (input == null) continue;
-            for (int rung = 0; rung < DRILL_MATERIALS.size(); rung++) {
-                final Materials material = DRILL_MATERIALS.get(rung);
-                final ItemStack drillStack = GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, material, 1);
-                // 正常构建中不会为 null（RecipeLoader 已校验）；GT 数据损坏时跳过而不崩溃。
-                if (drillStack == null) continue;
-                if (input.isItemEqual(drillStack) && (best == null || rung > best.rung)) {
-                    best = new DrillSelection(input, material.mName, rung);
-                }
-            }
-        }
-        return best;
     }
 
     // ==== GUI 与工具提示 ====
@@ -505,10 +448,10 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     /** 钻头行：总线中钻头的材质名称与阶级加成（x4^(阶级+1)），或"无"标签。 */
     private String resolveDrillDisplayName() {
         if (displayDrillMaterial.isEmpty()) return StatCollector.translateToLocal("vmd.gui.drill.none");
-        for (int rung = 0; rung < DRILL_MATERIALS.size(); rung++) {
-            final Materials material = DRILL_MATERIALS.get(rung);
+        for (int rung = 0; rung < DrillSelection.DRILL_MATERIALS.size(); rung++) {
+            final Materials material = DrillSelection.DRILL_MATERIALS.get(rung);
             if (material.mName.equals(displayDrillMaterial)) {
-                return material.mDefaultLocalName + " (x" + drillBonus(rung) + ")";
+                return material.mDefaultLocalName + " (x" + DrillSelection.bonus(rung) + ")";
             }
         }
         return displayDrillMaterial;

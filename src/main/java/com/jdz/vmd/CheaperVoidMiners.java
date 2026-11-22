@@ -17,6 +17,7 @@ import cpw.mods.fml.relauncher.Side;
     acceptedMinecraftVersions = "[1.7.10]",
     dependencies = """
         required-after:gregtech;
+        after:gtnhintergalactic;
         """)
 public class CheaperVoidMiners {
 

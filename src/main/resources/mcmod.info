@@ -3,7 +3,7 @@
 	"modList": [{
 		"modid": "${modId}",
 		"name": "${modName}",
-		"description": "Cheaper downtiered Void Miners for GTNH: three enhanced Void Miner EX stages, five-tier Void Fluid Drillers and two non-electric wooden machines",
+		"description": "Cheaper downtiered Void Miners for GTNH: three enhanced Void Miner EX stages, five-tier Void Fluid Drillers, two non-electric wooden machines and a Surface Planetary Gas Siphon (11 machines)",
 		"version": "${modVersion}",
 		"mcversion": "${minecraftVersion}",
 		"updateUrl": "",

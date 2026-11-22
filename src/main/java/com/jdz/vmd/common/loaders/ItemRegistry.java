@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 
 import com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler;
 import com.jdz.vmd.api.enums.MetaTileEntityIDs;
+import com.jdz.vmd.common.tileentities.MTESurfacePlanetaryGasSiphon;
 import com.jdz.vmd.common.tileentities.MTEVoidFluidDrillers;
 import com.jdz.vmd.common.tileentities.MTEVoidFluidPumpWooden;
 import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
@@ -33,6 +34,7 @@ public class ItemRegistry {
     public static ItemStack VoidFluidDrillerInfinity;
     public static ItemStack VoidFluidPumpWooden;
     public static ItemStack VoidMinerWooden;
+    public static ItemStack SurfacePlanetaryGasSiphon;
 
     public static void run() {
         ItemRegistry.VoidMinerEX1 = new MTEVoidMiners.VMLV(VoidMinerEX1Controller.ID, "VoidMinerEX1", "Void Miner EX I")
@@ -77,6 +79,11 @@ public class ItemRegistry {
             "VoidMinerWooden",
             "Wooden Void Miner").getStackForm(1L);
 
+        ItemRegistry.SurfacePlanetaryGasSiphon = new MTESurfacePlanetaryGasSiphon(
+            MetaTileEntityIDs.SurfacePlanetaryGasSiphonController.ID,
+            "SurfacePlanetaryGasSiphon",
+            "Surface Planetary Gas Siphon").getStackForm(1L);
+
         registerOwnershipTooltips();
     }
 
@@ -93,7 +100,7 @@ public class ItemRegistry {
 
         for (ItemStack stack : new ItemStack[] { VoidMinerEX1, VoidMinerEX2, VoidMinerEX3, VoidFluidDrillerIron,
             VoidFluidDrillerSteel, VoidFluidDrillerTitanium, VoidFluidDrillerNaquadah, VoidFluidDrillerInfinity,
-            VoidFluidPumpWooden, VoidMinerWooden }) {
+            VoidFluidPumpWooden, VoidMinerWooden, SurfacePlanetaryGasSiphon }) {
             AnimatedTooltipHandler.addItemTooltip(
                 stack,
                 AnimatedTooltipHandler.chain(AnimatedTooltipHandler.text(AnimatedTooltipHandler.BLUE), creditLine));

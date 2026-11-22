@@ -64,6 +64,26 @@ public final class VmdRecipeMaps {
                 .setMultipleWidgetsAllowed(false))
         .build();
 
+    /**
+     * 地表行星气体钻机的产出配方：全局气体表（{@code PlanetaryGasTableHelper}）每气体一条——
+     * 输入 = 配置 N 的编程电路标记（stackSize=0）+ 该气体原版 Depth × 64 的 Mining Pipes 需求展示
+     * （机器侧常备不消耗，NEI 展示实际所需数量）→ 输出 = 该气体的原版基础产量。
+     * 机器不走该表的配方匹配（checkProcessing 自行按电路选择），仅作 NEI 展示。
+     * 原版 Siphon 的 NEI 为自定义文本处理器（行星/Depth/基础速率/EUt 文本，无物品输入），
+     * 本表以 RecipeMap 形态承载同源信息：电路编号 ↔ 原版行星+Depth 的映射由机器 tooltip 全量列出。
+     * 注册时机在本 mod postInit（晚于 gtnhintergalactic postInit 填充 GT5u 气体清单），见
+     * {@code VmdOutputRecipeLoader#registerSurfaceGasSiphonRecipes}。
+     */
+    public static final RecipeMap<RecipeMapBackend> surfaceGasSiphonRecipes = RecipeMapBuilder
+        .of("vmd.recipe.surfacegassiphon")
+        .maxIO(2, 0, 0, 1)
+        .minInputs(1, 0)
+        .frontend(VmdFrontend::new)
+        .neiHandlerInfo(
+            builder -> builder.setHeight(240)
+                .setMultipleWidgetsAllowed(false))
+        .build();
+
     private VmdRecipeMaps() {}
 
     public static void register() {}

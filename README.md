@@ -1,12 +1,12 @@
 # Cheaper Void Miners for GTNH
 
-A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from early game, with five-tier void fluid drillers, three enhanced Void Miner EX stages and two non-electric wooden machines.
+A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from early game, with five-tier void fluid drillers, three enhanced Void Miner EX stages, two non-electric wooden machines and a Surface Planetary Gas Siphon.
 
 ## 项目定位
 
-本项目是 GTNH 2.9.0（MC 1.7.10）环境下 kuolemax/CheaperVoidMiners 的降档加强分支：在游戏早期即可获得低门槛的虚空采矿能力，并通过逐档加强把产能延伸到中后期。衍生出的虚空流体钻机、虚空矿机 EX 与木质两机覆盖了流体与矿石两类虚空产出。
+本项目是 GTNH 2.9.0（MC 1.7.10）环境下 kuolemax/CheaperVoidMiners 的降档加强分支：在游戏早期即可获得低门槛的虚空采矿能力，并通过逐档加强把产能延伸到中后期。衍生出的虚空流体钻机、虚空矿机 EX、木质两机与地表行星气体钻机覆盖了流体与矿石两类虚空产出。
 
-## 机器清单（10 台）
+## 机器清单（11 台）
 
 ### 虚空矿机 EX I / II / III（多方块）
 
@@ -31,9 +31,18 @@ A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from 
 - **木质虚空矿机**：从主世界矿物生成表拉取矿石物品（不破坏方块），每 100 tick 产出一组（64 件）；6 个输出槽，一组恰好占满 1 个输出槽，满仓待机、手动或传送带取出。GUI 提供幽灵编程电路槽直接点选：配置 1..N 选定单一矿脉（含其贫矿），N+1 为贫矿池，0/无电路为全部矿石加权混合。
 - **木质虚空流体泵**：抽取主世界地下流体，每 200 tick 产 100mB 至内部储罐；GUI 幽灵电路槽选择目标流体，储罐满或不兼容时待机。合成仅需原木、青铜中型流体管道与烧制粘土桶（Iguana Tweaks）。
 
+### 地表行星气体钻机（多方块）
+
+- GT5u 原版行星气体钻机（Planetary Gas Siphon）的"地表"加强版：任意维度的地表均可搭建，摆脱原版"必须建在环绕气态行星的空间站轨道"的限制；结构（13×23×13、Siphon 机壳 + 钨钢框架 + 再紧固镀铑钯机壳 + 加热线圈层）与原版 1:1。
+- 不做维度选择：原版 Siphon 全部可抽气体（4 行星 × 4 深度共 16 种）汇总为一张全局表，按行星 Tier 升序编号，编程电路（配置 1..N）选第 N 项；必须插电路且配置有效才会启动。
+- 产量 = 原版基础产量 × 16^max(0, 机器电压档 − 行星 Tier)；行星 Tier 高于机器电压档的气体不可选。EU/t = Depth × 4^(行星 Tier + 2) 按原版公式与完美超频规则（每级产量 ×2、耗电 ×4），**不随 16^ 产量加成放大**。
+- 钻头加成与虚空流体钻机同款（铁 ×4 / 钢 ×16 / 钛 ×64 / 硅岩 ×256 / 无尽 ×1024 取最高阶级），每完成一个周期有 1% 概率消耗 1 个钻头。
+- Mining Pipes 需求、Heating Coil 加速（每级 +10%）、批量模式、流体输出保护均与原版 1:1；原版的轨道空间站 chunk loading 随空间站限制一并移除。
+- 获取走组装机配方：硅岩档虚空流体钻机成品 + 原版行星气体钻机成品 + 坚固钨钢机器机壳 ×8、钨钢框架 ×8、超级储罐（IV）、电泵（LuV）、硅岩钻头与配置 1 编程电路（电路为不消耗的配置标记）。
+
 ## 多方块结构
 
-- 流体钻机 / EX 矿机均为 3×3×7 立柱结构，与 GT 原版流体钻井机同形（控制器位于正面底层中央）。
+- 流体钻机 / EX 矿机均为 3×3×7 立柱结构，与 GT 原版流体钻井机同形（控制器位于正面底层中央）；地表行星气体钻机与原版 Siphon 同形（13×23×13）。
 - 机壳与 GT 框架随档位变化：铁（ULV 机壳）/ 钢 / 钛 / 硅岩 / 无尽档对应各自主机壳与框架材料；硅岩 / 无尽档无专用机壳，分别以坚固钨钢机器机壳与中子素采矿机壳代替。
 - 流体钻机走组装机配方：对应档位机壳 ×4、GT 框架 ×4-8、超级缸、电泵、钻头与配置 12 编程电路（电路为不消耗的配置标记，不会作为材料被消耗）；框架数与时长随档位递增。
 - EX 矿机获取走无序合成 1:1 兑换：GT 采矿机 LV（Basic Miner）→ EX I、GT 采矿机 HV（Advanced Miner）→ EX II、矿石钻井机 Mk I（Ore Drilling Plant 控制器）→ EX III。
@@ -52,6 +61,7 @@ A GTNH 2.9.0 fork of Cheaper Void Miners that makes void mining accessible from 
 ## NEI 支持
 
 - 按维度分页的产出配方：钻机流体、木矿机按矿脉拆分（含贫矿归属），与机器实际产出同源。
+- 地表行星气体钻机：全局气体表每气体一条（电路 N 标记 + Depth × 64 钻杆需求展示 → 该气体基础产量），电路编号与机器选择同源同序。
 
 ## 兼容性
 

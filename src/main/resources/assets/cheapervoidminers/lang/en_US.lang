@@ -8,6 +8,7 @@ gt.blockmachines.voidfluiddrillertitanium.name=Void Fluid Driller (Titanium)
 gt.blockmachines.voidfluiddrillernaquadah.name=Void Fluid Driller (Naquadah)
 gt.blockmachines.voidfluiddrillerinfinity.name=Void Fluid Driller (Infinity)
 gt.blockmachines.voidfluidpumpwooden.name=Wooden Void Fluid Pump
+gt.blockmachines.surfaceplanetarygassiphon.name=Surface Planetary Gas Siphon
 
 # Void Fluid Driller tooltip
 vmd.mbtt.machine_type=Void Fluid Driller
@@ -42,6 +43,7 @@ vmd.credit.added_by=Added by %s
 # NEI output recipe maps (tab names)
 vmd.recipe.voidfluiddriller=Void Fluid Driller
 vmd.recipe.woodenminer=Wooden Void Miner
+vmd.recipe.surfacegassiphon=Surface Planetary Gas Siphon
 
 # Recipe check result messages (SimpleCheckRecipeResult keys)
 GT5U.gui.text.recipe_result.vmd_drilling=Extracting underground fluids
@@ -49,6 +51,29 @@ GT5U.gui.text.recipe_result.vmd_no_fluid_data=No underground fluid data for this
 GT5U.gui.text.recipe_result.vmd_circuit_required=No programming circuit inserted
 GT5U.gui.text.recipe_result.vmd_circuit_out_of_range=Circuit configuration exceeds the fluid count of this dimension
 GT5U.gui.text.recipe_result.vmd_output_full=Fluid output full
+GT5U.gui.text.recipe_result.vmd_siphoning=Siphoning planetary atmosphere
+GT5U.gui.text.recipe_result.vmd_siphon_no_gas_data=GT5u planetary gas list is empty, the machine is unusable
+GT5U.gui.text.recipe_result.vmd_siphon_circuit_required=No programming circuit inserted
+GT5U.gui.text.recipe_result.vmd_siphon_circuit_out_of_range=Circuit configuration exceeds the planetary gas table
+GT5U.gui.text.recipe_result.vmd_siphon_machine_tier_too_low=The machine voltage tier is too low for this planet's gases
+GT5U.gui.text.recipe_result.vmd_siphon_no_mining_pipe=Not enough Mining Pipes in the input bus (Depth x 64 required)
+
+# Surface Planetary Gas Siphon tooltip
+vmd.siphon.machine_type=Surface Gas Siphon
+vmd.siphon.info.1=A surface-strengthened variant of the vanilla Planetary Gas Siphon: builds on the ground in any dimension, without the orbiting space station requirement.
+vmd.siphon.info.2=A programming circuit (configuration 1..N) selects the N-th entry of the global gas table (every gas the vanilla Siphon can pump, sorted by planet tier, same order as shown in NEI); the machine does not start without an inserted circuit, with configuration 0, or with an out-of-range configuration.
+vmd.siphon.info.3=Output = vanilla base amount x 16^max(0, machine voltage tier - planet tier); gases whose planet tier is higher than the machine voltage tier cannot be selected.
+vmd.siphon.info.4=EU/t = Depth x 4^(planet tier + 2) with the vanilla perfect overclock rules (each OC level: output x2, EU/t x4); EU/t is NOT scaled by the 16^ output boost.
+vmd.siphon.info.5=Drill heads in the input bus boost the output like the Void Fluid Driller: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024 (highest class applies). Each finished cycle consumes one drill head with a 1% chance.
+vmd.siphon.info.6=Mining Pipes: keep at least Depth x 64 pipes in the input bus (they are not consumed). Heating Coil: +10% speed per tier; batch mode is supported like the vanilla Siphon.
+vmd.siphon.info.7=Gas table: circuits 1-4 Jupiter (T3): Hydrogen/Helium/Nitrogen/Oxygen; 5-8 Saturn (T5): Hydrogen/Helium/Oxygen/Liquid Oxygen; 9-12 Uranus (T5): Deuterium/Neon/Argon/Krypton; 13-16 Neptune (T6): Tritium/Helium-3/Ammonia/Xenon.
+vmd.siphon.structure.controller=Controller, front center of the main body
+vmd.siphon.structure.siphon_casing=Planetary Siphon Casings
+vmd.siphon.structure.frame=Tungstensteel Frame Box
+vmd.siphon.structure.rebolted_casing=Rebolted Rhodium-Plated Palladium Casing
+vmd.siphon.structure.any_siphon_casing=Any siphon casing
+vmd.siphon.structure.input_bus=Input Bus (programmed circuit, drill heads and Mining Pipes)
+vmd.siphon.structure.output_hatch=Output Hatch (fluid output, required)
 
 # Wooden Void Fluid Pump tooltip
 vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground fluids.

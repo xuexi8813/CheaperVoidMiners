@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.jdz.vmd.api.recipe.VmdRecipeMaps;
 import com.jdz.vmd.common.tileentities.MTEVoidMinerWooden;
+import com.jdz.vmd.common.tileentities.PlanetaryGasTableHelper;
 import com.jdz.vmd.common.tileentities.VoidFluidTableHelper;
 
 import gregtech.api.enums.ItemList;
@@ -23,9 +24,11 @@ import gregtech.api.objects.GTUODimension;
 import gregtech.api.objects.GTUOFluid;
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.RecipeMapBackend;
+import gregtech.api.util.GTModHandler;
 import gregtech.api.util.GTUtility;
 import gtneioreplugin.plugin.block.ModBlocks;
 import gtneioreplugin.util.DimensionHelper;
+import gtnhintergalactic.recipe.GasSiphonRecipes;
 
 /**
  * 注册本模组的 NEI 产出配方。流体钻机配方：维度显示方块作输入，该维度全部候选流体按规范排序
@@ -47,10 +50,14 @@ public final class VmdOutputRecipeLoader {
     /** 单条流体输出的展示数量（mB）；机器实际产出量由其自身决定。 */
     private static final int FLUID_DISPLAY_AMOUNT_MB = 1000;
 
+    /** 地表行星气体钻机的 Mining Pipes 常备量系数（原版 Siphon 1:1：Depth × 64，不消耗）。 */
+    private static final int MINING_PIPES_PER_DEPTH = 64;
+
     /** 主世界的 GTNEI 维度缩写：木制采矿机固定开采主世界。 */
     private static final String OVERWORLD_DIMENSION_ABBREVIATION = "Ow";
 
     private static boolean registered = false;
+    private static boolean surfaceGasSiphonRegistered = false;
 
     private VmdOutputRecipeLoader() {}
 
@@ -60,6 +67,65 @@ public final class VmdOutputRecipeLoader {
 
         registerFluidDrillerRecipes();
         registerWoodenMinerRecipe();
+    }
+
+    /**
+     * 地表行星气体钻机：全局气体表（{@code PlanetaryGasTableHelper}，源自 GT5u 原版
+     * {@code GasSiphonRecipes} 各行星大气气体清单）每气体一条——输入 = 配置 N 的编程电路标记
+     * （stackSize=0，与机器电路选择同源同序）+ 该气体 Depth × 64 的 Mining Pipes 需求展示
+     * （机器侧常备不消耗，NEI 展示实际所需数量）→ 输出 = 该气体的原版基础产量（机器实际产出在其上
+     * 叠加 16^ 电压加成、钻头加成与完美超频）。
+     * <p>
+     * 注册时机为本 mod 的 postInit（GT5u 气体清单由 gtnhintergalactic 的 postInit 填充，本 mod
+     * 声明 {@code after:gtnhintergalactic} 使其先于本 postInit），并在 GT-PostLoad 链
+     * （{@code CommonProxy#registerVmdOutputRecipes}）兜底重试：FML 对 init/postInit 的分发顺序
+     * 并不严格保证依赖语义（本项目实测，见 CommonProxy 注释），若本方法先于 gtnhintergalactic
+     * postInit 执行，则清单仍为空表——此时不构建、不缓存空表、不置已注册标记，交由 GT-PostLoad
+     * 后备点重试（GT5u 2.9 的 postInit 经调度排在所有普通 mod 之后，届时清单必然就绪）。
+     * Fail Fast：两次注册点均未等到数据时仅告警跳过（NEI 无条目），机器运行期构建的空表会给出
+     * 针对性失败提示，绝不静默空表。
+     */
+    public static void registerSurfaceGasSiphonRecipes() {
+        if (surfaceGasSiphonRegistered) return;
+        if (GasSiphonRecipes.RECIPES.isEmpty()) {
+            LOG.warn(
+                "GT5u planetary gas list not populated yet, Surface Planetary Gas Siphon NEI registration deferred to the GT-PostLoad fallback");
+            return;
+        }
+        surfaceGasSiphonRegistered = true;
+
+        final List<PlanetaryGasTableHelper.GasEntry> gasTable = PlanetaryGasTableHelper.getEntries();
+        if (gasTable.isEmpty()) {
+            // 全部条目无效（构建时已记错误日志）：维持 Fail Fast，不注册空配方。
+            LOG.error("Planetary gas table has no valid entries, Surface Planetary Gas Siphon NEI recipes skipped");
+            return;
+        }
+
+        // 电路编号 = 全局表位次 + 1（与机器 checkProcessing 的 gasTable.get(config - 1) 同源同序）。
+        for (int i = 0; i < gasTable.size(); i++) {
+            final PlanetaryGasTableHelper.GasEntry gas = gasTable.get(i);
+            RA.stdBuilder()
+                .itemInputs(
+                    // 电路标记（stackSize=0）：配置 i+1 对应全局表第 i+1 项（与机器选择同源同序）。
+                    ItemList.Circuit_Integrated.getWithDamage(0L, i + 1L),
+                    // Mining Pipes 需求展示：机器要求总线常备 Depth × 64 根（不消耗）。
+                    GTUtility.copyAmount(gas.depth * MINING_PIPES_PER_DEPTH, getMiningPipeStack()))
+                .fluidOutputs(new FluidStack(gas.fluid, gas.fluid.amount))
+                .duration(1)
+                .eut(0)
+                .addTo(VmdRecipeMaps.surfaceGasSiphonRecipes);
+        }
+
+        LOG.info("Surface Planetary Gas Siphon NEI: {} gas recipes registered", gasTable.size());
+    }
+
+    /** IC2 Mining Pipe 物品堆（与原版 Siphon 的判定物品一致）；缺失时 Fail Fast 抛出。 */
+    private static ItemStack getMiningPipeStack() {
+        final ItemStack pipe = GTModHandler.getIC2Item("miningPipe", 0);
+        if (pipe == null) {
+            throw new IllegalStateException("IC2 mining pipe item is missing, cannot register gas siphon NEI recipes");
+        }
+        return pipe;
     }
 
     /**
