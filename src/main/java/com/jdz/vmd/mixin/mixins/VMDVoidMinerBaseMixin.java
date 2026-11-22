@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.cleanroommc.modularui.utils.item.ItemStackHandler;
 import com.jdz.vmd.api.IVoidMinerOverride;
+import com.jdz.vmd.common.tileentities.VoidOreTableHelper;
 
 import bwcrossmod.galacticgreg.MTEVoidMinerBase;
 import bwcrossmod.galacticgreg.VoidMinerUtility;
@@ -103,9 +104,22 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
      * 替换原 onFirstTick 中 calculateDropMap 之后的逻辑：原码
      * {@code int size = dropMap.getOres().length} 在 getOres() 为 null
      * （私人维度的空 DropMap）时 NPE，此处改为安全重算。
+     *
+     * <p>
+     * 方法最前先做贫矿追加兜底（幂等，时序契约见
+     * {@link VoidOreTableHelper#appendPoorOresToVoidMinerDropMaps}）：客户端连远程服不触发
+     * FMLServerStartingEvent，本调用点是客户端进程的唯一入口。BartWorks 掉表在客户端启动的
+     * FMLLoadCompleteEvent（早于任何 tick）已生成，首个 tick 时追加必然成功，且先于本方法后续
+     * recalculateDropMap 与 GUI 弹窗路径的首次 {@code isDistributionCached} 缓存，客户端过滤弹窗
+     * 因此包含贫矿独立按钮；服务端 serverStarting 先于任何 tick 追加完毕，此处命中幂等标志静默
+     * 跳过，两路径顺序无关。调用放在 isCancelled 检查之前，覆盖让位 vmtweak 的取消路径——追加是
+     * 本 mod 的全局一次性职责，与维度覆写让位无关。本类首次类加载随之提前到运行期（游戏内首个
+     * tick），不落入 initializeMods/loadComplete 时段 RFB 环境的类加载禁区（同
+     * CommonProxy#serverStarting 注释记录的约束核对）。
      */
     @Inject(method = "onFirstTick", at = @At("HEAD"), require = 1, remap = false, cancellable = true)
     private void vmd$onFirstTick(IGregTechTileEntity aBaseMetaTileEntity, CallbackInfo ci) {
+        VoidOreTableHelper.appendPoorOresToVoidMinerDropMaps();
         if (ci.isCancelled()) return;
         ci.cancel();
         // 复刻 super.onFirstTick 行为

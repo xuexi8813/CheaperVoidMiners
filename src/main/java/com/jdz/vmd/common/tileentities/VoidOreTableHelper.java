@@ -93,8 +93,22 @@ public final class VoidOreTableHelper {
     /**
      * 一次性把已启用的贫矿条目追加进原版虚空采矿机掉落表（经 {@link VoidMinerUtility#addBlockToDimensionList}）。
      * 时序契约：必须在 {@code VoidMinerUtility.generateDropMaps()} 之后（BartWorks 于 FMLLoadCompleteEvent
-     * 执行，否则掉落表被重建），且在首台虚空采矿机首个 tick 调用 {@code calculateDropMap()} 之前；
-     * 服务器启动事件满足两个边界，标记位保证幂等。
+     * 执行，否则掉落表被重建），且在首台虚空采矿机首个 tick 调用 {@code calculateDropMap()} 之前。
+     * 双调用点互为补充，标记位保证全局只追加一次：
+     * <ul>
+     * <li>服务器启动事件（{@code serverStarting}）：服务端（单人/集成服/专服）主路径，先于任何 tick，
+     * 两个边界天然满足，语义不变。</li>
+     * <li>虚空矿机 mixin 的 {@code onFirstTick} 注入（见
+     * {@code VMDVoidMinerBaseMixin#vmd$onFirstTick}）：客户端连远程服的唯一入口——客户端进程不触发
+     * FMLServerStartingEvent，但本 mod 双端 required，客户端同样有 BartWorks，其 FMLLoadCompleteEvent
+     * （早于任何 tick）已生成掉表，首个 tick 时追加必然成功，且先于客户端首次
+     * {@code isDistributionCached} 缓存（recalculateDropMap 与 GUI 弹窗路径均晚于首个 tick），
+     * 客户端 GUI 过滤弹窗因此包含贫矿独立按钮；服务端场景该调用点命中幂等标志静默跳过。</li>
+     * </ul>
+     * 类加载时点：mixin 路径使本类首次加载提前到运行期（游戏内首个 tick），不在 initializeMods/
+     * loadComplete 时段（见 {@code CommonProxy#serverStarting} 注释记录的 RFB 类加载禁区），
+     * 约束不适用。追加只做一次，普通静态标志即可：serverStarting 与各机器 onFirstTick 均在
+     * 同一主线程串行执行，无跨线程可见性问题。
      */
     public static void appendPoorOresToVoidMinerDropMaps() {
         if (appendedToVoidMinerDropMaps) return;
