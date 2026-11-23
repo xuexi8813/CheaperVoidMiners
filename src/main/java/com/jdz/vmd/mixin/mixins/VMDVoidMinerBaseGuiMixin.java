@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.cleanroommc.modularui.api.IPanelHandler;
@@ -27,6 +28,8 @@ import com.cleanroommc.modularui.widgets.ButtonWidget;
 import com.cleanroommc.modularui.widgets.ListWidget;
 import com.cleanroommc.modularui.widgets.layout.Flow;
 import com.jdz.vmd.api.IVoidMinerOverride;
+import com.jdz.vmd.common.gui.ExVoidMinerFilterPanel;
+import com.jdz.vmd.common.tileentities.MTEVoidMinerEXBase;
 
 import bwcrossmod.galacticgreg.MTEVoidMinerBase;
 import bwcrossmod.galacticgreg.VoidMinerUtility;
@@ -36,7 +39,7 @@ import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * 在虚空矿机终端显示维度覆写，覆写变化时刷新过滤弹窗。逻辑移植自 Void-Miner-Tweak-Mod。
+ * 在虚空矿机终端显示维度覆写，并复用 GT 的过滤弹窗入口。普通机型保留旧刷新方式，EX 同步服务端矿表。
  * 独立版 vmtweak 存在时由 {@code VmdMixinPlugin} 让位，已取消的注入回调不重复处理。
  */
 @SuppressWarnings("rawtypes")
@@ -137,9 +140,22 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
         return list;
     }
 
+    /** EX 齿轮不依赖本地矿表；仅改 GT 的按钮显示条件，不另注册面板或按钮。 */
+    @ModifyArg(
+        method = "createRightPanelGapRow",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/cleanroommc/modularui/widgets/layout/Flow;childIf(ZLjava/util/function/Supplier;)Lcom/cleanroommc/modularui/api/widget/IParentWidget;"),
+        index = 0,
+        require = 1,
+        remap = false)
+    private boolean vmd$showFilterGear(boolean hasDropMap) {
+        return hasDropMap || multiblock instanceof MTEVoidMinerEXBase;
+    }
+
     /**
-     * 在 createRightPanelGapRow 的 RETURN 处注册服务端 tick 处理器，监视维度覆写变化。
-     * 过滤弹窗打开时检测到变化，执行"关闭-丢弃缓存-重开"，使新维度的矿物列表即时显示。
+     * 主面板开启期间更新 EX 矿表，即使 EX 停机且过滤子面板未开启。
+     * 普通机型保留原有的关闭、丢弃缓存、重开流程。
      */
     @Inject(method = "createRightPanelGapRow", at = @At("RETURN"), require = 1, remap = false)
     private void vmd$onCreateRightPanelGapRow(ModularPanel parent, PanelSyncManager syncManager,
@@ -147,6 +163,11 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
         if (cir.isCancelled()) return;
 
         MTEVoidMinerBase mb = this.multiblock;
+
+        if (mb instanceof MTEVoidMinerEXBase) {
+            syncManager.onServerTick(((IVoidMinerOverride) mb)::vmd$refreshExFilter);
+            return;
+        }
 
         // 查找原方法刚注册的过滤面板 handler
         IPanelHandler filterPanel = syncManager.findPanelHandlerNullable("filter");
@@ -199,6 +220,10 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
         if (cir.isCancelled()) return;
 
         MTEVoidMinerBase mb = multiblock;
+        if (mb instanceof MTEVoidMinerEXBase) {
+            cir.setReturnValue(ExVoidMinerFilterPanel.create(syncManager, (IVoidMinerOverride) mb));
+            return;
+        }
 
         // 从覆写槽位解析正确的矿表；数据异常（物品/维度解析失败）仅记 DEBUG 日志，
         // 走后续无矿表兜底面板，不让 GUI 构建崩溃。

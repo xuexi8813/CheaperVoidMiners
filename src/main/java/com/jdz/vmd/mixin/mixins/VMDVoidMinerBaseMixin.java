@@ -1,5 +1,6 @@
 package com.jdz.vmd.mixin.mixins;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,16 +16,21 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.cleanroommc.modularui.utils.item.ItemStackHandler;
 import com.jdz.vmd.api.IVoidMinerOverride;
+import com.jdz.vmd.common.tileentities.ExVoidMinerFilter;
+import com.jdz.vmd.common.tileentities.ExVoidMinerFilter.Operation;
+import com.jdz.vmd.common.tileentities.ExVoidMinerFilter.View;
 import com.jdz.vmd.common.tileentities.MTEVoidMinerEXBase;
 import com.jdz.vmd.common.tileentities.VoidOreTableHelper;
 
 import bwcrossmod.galacticgreg.MTEVoidMinerBase;
 import bwcrossmod.galacticgreg.VoidMinerUtility;
+import bwcrossmod.galacticgreg.VoidMinerUtility.DropMap;
 import galacticgreg.api.ModDimensionDef;
 import galacticgreg.api.enums.DimensionDef;
 import gregtech.api.interfaces.IOreMaterial;
@@ -73,6 +79,9 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     @Shadow(remap = false)
     public ItemStackHandler selected;
 
+    @Shadow(remap = false)
+    public boolean blacklist;
+
     // endregion
 
     // region 维度覆写的独有状态
@@ -92,6 +101,26 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     /** 维度覆写每次变化时自增的单调计数器，供 GUI 检测变化刷新过滤面板。 */
     @Unique
     private int vmd$dimChangeVersion = 0;
+
+    /** The EX table revision changes on every resolution, including removal or invalid markers. */
+    @Unique
+    private long vmd$exRevision;
+
+    /** Indexes only the current server distribution; persisted selections stay in GT's selected handler. */
+    @Unique
+    private ExVoidMinerFilter vmd$exFilter;
+
+    /** The current output batch's filter; EX projects the saved slots onto the current ore table. */
+    @Unique
+    private List<ItemStack> vmd$batchSelections;
+
+    /** Whether the filter contains a selected stack; computed once for GT's empty-filter check. */
+    @Unique
+    private boolean vmd$batchSelectionEmpty;
+
+    /** The last raw EX marker; a blank abbreviation means a present but invalid marker. */
+    @Unique
+    private String vmd$exMarker;
 
     // endregion
 
@@ -115,8 +144,8 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
         super.onFirstTick(aBaseMetaTileEntity);
         // 以维度覆写逻辑重算矿表
         vmd$recalculateDropMap();
-        // getOres() 空值安全处理
-        vmd$resizeSelected();
+        // 只有普通 GT 面板仍将 selected 当作按行槽位。
+        if (!vmd$isEx()) vmd$resizeSelected();
     }
 
     /** 替换原 calculateDropMap，支持槽位维度方块覆写目标矿表。 */
@@ -129,6 +158,10 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
 
     @Unique
     private void vmd$recalculateDropMap() {
+        if (vmd$isEx()) {
+            if (getBaseMetaTileEntity().isServerSide()) vmd$resolveExDropMap(vmd$readExMarker());
+            return;
+        }
         // 重置状态
         this.dropMap = null;
         this.extraDropMap = null;
@@ -190,6 +223,60 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
         vmd$resizeSelected();
     }
 
+    /** Whether this machine uses the EX-only, server-owned ore filter. */
+    @Unique
+    private boolean vmd$isEx() {
+        return (Object) this instanceof MTEVoidMinerEXBase;
+    }
+
+    /** Separates an absent override from an invalid marker so both transitions invalidate stale UI actions. */
+    @Unique
+    private String vmd$readExMarker() {
+        ItemStack slot = this.mInventory[1];
+        if (slot == null || !(slot.getItem() instanceof ItemDimensionDisplay)) return null;
+        try {
+            String marker = ItemDimensionDisplay.getDimension(slot);
+            return marker == null ? "" : marker;
+        } catch (RuntimeException e) {
+            VMD$LOG.warn("Failed to read the EX dimension override marker", e);
+            return "";
+        }
+    }
+
+    /** Resolves the map used by GT output; the EX panel never consults a client's independent drop maps. */
+    @Unique
+    private void vmd$resolveExDropMap(String marker) {
+        dimensionDef = DimensionDef.getDefForWorld(getBaseMetaTileEntity().getWorld());
+        String target = marker == null ? null : DimensionHelper.ABBR_TO_INTERNAL.get(marker);
+        DropMap base = target == null ? null : VoidMinerUtility.dropMapsByDimName.get(target);
+        DropMap extra = target == null ? null : VoidMinerUtility.extraDropsByDimName.get(target);
+        if (base != null) base.isDistributionCached(extra);
+        boolean validOverride = base != null && base.getOres() != null && base.getTotalWeight() > 0;
+        canVoidMine = validOverride || (dimensionDef != null && dimensionDef.canBeVoidMined());
+        if (!validOverride) {
+            String actual = canVoidMine ? dimensionDef.getDimensionName() : null;
+            base = actual == null ? null : VoidMinerUtility.dropMapsByDimName.get(actual);
+            extra = actual == null ? null : VoidMinerUtility.extraDropsByDimName.get(actual);
+            if (base == null && extra != null) base = new DropMap();
+            if (base != null) base.isDistributionCached(extra);
+        }
+        dropMap = base;
+        extraDropMap = extra;
+        totalWeight = base == null ? 0 : base.getTotalWeight();
+        vmd$exMarker = marker;
+        vmd$lastDimOverride = validOverride ? marker : "None";
+        vmd$warning = marker == null || validOverride ? ""
+            : totalWeight > 0 ? "vmd.gui.override.failed" : "vmd.gui.override.error";
+        vmd$exFilter = new ExVoidMinerFilter(++vmd$exRevision, base == null ? null : base.getOres());
+    }
+
+    /** Updates on initial use or controller-slot change even when checkProcessing is not running. */
+    @Unique
+    private void vmd$refreshExDropMap() {
+        String marker = vmd$readExMarker();
+        if (vmd$exFilter == null || !Objects.equals(vmd$exMarker, marker)) vmd$resolveExDropMap(marker);
+    }
+
     /**
      * 读取控制器槽位中维度方块的维度缩写；变化时更新 {@link #vmd$lastDimOverride} 并清零 totalWeight。
      */
@@ -243,6 +330,7 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     @Inject(method = "loadNBTData", at = @At("HEAD"), require = 1, remap = false)
     private void vmd$onLoadNBT(NBTTagCompound aNBT, CallbackInfo ci) {
         if (ci.isCancelled()) return;
+        this.vmd$exFilter = null;
         this.vmd$lastDimOverride = aNBT.getString("vmd$lastDimOverride");
         if (this.vmd$lastDimOverride.isEmpty() && aNBT.hasKey("vmtweak$lastDimOverride")) {
             // 用户此前安装过独立版 vmtweak：新键缺失时回退读旧键，存档平滑迁移。
@@ -260,6 +348,10 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     @Inject(method = "checkProcessing", at = @At("HEAD"), require = 1, remap = false)
     private void vmd$onCheckProcessing(CallbackInfoReturnable<CheckRecipeResult> cir) {
         if (cir.isCancelled()) return;
+        if (vmd$isEx()) {
+            vmd$refreshExDropMap();
+            return;
+        }
         String prev = vmd$lastDimOverride;
         vmd$readOverrideSlot();
         if (!Objects.equals(prev, vmd$lastDimOverride)) {
@@ -271,6 +363,42 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     // endregion
 
     // region 材料级宽匹配
+
+    /** Captures the selection for both GT checks; MUI2 2.3.92 exposes only the slot API. */
+    @Inject(method = "handleOutputs", at = @At("HEAD"), require = 1, remap = false)
+    private void vmd$beginOutput(CallbackInfo ci) {
+        if (vmd$isEx()) {
+            vmd$batchSelections = vmd$exFilter.effectiveSelections(selected);
+        } else {
+            vmd$batchSelections = new ArrayList<>();
+            for (int slot = 0; slot < selected.getSlots(); slot++) {
+                ItemStack stack = selected.getStackInSlot(slot);
+                if (stack != null) vmd$batchSelections.add(stack);
+            }
+        }
+        vmd$batchSelectionEmpty = vmd$batchSelections.isEmpty();
+    }
+
+    @Redirect(
+        method = "handleOutputs",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/cleanroommc/modularui/utils/item/ItemStackHandler;getStacks()Ljava/util/List;"),
+        require = 1,
+        remap = false)
+    private List<ItemStack> vmd$effectiveOutputSelections(ItemStackHandler handler) {
+        return vmd$batchSelections;
+    }
+
+    @Inject(method = "isSelectedEmpty", at = @At("HEAD"), require = 1, remap = false, cancellable = true)
+    private void vmd$isOutputSelectionEmpty(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(vmd$batchSelectionEmpty);
+    }
+
+    @Inject(method = "handleOutputs", at = @At("RETURN"), require = 1, remap = false)
+    private void vmd$endOutput(CallbackInfo ci) {
+        vmd$batchSelections = null;
+    }
 
     /**
      * GUI 过滤器与输入总线共用此匹配点。原版 item+meta 精确匹配会漏掉同材料的不同石种、大小矿。
@@ -301,6 +429,38 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
 
     @Unique
     @Override
+    public void vmd$refreshExFilter() {
+        if (vmd$isEx() && getBaseMetaTileEntity().isServerSide()) vmd$refreshExDropMap();
+    }
+
+    @Unique
+    @Override
+    public View vmd$getExFilterView() {
+        if (!vmd$isEx() || !getBaseMetaTileEntity().isServerSide()) return View.EMPTY;
+        vmd$refreshExDropMap();
+        return vmd$exFilter.view(selected, blacklist);
+    }
+
+    @Unique
+    @Override
+    public void vmd$applyExFilterAction(long revision, int row, Operation operation) {
+        if (!vmd$isEx() || !getBaseMetaTileEntity().isServerSide()) return;
+        vmd$refreshExDropMap();
+        if (!vmd$exFilter.accepts(revision, row, operation)) return;
+        if (operation == Operation.WHITELIST || operation == Operation.BLACKLIST) {
+            boolean nextMode = operation == Operation.BLACKLIST;
+            if (blacklist == nextMode) return;
+            blacklist = nextMode;
+        } else {
+            ItemStackHandler nextSelection = vmd$exFilter.edit(selected, revision, row, operation);
+            if (nextSelection == selected) return;
+            selected = nextSelection;
+        }
+        markDirty();
+    }
+
+    @Unique
+    @Override
     public int vmd$getDimChangeVersion() {
         return vmd$dimChangeVersion;
     }
@@ -322,6 +482,7 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     @Unique
     @Override
     public String vmd$getOverrideDisplayText() {
+        if (vmd$isEx() && !vmd$warning.isEmpty()) return "!" + vmd$warning;
         if ("None".equals(vmd$lastDimOverride)) {
             return "";
         }

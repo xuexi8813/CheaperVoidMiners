@@ -1,5 +1,8 @@
 package com.jdz.vmd.api;
 
+import com.jdz.vmd.common.tileentities.ExVoidMinerFilter.Operation;
+import com.jdz.vmd.common.tileentities.ExVoidMinerFilter.View;
+
 /**
  * Void Miner（虚空矿机）维度覆写能力的公开契约，由 {@code VMDVoidMinerBaseMixin}
  * 注入 {@code bwcrossmod.galacticgreg.MTEVoidMinerBase} 后实现。
@@ -27,6 +30,15 @@ public interface IVoidMinerOverride {
      * @return 维度覆写每次变化时自增的单调计数器，供 GUI 检测变化并刷新过滤面板。
      */
     int vmd$getDimChangeVersion();
+
+    /** Refreshes the server's EX ore table while the controller is stopped or its filter is closed. */
+    void vmd$refreshExFilter();
+
+    /** Refreshes the EX view on the server and returns its rows, revision and current selection. */
+    View vmd$getExFilterView();
+
+    /** Applies an EX filter action only if its revision and row still identify the current server table. */
+    void vmd$applyExFilterAction(long revision, int row, Operation operation);
 
     /**
      * 当前每秒矿石产出（产能显示口径，含惰性气体加成与电压产量加成），供 EX 虚空矿机 GUI 的
