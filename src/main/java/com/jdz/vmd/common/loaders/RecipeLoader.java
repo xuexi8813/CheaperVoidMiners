@@ -9,6 +9,8 @@ import net.minecraft.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.jdz.vmd.common.tileentities.DrillSelection;
+
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.Mods;
@@ -51,13 +53,8 @@ public class RecipeLoader {
         GTModHandler.addShapelessCraftingRecipe(output, new Object[] { inputStack });
     }
 
-    /**
-     * 五个虚空流体钻机阶段的装配机配方；输入物品堆注册前校验，GT 物品缺失时记错误日志并跳过，
-     * 不生成损坏配方。配置 12 的编程电路为不消耗的配置标记（GT5u notConsumable 惯例：stackSize=0
-     * 的输入仍为启动必需项，但配方执行与 SingleRecipeCheck 消耗阶段均跳过 0 消耗量），框架数与时长随阶段递增。
-     */
+    /** 五档虚空流体钻机的装配机配方；配置 12 的电路为必需但不消耗的输入。 */
     private static void registerDrillerAssemblerRecipes() {
-        // 钻头为全系列共用，缺一则整个阶梯失效。
         validateDrillHeads();
 
         addDrillerAssemblerRecipe(
@@ -116,8 +113,7 @@ public class RecipeLoader {
 
     /** 校验钻机装配机配方所需钻头物品堆的存在性，缺失时输出错误日志。 */
     private static void validateDrillHeads() {
-        for (Materials material : new Materials[] { Materials.Iron, Materials.Steel, Materials.Titanium,
-            Materials.Naquadah, Materials.Infinity }) {
+        for (Materials material : DrillSelection.DRILL_MATERIALS) {
             if (GTOreDictUnificator.get(OrePrefixes.toolHeadDrill, material, 1) == null) {
                 LOG.error(
                     "OrePrefixes.toolHeadDrill stack for material {} is missing, Void Fluid Driller recipes may be broken",

@@ -16,16 +16,8 @@ import gregtech.api.enums.OrePrefixes;
 import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
 
 /**
- * 钻头选择结果与多台机器共享的钻头判定/消耗逻辑（原为虚空流体钻机基类私有实现，因地表行星气体
- * 钻机复用同一套"输入总线钻头阶级加成 + 按概率消耗"机制而顶层化；三处使用场景：
- * {@link MTEVoidFluidDrillerBase}（0.1% 消耗概率）、{@link MTESurfacePlanetaryGasSiphon}（1% 消耗概率））。
- * <p>
- * 消耗语义（两台机器一致，见各自 checkProcessing 说明）：消耗时点 = 周期启动成功时（全部失败返回
- * 分支之后）；必须在配方窗口内（checkRecipe 先以 startRecipeProcessing 开窗、后以 endRecipeProcessing
- * 关窗）扣减——普通输入总线中 {@link #stack} 为库存槽位活跃引用，扣减即生效；ME 输入总线中
- * {@link #stack} 为窗口内提取出的 slot.extracted 活跃引用，扣减后由窗口关闭时的差额结算
- * （extractedAmount − stackSize，{@code MTEHatchInputBusME.endRecipeProcessing}）自动从 AE 网络补扣。
- * 单周期至多消耗 1 个，概率由调用方传入（钻机 0.1%、地表气体钻机 1%，各自独立常量）。
+ * 共享的钻头选择结果与消耗逻辑。周期成功启动时，在配方处理窗口内尝试消耗。
+ * 普通总线直接扣减槽位库存；ME 总线扣减提取引用，由 {@code endRecipeProcessing} 在关窗时向 AE 网络结算差额。
  */
 public final class DrillSelection {
 
@@ -51,10 +43,7 @@ public final class DrillSelection {
         return 1L << (2 * (drillRung + 1));
     }
 
-    /**
-     * 输入堆叠中钻头阶级最高者，无则为 null（同阶级先到先得，材质名仅影响 GUI 显示）。
-     * 正常构建中钻头物品堆不会为 null（RecipeLoader 已校验）；GT 数据损坏时跳过而不崩溃。
-     */
+    /** 选最高阶钻头，同阶取首个；跳过 GT 未提供的钻头材质，无匹配则返回 null。 */
     @Nullable
     public static DrillSelection findDrill(List<ItemStack> inputs) {
         DrillSelection best = null;

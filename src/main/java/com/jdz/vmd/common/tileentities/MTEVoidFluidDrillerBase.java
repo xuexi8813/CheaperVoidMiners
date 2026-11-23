@@ -263,9 +263,8 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
             return SimpleCheckRecipeResult.ofFailurePersistOnShutdown("vmd_no_fluid_data");
         }
 
-        // 必须由编程电路（配置 1..N）选定候选列表第 N 项（规范排序与 NEI 展示同源一致，见
-        // VoidFluidTableHelper#CANDIDATE_ORDER）：未插入电路、配置 0 或超出范围时一律不启动。
-        final int circuitConfig = readCircuitConfig();
+        // 电路配置 1..N 选择候选列表第 N 项，顺序与 NEI 一致。
+        final int circuitConfig = IntegratedCircuitInputs.readFirstConfig(getStoredInputs());
         if (circuitConfig < 1) {
             // 未插入编程电路或配置 0：视为未配置。
             mEUt = 0;
@@ -306,16 +305,7 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
         displayFluidKey = fluid.getUnlocalizedName();
         displayDrillMaterial = drill == null ? "" : drill.materialName;
 
-        // 钻头消耗时点 = 周期启动成功时（全部失败返回分支之后）：多方块周期一经启动必完成
-        // （断电仅暂停进度，不取消周期），故"每周期启动成功"与"每完成周期"一一对应，
-        // 单周期至多消耗 1 个，概率不变（DRILL_CONSUMPTION_CHANCE）。必须在配方窗口内
-        // （checkRecipe 先以 startRecipeProcessing 开窗、后以 endRecipeProcessing 关窗）扣减：
-        // 普通输入总线中 drill.stack 为库存槽位活跃引用，扣减即生效；ME 输入总线中 drill.stack
-        // 为窗口内提取出的 slot.extracted 活跃引用，扣减后由窗口关闭时的差额结算
-        // （extractedAmount − stackSize，MTEHatchInputBusME.endRecipeProcessing）自动从 AE 网络补扣
-        // ——原实现（周期完成时经 outputAfterRecipe 消耗）在窗口关闭后执行，ME 总线的
-        // getStackInSlot 已返回 null，导致加成生效而钻头永不消耗。
-        // 判定与扣减逻辑自本机与地表行星气体钻机共用后上提至 {@link DrillSelection#consumeIfRolled}。
+        // 仅在周期成功启动时尝试消耗。须在配方窗口内扣减，ME 总线才能在关窗时结算差额（见 DrillSelection）。
         if (drill != null) {
             drill.consumeIfRolled(DRILL_CONSUMPTION_CHANCE, this);
         }
@@ -383,16 +373,6 @@ public abstract class MTEVoidFluidDrillerBase<T extends MTEVoidFluidDrillerBase<
     @Nullable
     private String resolveDisplayedAbbr(@Nullable GTUODimension dimension) {
         return VoidFluidTableHelper.getAbbrOfDimension(dimension);
-    }
-
-    /** 输入总线中第一个编程电路的配置值，不存在时为 0。 */
-    private int readCircuitConfig() {
-        for (ItemStack stack : getStoredInputs()) {
-            if (ItemList.Circuit_Integrated.isStackEqual(stack, true, true)) {
-                return stack.getItemDamage();
-            }
-        }
-        return 0;
     }
 
     // ==== GUI 与工具提示 ====

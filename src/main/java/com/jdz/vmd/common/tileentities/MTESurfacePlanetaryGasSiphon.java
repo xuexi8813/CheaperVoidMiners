@@ -36,7 +36,6 @@ import bartworks.system.material.WerkstoffLoader;
 import gregtech.api.GregTechAPI;
 import gregtech.api.enums.HatchElement;
 import gregtech.api.enums.HeatingCoilLevel;
-import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.Textures;
 import gregtech.api.interfaces.ITexture;
@@ -285,7 +284,7 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
         final List<ItemStack> storedInputs = getStoredInputs();
 
         // 编程电路（配置 1..N）选择全局气体表第 N 项（钻机同款语义）：未插入、配置 0 或超出范围一律不启动。
-        final int circuitConfig = readCircuitConfig(storedInputs);
+        final int circuitConfig = IntegratedCircuitInputs.readFirstConfig(storedInputs);
         if (circuitConfig < 1) {
             resetMachine();
             return SimpleCheckRecipeResult.ofFailure("vmd_siphon_circuit_required");
@@ -427,16 +426,6 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
         if (a <= 0 || b <= 0) return 0;
         if (a > Long.MAX_VALUE / b) return Long.MAX_VALUE;
         return a * b;
-    }
-
-    /** 输入堆叠中第一个编程电路的配置值（GT 标准幽灵电路堆叠同样命中），不存在时为 0。 */
-    private static int readCircuitConfig(List<ItemStack> storedInputs) {
-        for (ItemStack stack : storedInputs) {
-            if (ItemList.Circuit_Integrated.isStackEqual(stack, true, true)) {
-                return stack.getItemDamage();
-            }
-        }
-        return 0;
     }
 
     // ==== Heating Coil（原版 1:1） ====
