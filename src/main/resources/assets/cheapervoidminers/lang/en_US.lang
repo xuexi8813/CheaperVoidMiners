@@ -128,5 +128,6 @@ vmd.gui.override.end_asteroids=T0: End Asteroids (same as The End)
 vmd.gui.filter.loading=Loading ore filter...
 vmd.gui.filter.no_ores=No ores available. Use a Dimension Display block to select a target.
 
-# Void Miner EX GUI real-time output rate line (%s is the thousand-grouped ores per second)
-vmd.gui.output_rate=Output: %s ores/s
+# Void Miner EX terminal: latest ore actually produced
+vmd.gui.last_output=Last output: %s
+vmd.gui.last_output.none=No actual output yet

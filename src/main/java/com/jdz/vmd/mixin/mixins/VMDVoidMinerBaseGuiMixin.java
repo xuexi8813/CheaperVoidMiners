@@ -1,7 +1,5 @@
 package com.jdz.vmd.mixin.mixins;
 
-import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.formatNumber;
-
 import java.lang.reflect.Method;
 
 import net.minecraft.item.ItemStack;
@@ -19,8 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.cleanroommc.modularui.api.IPanelHandler;
 import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.api.widget.IWidget;
+import com.cleanroommc.modularui.drawable.ItemDrawable;
 import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.utils.Alignment;
 import com.cleanroommc.modularui.utils.Color;
+import com.cleanroommc.modularui.utils.serialization.ByteBufAdapters;
+import com.cleanroommc.modularui.value.sync.GenericSyncValue;
 import com.cleanroommc.modularui.value.sync.PanelSyncHandler;
 import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.value.sync.StringSyncValue;
@@ -69,7 +71,7 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
     private int vmd$refreshState = 0;
 
     /**
-     * 覆写 createTerminalTextWidget：在终端/屏幕区域既有状态行下方追加维度覆写状态显示。
+     * 在终端既有状态行下方追加维度覆写状态，以及 EX 的最近实际产出。
      */
     @Override
     protected ListWidget<IWidget, ?> createTerminalTextWidget(PanelSyncManager syncManager, ModularPanel parent) {
@@ -116,28 +118,45 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
             .marginBottom(2)
             .widthRel(1));
 
-        // 服务端只同步格式化的数字，客户端翻译产能模板。非 EX 机型用空串隐藏产能行。
-        StringSyncValue outputRateSyncer = new StringSyncValue(() -> {
-            long outputPerSecond = ((IVoidMinerOverride) mb).vmd$getCurrentOutputPerSecond();
-            return outputPerSecond > 0 ? formatNumber(outputPerSecond) : "";
-        });
-        syncManager.syncValue("vmd$outputRate", outputRateSyncer);
-
-        list.child(IKey.dynamic(() -> {
-            String raw = outputRateSyncer.getValue();
-            if (raw == null || raw.isEmpty()) return "";
-            return StatCollector.translateToLocalFormatted("vmd.gui.output_rate", raw);
-        })
-            .color(Color.WHITE.main)
-            .asWidget()
-            .setEnabledIf(w -> {
-                String raw = outputRateSyncer.getValue();
-                return raw != null && !raw.isEmpty();
-            })
-            .marginBottom(2)
-            .widthRel(1));
+        if (mb instanceof MTEVoidMinerEXBase<?>ex) {
+            list.child(vmd$createLastOutputRow(syncManager, ex));
+        }
 
         return list;
+    }
+
+    /** 两侧以同一键注册只读同步；矿石名称和图标由客户端根据同步到的物品栈显示。 */
+    @Unique
+    private static Flow vmd$createLastOutputRow(PanelSyncManager syncManager, MTEVoidMinerEXBase<?> ex) {
+        GenericSyncValue<ItemStack, ?> lastOutputSyncer = GenericSyncValue.builder(ItemStack.class)
+            .getter(syncManager.isClient() ? () -> null : ex::getLastOutputOre)
+            .adapter(ByteBufAdapters.ITEM_STACK)
+            .copy(ItemStack::copy)
+            .nullable()
+            .build();
+        syncManager.syncValue("vmd$lastOutputOre", lastOutputSyncer);
+
+        ItemDrawable icon = new ItemDrawable(lastOutputSyncer.getValue());
+        lastOutputSyncer.setChangeListener(() -> icon.setItem(lastOutputSyncer.getValue()));
+        return Flow.row()
+            .child(
+                icon.asWidget()
+                    .setEnabledIf(w -> lastOutputSyncer.getValue() != null))
+            .child(IKey.dynamic(() -> {
+                ItemStack stack = lastOutputSyncer.getValue();
+                return stack == null ? StatCollector.translateToLocal("vmd.gui.last_output.none")
+                    : StatCollector.translateToLocalFormatted("vmd.gui.last_output", stack.getDisplayName());
+            })
+                .color(Color.WHITE.main)
+                .asWidget()
+                .textAlign(Alignment.CenterLeft)
+                .expanded())
+            .collapseDisabledChild()
+            .crossAxisAlignment(Alignment.CrossAxis.CENTER)
+            .childPadding(2)
+            .marginBottom(2)
+            .fullWidth()
+            .coverChildrenHeight(16);
     }
 
     /** EX 齿轮不依赖本地矿表；仅改 GT 的按钮显示条件，不另注册面板或按钮。 */

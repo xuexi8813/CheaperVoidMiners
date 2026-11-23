@@ -128,5 +128,6 @@ vmd.gui.override.end_asteroids=T0: 末地小行星（与末地掉落相同）
 vmd.gui.filter.loading=正在加载矿物筛选器……
 vmd.gui.filter.no_ores=无可用矿物。放入维度显示方块可选目标。
 
-# 虚空矿机 EX GUI 实时产能行（%s 为千分位格式化的每秒矿石数）
-vmd.gui.output_rate=每秒产出：%s 个矿石
+# 虚空矿机 EX 终端最近实际产出
+vmd.gui.last_output=最近产出：%s
+vmd.gui.last_output.none=暂无实际产出

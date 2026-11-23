@@ -68,14 +68,6 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     @Shadow(remap = false)
     private boolean canVoidMine;
 
-    /**
-     * 上游每周期产出堆叠数的运行时倍率：handleFluidConsumption 每周期写入
-     * TIER_MULTIPLIER × 惰性气体加成（无气体时为 TIER_MULTIPLIER），构造后未运行时为初始值 1。
-     * EX 产能显示经 {@link #vmd$getCurrentOutputPerSecond()} 读取。
-     */
-    @Shadow(remap = false)
-    private int multiplier;
-
     @Shadow(remap = false)
     public ItemStackHandler selected;
 
@@ -506,20 +498,6 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
         }
         // 返回原始缩写，由客户端本地化
         return vmd$lastDimOverride;
-    }
-
-    /**
-     * 将 GT 私有倍率桥接给 EX。Mixin 与 EX 在编译期属于不同分支，故经 {@code Object} 中转。
-     *
-     * @return EX 每秒矿石产量；非 EX 返回 0，让客户端隐藏产能行
-     */
-    @Unique
-    @Override
-    public long vmd$getCurrentOutputPerSecond() {
-        if ((Object) this instanceof MTEVoidMinerEXBase) {
-            return ((MTEVoidMinerEXBase<?>) (Object) this).getCurrentOutputPerSecond(this.multiplier);
-        }
-        return 0;
     }
 
     // endregion

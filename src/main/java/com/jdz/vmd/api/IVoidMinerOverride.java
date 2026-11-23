@@ -39,19 +39,4 @@ public interface IVoidMinerOverride {
 
     /** Applies an EX filter action only if its revision and row still identify the current server table. */
     void vmd$applyExFilterAction(long revision, int row, Operation operation);
-
-    /**
-     * 当前每秒矿石产出（产能显示口径，含惰性气体加成与电压产量加成），供 EX 虚空矿机 GUI 的
-     * 实时产能行轮询。
-     *
-     * <p>
-     * 动机：产能三要素中的惰性气体加成存储于上游 MTEVoidMinerBase 私有字段 multiplier
-     * （上游 handleFluidConsumption 每周期写入），仅注入该类的 mixin 可读，而 mixin 类
-     * 运行时不可直接引用，故以本接口为 GUI 访问入口，由注入类桥接到
-     * MTEVoidMinerEXBase 的计算方法。
-     *
-     * @return 每秒产出矿石数（long 显示不截断）；0 表示当前机器不支持产能显示（非 EX 系列机型），
-     *         GUI 行据此隐藏。
-     */
-    long vmd$getCurrentOutputPerSecond();
 }
