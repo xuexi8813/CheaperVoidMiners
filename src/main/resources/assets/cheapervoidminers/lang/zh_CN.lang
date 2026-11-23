@@ -62,10 +62,11 @@ GT5U.gui.text.recipe_result.vmd_siphon_no_mining_pipe=输入总线的采矿管�
 vmd.siphon.machine_type=地表气体钻机
 vmd.siphon.info.1=可建在任意维度地表，无需轨道空间站。
 vmd.siphon.info.2=按 NEI 配方所示配置（1..N）在输入总线放编程电路，不按列表行序。无电路、配置 0 或越界均不启动；所选气体决定钻井深度（1–4）。
-vmd.siphon.info.3=产量 = 原版基础产量 × 16^max(0, 机器电压档 − 行星 Tier)；行星 Tier 高于机器电压档的气体不可选。
+vmd.siphon.info.3=产量 = NEI 所示基础量 × 16^max(0, 机器电压档 − 行星 Tier)（未计钻头及超频）；行星 Tier 高于机器电压档的气体不可选。
 vmd.siphon.info.4=基础 EU/t = 钻井深度 × 4^(行星 Tier + 2)。无损超频每级产量 ×2、耗电 ×4；16^ 产量加成不影响耗电。
-vmd.siphon.info.5=取输入总线最高阶钻头：铁 ×4、钢 ×16、钛 ×64、硅岩 ×256、无尽 ×1024。周期启动时有 1% 概率消耗 1 个。
-vmd.siphon.info.6=采矿管道：输入总线需常备 钻井深度 × 64 根（不消耗）。加热线圈每级 +10% 速度；支持批量模式（与原版一致）。
+vmd.siphon.info.5=取输入总线最高阶钻头：铁 ×4、钢 ×16、钛 ×64、硅岩 ×256、无尽 ×1024。每次成功启动仅判定一次 1% 消耗概率，批量亦同。
+vmd.siphon.info.6=输入总线需常备 钻井深度 × 64 根采矿管道（不消耗）。基础周期 10 秒（未计线圈加速），必须安装加热线圈；批量时长预算为 2844t。
+vmd.siphon.info.7=开启流体输出保护时，小仓也能开工。完工气体会保存，排完才启动下一轮；切换销毁模式不会丢弃已受保护的气体。
 vmd.siphon.structure.controller=控制器，主体正面中部第 16 层
 vmd.siphon.structure.siphon_casing=行星虹吸机械方块
 vmd.siphon.structure.frame=钨钢框架

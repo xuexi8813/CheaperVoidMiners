@@ -62,10 +62,11 @@ GT5U.gui.text.recipe_result.vmd_siphon_no_mining_pipe=Not enough Mining Pipes in
 vmd.siphon.machine_type=Surface Gas Siphon
 vmd.siphon.info.1=Build on the ground in any dimension; no orbital station needed.
 vmd.siphon.info.2=Input bus: match the NEI recipe's circuit config (1..N), not its row. No circuit, config 0, or an invalid config prevents startup. The gas sets Drilling Depth (1–4).
-vmd.siphon.info.3=Output = vanilla base amount x 16^max(0, machine voltage tier - planet tier); gases whose planet tier is higher than the machine voltage tier cannot be selected.
+vmd.siphon.info.3=Output = base amount shown in NEI x 16^max(0, machine voltage tier - planet tier), before drill and overclock bonuses. The machine voltage tier must be at least the planet tier.
 vmd.siphon.info.4=Base EU/t = Drilling Depth x 4^(planet tier + 2). Lossless OC: x2 output and x4 EU/t per level. The 16^ boost does not affect EU/t.
-vmd.siphon.info.5=Highest drill head in the input bus: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024. 1% chance to consume one at cycle start.
-vmd.siphon.info.6=Mining Pipes: keep at least Drilling Depth x 64 pipes in the input bus (they are not consumed). Heating Coil: +10% speed per tier; batch mode is supported like the vanilla Siphon.
+vmd.siphon.info.5=Uses the highest drill head in the input bus: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024. One 1% consumption roll per successful start, including batches.
+vmd.siphon.info.6=Keep Drilling Depth x 64 Mining Pipes in the input bus (not consumed). Base cycle: 10 seconds before coil speed bonuses. Heating Coils are required. Batch time budget: 2844 ticks.
+vmd.siphon.info.7=Fluid protection: even a small hatch can start a run. Completed gas is saved and must drain before the next run; switching void modes cannot discard already protected gas.
 vmd.siphon.structure.controller=Controller, front center of the main body, 16th layer
 vmd.siphon.structure.siphon_casing=Planetary Siphon Casings
 vmd.siphon.structure.frame=Tungstensteel Frame Box

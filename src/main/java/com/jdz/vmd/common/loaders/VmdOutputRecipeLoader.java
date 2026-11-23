@@ -74,13 +74,13 @@ public final class VmdOutputRecipeLoader {
      * （stackSize=0，与机器电路选择同源同序）+ 该气体 Depth × 64 的 Mining Pipes 需求展示
      * （机器侧常备不消耗：NEI 展示原版 1:1 需求量即常备量，经 {@code GTUtility.copyAmountUnsafe}
      * 保留 128/192/256 等超 64 数量显示——普通 {@code copyAmount} 会截断到 64；"不消耗"语义由
-     * 机器 tooltip 描述行 {@code vmd.siphon.info.6} 承载）→ 输出 = 该气体的原版基础产量
-     * （机器实际产出在其上叠加 16^ 电压加成、钻头加成与无损超频）。
+     * 机器 tooltip 描述行 {@code vmd.siphon.info.6} 承载）→ 输出 = 该气体按旧 9t 基准产速折算的
+     * 单周期基础量（与机器共用 {@link MTESurfacePlanetaryGasSiphon#calculateBaseOutputAmount}，
+     * 机器实际产出在其上叠加 16^ 电压加成、钻头加成与无损超频）。
      * <p>
-     * 时长与 EUt 为原版机器真值：duration 取无线圈基准周期（{@code MTESurfacePlanetaryGasSiphon
-     * #BASE_PROCESS_TIME_TICKS}，速度公式在无线圈下的取整结果，线圈可加速故 NEI 显示基准）；
-     * EUt 取原版公式 {@code calculateEUt(depth, planetTier)}（gtnhintergalactic 静态方法，机器
-     * 运行期同款），与原版 Siphon NEI 面板（GasSiphonRecipeHandler）的 EUt 口径一致。
+     * duration 取本机未计线圈加速的基准周期（{@link MTESurfacePlanetaryGasSiphon#BASE_PROCESS_TIME_TICKS}，
+     * 10 秒 = 200t）；EUt 取原版公式 {@code calculateEUt(depth, planetTier)}（gtnhintergalactic 静态方法，
+     * 机器运行期同款），与原版 Siphon NEI 面板（GasSiphonRecipeHandler）的 EUt 口径一致。
      * <p>
      * 注册时机为本 mod 的 postInit（GT5u 气体清单由 gtnhintergalactic 的 postInit 填充，本 mod
      * 声明 {@code after:gtnhintergalactic} 使其先于本 postInit），并在 GT-PostLoad 链
@@ -110,6 +110,7 @@ public final class VmdOutputRecipeLoader {
         // 电路编号 = 全局表位次 + 1（与机器 checkProcessing 的 gasTable.get(config - 1) 同源同序）。
         for (int i = 0; i < gasTable.size(); i++) {
             final PlanetaryGasTableHelper.GasEntry gas = gasTable.get(i);
+            final long baseOutputAmount = MTESurfacePlanetaryGasSiphon.calculateBaseOutputAmount(gas.fluid.amount);
             RA.stdBuilder()
                 .itemInputs(
                     // 电路标记（stackSize=0）：配置 i+1 对应全局表第 i+1 项（与机器选择同源同序）。
@@ -120,8 +121,8 @@ public final class VmdOutputRecipeLoader {
                     GTUtility.copyAmountUnsafe(
                         gas.depth * MTESurfacePlanetaryGasSiphon.MINING_PIPES_PER_DEPTH,
                         getMiningPipeStack()))
-                .fluidOutputs(new FluidStack(gas.fluid, gas.fluid.amount))
-                // 原版机器真值：无线圈基准周期（ticks）与原版 EUt 公式，见方法 javadoc。
+                .fluidOutputs(new FluidStack(gas.fluid, (int) Math.min(baseOutputAmount, Integer.MAX_VALUE)))
+                // 未计线圈加速的基准周期（200t）与原版 EUt 公式。
                 .duration(MTESurfacePlanetaryGasSiphon.BASE_PROCESS_TIME_TICKS)
                 .eut(calculateEUt(gas.depth, gas.planetTier))
                 .addTo(VmdRecipeMaps.surfaceGasSiphonRecipes);

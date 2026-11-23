@@ -13,11 +13,16 @@ import static gregtech.api.util.GTStructureUtility.ofCoil;
 import static gregtech.api.util.GTStructureUtility.ofFrame;
 import static gtnhintergalactic.recipe.GasSiphonRecipes.calculateEUt;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -51,6 +56,7 @@ import gregtech.api.structure.error.StructureError;
 import gregtech.api.util.GTModHandler;
 import gregtech.api.util.GTUtility;
 import gregtech.api.util.MultiblockTooltipBuilder;
+import gregtech.api.util.shutdown.ShutDownReason;
 import gregtech.common.misc.GTStructureChannels;
 import gtnhintergalactic.client.IGTextures;
 
@@ -67,17 +73,20 @@ import gtnhintergalactic.client.IGTextures;
  * <li>不做维度方块选择：原版按"所在轨道对应的行星 + Depth（1..4）"二维选择气体；本机把原版
  * 全部可抽气体汇总为一张全局表（{@link PlanetaryGasTableHelper}，按行星 Tier 升序拉平编号），
  * 编程电路 1..N 选第 N 项（钻机同款语义：未插电路、配置 0 或超范围 → 失败提示）。</li>
- * <li>产量电压公式：产量 = 原版基础产量 × 16^max(0, 机器电压档 − 该气体行星 Tier)；
+ * <li>产量电压公式：产量 = 本机每周期基础产量 × 16^max(0, 机器电压档 − 该气体行星 Tier)；
  * 机器电压档低于行星 Tier 的气体不可选（失败提示）。EU/t 仍按原版公式（Depth × 4^(行星Tier+2)）
  * 与原版无损超频规则运行，<b>不随 16^ 产量加成放大</b>。</li>
  * <li>钻头加成：与虚空流体钻机同款阶级制（铁×4/钢×16/钛×64/硅岩×256/无尽×1024，取最高阶级），
  * 每周期启动成功 1% 概率消耗 1 个钻头（钻机为 0.1%，独立常量；判定/扣减共用
  * {@link DrillSelection}）。</li>
  * </ul>
- * 其余机制与原版 1:1：Heating Coil 每级 +10% 速度（{@link #speedBoost}）、Mining Pipes 需求
- * （Depth × 64 根常备、不消耗）、无损超频（产量 ×2^oc、EUt ×4^oc）、批量模式、流体输出保护
- * （supportsVoidProtection）。原版的轨道空间站 chunk loading（IChunkLoader + 焊接枪切换）随空间站
- * 限制一并移除——地表多方块随所在区块正常加载/暂停，GT 标准行为。
+ * 未计线圈加速的基准周期为 200t（10 秒），每周期基础产量按旧基准 9t 的实际产速折算
+ * （{@link #calculateBaseOutputAmount}）。加热线圈仍为必需，加速沿用原版速度曲线
+ * （{@link #calculateProcessTimeTicks}）。
+ * 其余机制与原版 1:1：Mining Pipes 需求（Depth × 64 根常备、不消耗）、无损超频（产量 ×2^oc、
+ * EUt ×4^oc）。批量时长预算按 200/9 同比放大；完工气体独立保存并分片排出，输出保护下保留未接收的气体。
+ * 原版的轨道空间站 chunk loading（IChunkLoader + 焊接枪切换）随空间站限制一并移除——地表多方块随所在区块
+ * 正常加载/暂停，GT 标准行为。
  */
 @IMetaTileEntity.SkipGenerateDescription
 @IMetaTileEntity.SkipGenerateName
@@ -90,7 +99,6 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
     private static final int OFFSET_X = 6;
     private static final int OFFSET_Y = 7;
     private static final int OFFSET_Z = 5;
-    private static final double SPEED_PER_COIL = 0.10;
     private static final double LOG4 = Math.log10(4);
 
     /**
@@ -100,19 +108,25 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
      */
     public static final int MINING_PIPES_PER_DEPTH = 64;
 
-    /**
-     * 无线圈基准周期时长（ticks）：速度公式 {@link #speedBoost}（每级加热线圈 +10% 速度）在
-     * 无线圈（max(1, ·) = 1）下的取整结果，即 {@code (int)(20 / 2.1) = 9}。NEI 条目展示该基准值——
-     * 玩家可经加热线圈加速，机器运行期按实际线圈档计算（{@code checkProcessing}）；本常量经
-     * {@link #speedBoost} 与机器运行期同源，公式变更时自动跟随，不另立副本。
-     */
-    public static final int BASE_PROCESS_TIME_TICKS = (int) (20 * speedBoost(0));
+    /** 未计线圈加速的基准周期时长（ticks）：200t = 10 秒，供运行时计算与 NEI 时长展示共用。 */
+    public static final int BASE_PROCESS_TIME_TICKS = 200;
+
+    /** 旧机器在最低档线圈下的实际周期：原公式 {@code (int) (20 * (1.0f / (2 + 0.10f)))} 得 9t。 */
+    private static final int LEGACY_BASE_PROCESS_TIME_TICKS = 9;
 
     /** 本机钻头消耗概率：每周期启动成功 1%（虚空流体钻机为 0.1%，按需求独立成常量）。 */
     public static final double DRILL_CONSUMPTION_CHANCE = 0.01;
 
+    private static final String IN_FLIGHT_GAS_KEY = "vmdSiphonInFlightGas";
+    private static final String PENDING_GAS_KEY = "vmdSiphonPendingGas";
+
     private HeatingCoilLevel coilLevel;
     private int casingAmount;
+
+    /** 只有正常完成的周期才把在制气体移入待排；GT 停机只取消这一部分。 */
+    private SiphonGasOutput inFlightGas;
+    /** 正常周期只产生一种气体；队列也能一次接管旧存档里的输出数组。 */
+    private final Deque<SiphonGasOutput> pendingGas = new ArrayDeque<>();
 
     /**
      * 结构定义与原版 1:1（逐字符复刻）：13×23×13，'B' = TungstenSteel 框架，'D' = Rebolted
@@ -272,7 +286,91 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
     }
 
     @Override
+    public void saveNBTData(NBTTagCompound tag) {
+        super.saveNBTData(tag);
+        if (inFlightGas != null) tag.setTag(IN_FLIGHT_GAS_KEY, inFlightGas.save());
+        else tag.removeTag(IN_FLIGHT_GAS_KEY);
+        final NBTTagList pending = new NBTTagList();
+        for (SiphonGasOutput output : pendingGas) {
+            pending.appendTag(output.save());
+        }
+        tag.setTag(PENDING_GAS_KEY, pending);
+    }
+
+    @Override
+    public void loadNBTData(NBTTagCompound tag) {
+        super.loadNBTData(tag);
+        inFlightGas = tag.hasKey(IN_FLIGHT_GAS_KEY, Constants.NBT.TAG_COMPOUND)
+            ? SiphonGasOutput.load(tag.getCompoundTag(IN_FLIGHT_GAS_KEY))
+            : null;
+        pendingGas.clear();
+        final NBTTagList pending = tag.getTagList(PENDING_GAS_KEY, Constants.NBT.TAG_COMPOUND);
+        for (int i = 0; i < pending.tagCount(); i++) {
+            final SiphonGasOutput output = SiphonGasOutput.load(pending.getCompoundTagAt(i));
+            if (output != null) pendingGas.addLast(output);
+        }
+    }
+
+    @Override
+    public void stopMachine(@NotNull ShutDownReason reason) {
+        inFlightGas = null;
+        super.stopMachine(reason);
+        markDirty();
+    }
+
+    @Override
+    protected void runMachine(IGregTechTileEntity tile, long tick) {
+        // Retry after the base has revalidated the structure, even if the controller is disabled.
+        if (!pendingGas.isEmpty()) {
+            drainPendingGas();
+            if (pendingGas.isEmpty()) scheduleRecipeCheckImmediate();
+        }
+        super.runMachine(tile, tick);
+    }
+
+    @Override
+    protected boolean addFluidOutputs(@NotNull FluidStack[] oldOutputs) {
+        // GT calls this at completion, before clearing mOutputFluids and calling outputAfterRecipe.
+        for (FluidStack output : oldOutputs) {
+            if (output != null && output.amount > 0) {
+                enqueueCompletedGas(new SiphonGasOutput(output, output.amount));
+            }
+        }
+        return pendingGas.isEmpty();
+    }
+
+    @Override
+    protected void outputAfterRecipe() {
+        if (inFlightGas != null) {
+            enqueueCompletedGas(inFlightGas);
+            inFlightGas = null;
+        }
+        // Try once at completion, so an available output does not add an idle tick to every cycle.
+        if (!pendingGas.isEmpty()) drainPendingGas();
+    }
+
+    private void enqueueCompletedGas(SiphonGasOutput output) {
+        output.finish(protectsExcessFluid());
+        pendingGas.addLast(output);
+    }
+
+    private void drainPendingGas() {
+        final SiphonGasOutput output = pendingGas.getFirst();
+        final boolean delivered = output.drainOneSlice(getOutputHatches());
+        if (output.remaining() == 0) {
+            pendingGas.removeFirst();
+        } else if (!delivered) {
+            return;
+        }
+        markDirty();
+    }
+
+    @Override
     public @NotNull CheckRecipeResult checkProcessing() {
+        if (!pendingGas.isEmpty()) {
+            resetMachine();
+            return CheckRecipeResultRegistry.FLUID_OUTPUT_FULL;
+        }
         final List<PlanetaryGasTableHelper.GasEntry> gasTable = PlanetaryGasTableHelper.getEntries();
         if (gasTable.isEmpty()) {
             // Fail Fast：GT5u 气体清单为空（gtnhintergalactic 未启用或数据异常，构建时已记错误日志），
@@ -325,11 +423,12 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
 
         final DrillSelection drill = DrillSelection.findDrill(storedInputs);
 
-        // 输出仓容量按原版基础产量校验（原版 1:1：canOutputAll 先于超频/加成放大；过量产出由 GT
-        // 销毁模式处理，本机 supportsVoidProtection=true）。
-        if (!canOutputAll(new FluidStack[] { gas.fluid })) {
+        // 只检查真实仓能否接收一点气体，未接收的完工量由控制器暂存，普通小仓也能工作。
+        if (protectsExcessFluid() && !SiphonGasOutput.hasSpace(gas.fluid, getOutputHatches())) {
+            resetMachine();
             return CheckRecipeResultRegistry.FLUID_OUTPUT_FULL;
         }
+        final long baseOutputAmount = calculateBaseOutputAmount(gas.fluid.amount);
 
         // EUt = 原版公式 Depth × 4^(行星Tier+2)（不随 16^ 电压加成放大），无损超频规则与原版一致：
         // oc = floor(log4(输入电压 / EUt))，oc ≥ 1 时产量 ×2^oc、EUt ×4^oc。
@@ -340,23 +439,16 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
             return CheckRecipeResultRegistry.insufficientPower(recipeEUt);
         }
 
-        // 产量 = 原版基础产量 × 16^max(0, 机器档 − 行星Tier) × 钻头项 4^(阶级+1) × 超频产量项 2^oc。
-        // 全部为 2 的幂乘积，按位移位数累加（16^x = 1<<4x、4^x = 1<<2x）并经饱和位移防 long 回绕；
-        // 写 FluidStack 时再按 int 上限截断。
+        // 产量 = 折算后的基础产量 × 16^max(0, 机器档 − 行星Tier) × 钻头项 4^(阶级+1) × 超频产量项 2^oc。
+        // 各倍率均为 2 的幂，按位移位数累加（16^x = 1<<4x、4^x = 1<<2x）并经饱和位移防 long 回绕。
         int amountBits = 4 * Math.max(0, machineTier - gas.planetTier);
         if (drill != null) amountBits += 2 * (drill.rung + 1);
         if (ocLevel > 0) amountBits += ocLevel;
-        final long outputAmount = saturatingShift(gas.fluid.amount, amountBits);
+        final long outputAmount = saturatingShift(baseOutputAmount, amountBits);
 
-        final int processTime = (int) (20 * speedBoost(getCoilTier()));
-        int batchMultiplierMax = 1;
-        if (isBatchModeEnabled()) {
-            batchMultiplierMax = getMaxBatchSize() / processTime;
-        }
-
-        final FluidStack output = gas.fluid.copy();
-        output.amount = (int) Math.min(saturatingMultiply(outputAmount, batchMultiplierMax), Integer.MAX_VALUE);
-        mOutputFluids = new FluidStack[] { output };
+        final int processTime = calculateProcessTimeTicks(getCoilTier());
+        final int batchMultiplier = isBatchModeEnabled() ? Math.max(1, getMaxBatchSize() / processTime) : 1;
+        inFlightGas = new SiphonGasOutput(gas.fluid, saturatingMultiply(outputAmount, batchMultiplier));
 
         if (ocLevel == 0) {
             lEUt = -recipeEUt;
@@ -367,7 +459,7 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
         }
         mEfficiency = 10000 - (getIdealStatus() - getRepairStatus()) * 1000;
         mEfficiencyIncrease = 10000;
-        mMaxProgresstime = processTime * batchMultiplierMax;
+        mMaxProgresstime = processTime * batchMultiplier;
 
         // 钻头消耗：每周期启动成功 1% 概率消耗 1 个（配方窗口内扣减，ME 总线兼容语义见 DrillSelection）。
         if (drill != null) {
@@ -411,9 +503,8 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
     }
 
     /**
-     * 饱和左移：base × 2^bits。结果超出 long 范围时按 {@code Long.MAX_VALUE} 饱和——输出语义不变
-     * （FluidStack 写入时按 int 上限截断），仅防回绕为负。bits ≥ 64 时 Java 位移位数按 64 取模，
-     * 必须先于位移显式判饱和。
+     * 饱和左移：base × 2^bits。结果超出 long 范围时按 {@code Long.MAX_VALUE} 饱和，防回绕为负。
+     * bits ≥ 64 时 Java 位移位数按 64 取模，必须先于位移显式判饱和。
      */
     private static long saturatingShift(long base, int bits) {
         if (base <= 0) return 0;
@@ -438,18 +529,29 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
         return this.coilLevel;
     }
 
-    /** 线圈档位（HeatingCoilLevel.getTier() + 1，None = 0），驱动 WAILA 与速度公式。 */
+    /** 线圈档位（HeatingCoilLevel.getTier() + 1，None = -1），驱动周期公式。 */
     public int getCoilTier() {
         return this.coilLevel == null ? 0 : (int) this.coilLevel.getTier() + 1;
     }
 
     /**
-     * 周期时长系数（原版 1:1）：1 / (2 + 0.1 × max(1, 线圈档))，即每级线圈 +10% 速度。
-     * 纯参数函数（不读实例状态），供机器运行期与 NEI 基准时长常量 {@link #BASE_PROCESS_TIME_TICKS}
-     * 共用同一公式实现。
+     * 本机每周期基础产量（mB）：按旧基准 9t 的实际产速折算至 200t，不足 1mB 的部分向下取整。
+     * 运行时与 NEI 共用此换算，先用 long 计算，再由调用方在写入 FluidStack 时按 int 上限截断。
+     *
+     * @param legacyAmount 原配方每周期的基础产量（mB）
+     * @return 未计档位、钻头、超频及批量的本机每周期产量（mB）
      */
-    public static float speedBoost(int coilTier) {
-        return (float) 1 / (2 + (float) SPEED_PER_COIL * Math.max(1, coilTier));
+    public static long calculateBaseOutputAmount(int legacyAmount) {
+        return (long) legacyAmount * BASE_PROCESS_TIME_TICKS / LEGACY_BASE_PROCESS_TIME_TICKS;
+    }
+
+    /**
+     * 周期时长（ticks）：保留原版 speedBoost 的加速曲线 {@code 1 / (2 + 0.1 × max(1, coilTier))}，
+     * 归一化到最低档的 {@link #BASE_PROCESS_TIME_TICKS}。用整数式 {@code 200 × 21 / (20 + max(1, coilTier))}
+     * 向下取整；各档取整后的周期不保证与旧周期等比，例如 {@code coilTier = 4} 时为 175t。
+     */
+    private static int calculateProcessTimeTicks(int coilTier) {
+        return BASE_PROCESS_TIME_TICKS * 21 / (20 + Math.max(1, coilTier));
     }
 
     @Override
@@ -460,14 +562,18 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
 
     @Override
     public boolean supportsVoidProtection() {
-        // 开启 GT5u 销毁模式切换（原版 1:1）：输出仓满时过量产出由 GT 销毁逻辑处理。
         return true;
     }
 
     @Override
     public boolean supportsBatchMode() {
-        // 批量模式（原版 1:1）：产出与时长同乘 batch 倍数。
         return true;
+    }
+
+    /** 本机批量时长预算沿用旧版 128t，并按基础周期调整的比例换算（向下取整）。 */
+    @Override
+    protected int getMaxBatchSize() {
+        return super.getMaxBatchSize() * BASE_PROCESS_TIME_TICKS / LEGACY_BASE_PROCESS_TIME_TICKS;
     }
 
     @Override
@@ -480,6 +586,7 @@ public class MTESurfacePlanetaryGasSiphon extends MTEExtendedPowerMultiBlockBase
             .addInfo(StatCollector.translateToLocal("vmd.siphon.info.4"))
             .addInfo(StatCollector.translateToLocal("vmd.siphon.info.5"))
             .addInfo(StatCollector.translateToLocal("vmd.siphon.info.6"))
+            .addInfo(StatCollector.translateToLocal("vmd.siphon.info.7"))
             .beginStructureBlock(13, 23, 13, false)
             .addController(StatCollector.translateToLocal("vmd.siphon.structure.controller"))
             .addCasing("184", StatCollector.translateToLocal("vmd.siphon.structure.siphon_casing"), false)
