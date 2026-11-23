@@ -1,14 +1,6 @@
-// 在此添加项目依赖所需的额外仓库。
-
-// GTNH convention 插件把官方 Nexus（https://nexus.gtnewhorizons.com/repository/public/）硬编码注入为
-// "GTNH Maven" 仓库，且声明在容器前部——额外新增的镜像仓库永远排在它之后而无法生效。
-// 因此直接把该仓库的 URL 重定向到国内镜像（gaytnh.com 对 GTNH Nexus public 的同步镜像）：
-// 它承载的全部 GTNH 官方构件（com.github.GTNewHorizons.*）改走镜像，其余仓库（mojang/forge/sponge/
-// mavenCentral 等）不受影响；镜像缺失个别构件时 Gradle 会自动回落到容器中的后续仓库。
-// 注意：该回落仅覆盖构件缺失级失败；镜像连接级失败（宕机/超时）Gradle 不跨仓库回落，
-// 构建可用性绑定该镜像存活（作者有意为之的取舍）。
+// Convention 插件将官方 Nexus 排在前面，追加镜像无法覆盖它；直接重定向该仓库。
+// 仅缺少构件时回退到官方 Nexus，镜像宕机或超时不会触发 Gradle 回退。
 project.afterEvaluate {
-    // 主仓库重定向到国内镜像
     project.repositories.matching { it.name == "GTNH Maven" }.configureEach {
         it.url = uri("https://maven.gaytnh.com/gtnh-public")
     }

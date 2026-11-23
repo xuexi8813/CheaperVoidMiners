@@ -13,11 +13,8 @@ import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 
 /**
- * Void Fluid Driller（虚空流体钻机）家族的五个阶段，仅差结构材料、机器档位与产量公式中的机器档项
- * （16^(机器档位)，见基类 {@link MTEVoidFluidDrillerBase#computeOutputAmount}）；电压项由能源仓实际
- * GT 输入电压档驱动（无尽钻机电压基数换 16），为五档共用逻辑。工作逻辑见
- * {@link MTEVoidFluidDrillerBase}。每台具体类须显式携带 {@link IMetaTileEntity.SkipGenerateName}
- * （注解不继承），显示名来自 lang 键。Naquadah/Infinity 无专用机壳，复用高级机壳替代。
+ * 虚空流体钻机的五档机型。结构材料与机器档位由各机型指定，产量由 {@link MTEVoidFluidDrillerBase} 计算。
+ * {@link IMetaTileEntity.SkipGenerateName} 不继承，各机型须显式标注才能使用 lang 显示名。
  */
 public class MTEVoidFluidDrillers {
 
@@ -50,9 +47,7 @@ public class MTEVoidFluidDrillers {
 
         @Override
         protected int getControllerTextureIndex() {
-            // ULV 机壳贴图 id 为 0，被 casingIndex>0 契约保留为"未设置"（投影仪构建即抛
-            // IllegalArgumentException），改用相邻 LV 机壳贴图；仅影响投影全息提示渲染，
-            // 结构校验按方块+meta 完全不受影响。
+            // 投影仪要求 casingIndex > 0，ULV 贴图 ID 为 0，故提示用 LV 贴图；结构仍按 ULV 校验。
             return Casings.LVMachineCasing.getTextureId();
         }
 

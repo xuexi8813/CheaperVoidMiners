@@ -12,14 +12,14 @@ gt.blockmachines.surfaceplanetarygassiphon.name=Surface Planetary Gas Siphon
 
 # Void Fluid Driller tooltip
 vmd.mbtt.machine_type=Void Fluid Driller
-vmd.mbtt.info.1=Taps the underground fluids of a chosen dimension without drilling pipes and without depleting the chunk's fluids.
-vmd.mbtt.info.2=Put a Dimension Display block into the controller slot to select the dimension; leave the slot empty to use the dimension the machine is built in.
-vmd.mbtt.info.3=A programming circuit (configuration 1..N) must be inserted into the input bus to select the N-th entry of that dimension's fluid list (same order as shown in NEI); the machine does not start without an inserted programming circuit.
-vmd.mbtt.info.4=A circuit configuration beyond the fluid count of the dimension fails the cycle with an error message.
-vmd.mbtt.info.5=Drill heads in the input bus boost the output by drill class: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024 (highest class applies). Each finished cycle consumes one drill head with a 0.1% chance.
-vmd.mbtt.info.6=Produces 1000mB x 4^(energy hatch tier - LV + 1) x 16^(machine tier - LV) x 4^(drill class + 1) per 100 tick cycle; the Infinity driller uses a base of 16 for the voltage term (x16 per tier).
-vmd.mbtt.info.7=Energy hatches of any tier from LV (the lowest machine voltage) up are accepted; the voltage term scales linearly with the raw GT voltage tier (EV/IV/ZPM etc. continue the sequence), using the highest available input voltage tier.
-vmd.mbtt.info.8=Power draw follows the energy hatch tier at 1 A per tier.
+vmd.mbtt.info.1=Extracts underground fluids without Mining Pipes or depleting chunk reserves.
+vmd.mbtt.info.2=Use a Dimension Display block in the controller slot; leave empty for the current dimension.
+vmd.mbtt.info.3=Input bus: programmed circuit config 1..N selects the Nth fluid in the dimension's list (see NEI).
+vmd.mbtt.info.4=No circuit, config 0, or an out-of-range config prevents startup.
+vmd.mbtt.info.5=Highest-tier drill head in the input bus: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024. 0.1% chance to consume one at cycle start.
+vmd.mbtt.info.6=Per 100 ticks: 1000 mB x 4^(input tier - LV + 1) x 16^(machine rank) x 4^(drill class + 1). Iron is rank 0; no drill head means no boost. Infinity uses base 16 for the input tier term.
+vmd.mbtt.info.7=Accepts LV+ energy hatches; uses the highest GT input tier.
+vmd.mbtt.info.8=Draws 1 A at that input tier, independent of machine tier.
 vmd.mbtt.structure.front_bottom_center=Controller, front bottom center
 vmd.mbtt.structure.center_shaft_frame=Frame Blocks (shaft above the controller)
 vmd.mbtt.structure.frame=%s Frame Blocks (plus-shaped middle layers)
@@ -60,11 +60,11 @@ GT5U.gui.text.recipe_result.vmd_siphon_no_mining_pipe=Not enough Mining Pipes in
 
 # Surface Planetary Gas Siphon tooltip
 vmd.siphon.machine_type=Surface Gas Siphon
-vmd.siphon.info.1=A surface-strengthened variant of the vanilla Planetary Gas Siphon: builds on the ground in any dimension, without the orbiting space station requirement.
-vmd.siphon.info.2=A programming circuit (configuration 1..N) selects the N-th entry of the global gas table (every gas the vanilla Siphon can pump, sorted by planet tier in ascending order); the machine does not start without an inserted circuit, with configuration 0, or with an out-of-range configuration. The Drilling Depth (1-4) is the depth index of the selected gas within its planet, set automatically by the circuit selection.
+vmd.siphon.info.1=Build on the ground in any dimension; no orbital station needed.
+vmd.siphon.info.2=Input bus: match the NEI recipe's circuit config (1..N), not its row. No circuit, config 0, or an invalid config prevents startup. The gas sets Drilling Depth (1–4).
 vmd.siphon.info.3=Output = vanilla base amount x 16^max(0, machine voltage tier - planet tier); gases whose planet tier is higher than the machine voltage tier cannot be selected.
-vmd.siphon.info.4=EU/t = Drilling Depth x 4^(planet tier + 2) with the vanilla lossless overclock rules (each OC level: output x2, EU/t x4); EU/t is NOT scaled by the 16^ output boost.
-vmd.siphon.info.5=Drill heads in the input bus boost the output like the Void Fluid Driller: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024 (highest class applies). Each finished cycle consumes one drill head with a 1% chance.
+vmd.siphon.info.4=Base EU/t = Drilling Depth x 4^(planet tier + 2). Lossless OC: x2 output and x4 EU/t per level. The 16^ boost does not affect EU/t.
+vmd.siphon.info.5=Highest drill head in the input bus: Iron x4, Steel x16, Titanium x64, Naquadah x256, Infinity x1024. 1% chance to consume one at cycle start.
 vmd.siphon.info.6=Mining Pipes: keep at least Drilling Depth x 64 pipes in the input bus (they are not consumed). Heating Coil: +10% speed per tier; batch mode is supported like the vanilla Siphon.
 vmd.siphon.structure.controller=Controller, front center of the main body, 16th layer
 vmd.siphon.structure.siphon_casing=Planetary Siphon Casings
@@ -75,11 +75,11 @@ vmd.siphon.structure.input_bus=Input Bus (programmed circuit, drill heads and Mi
 vmd.siphon.structure.output_hatch=Output Hatch (fluid output, required)
 
 # Wooden Void Fluid Pump tooltip
-vmd.pump.desc.1=Non-electric wooden pump that taps the Overworld underground fluids.
-vmd.pump.desc.2=Produces 100mB every 200 ticks into its internal output tank; a full or incompatible tank stalls the machine, draw the fluid out with pipes from any non-main face.
-vmd.pump.desc.3=A programming circuit (configuration 1..N) must be inserted to select the N-th entry of the Overworld fluid list (same order as shown in NEI); without it the pump idles.
-vmd.pump.desc.4=The internal tank never mixes fluids; switch the circuit only after it is drained.
-vmd.pump.desc.5=The programmed circuit can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there).
+vmd.pump.desc.1=Pumps Overworld underground fluids without power.
+vmd.pump.desc.2=Fills its tank by 100 mB every 200 ticks; idles if full or incompatible. Pipe out from any non-main face.
+vmd.pump.desc.3=Circuit config 1..N selects the Nth fluid on the Overworld list (see NEI). No valid config: idle.
+vmd.pump.desc.4=The tank cannot mix fluids; drain it before switching.
+vmd.pump.desc.5=Set the config in the GUI circuit slot or insert a real circuit.
 vmd.pump.desc.selection=Current selection: %s
 vmd.pump.selection.invalid=Invalid circuit configuration
 vmd.pump.selection.no_circuit=No programming circuit inserted (idle)
@@ -88,11 +88,11 @@ vmd.pump.selection.no_circuit=No programming circuit inserted (idle)
 gt.blockmachines.voidminerwooden.name=Wooden Void Miner
 
 # Wooden Void Miner tooltip
-vmd.miner.desc.1=Non-electric wooden miner that pulls ore items from the Overworld ore generation tables without breaking blocks.
-vmd.miner.desc.2=Produces a stack of 64 ore items every 100 ticks into one of its 6 output slots (a full group fills exactly one slot); the machine stalls when none of the 6 output slots can hold more output, take the outputs out manually or with a conveyor.
-vmd.miner.desc.3=Programmed circuit (configuration 1..N) in the circuit slot selects the N-th Overworld ore vein (its main ores plus its matching poor/small ores); configuration N+1 selects the full poor (small) ore pool.
-vmd.miner.desc.4=Configuration 0 or no circuit mixes all veins and poor ores into one weighted pool (weights = generation weights).
-vmd.miner.desc.5=A circuit configuration beyond N+1 idles the machine; the programmed circuit can be configured directly in the circuit slot in the GUI (or a real programmed circuit can be inserted there).
+vmd.miner.desc.1=Produces Overworld ores without power or breaking blocks.
+vmd.miner.desc.2=64 ores per 100 ticks fill one of 6 output slots. Idles when full; unload by hand or conveyor.
+vmd.miner.desc.3=Config 1..N selects an Overworld vein and its poor ores; N+1 selects all poor (small) ores.
+vmd.miner.desc.4=Config 0 or no circuit mixes all ores by their generation weights.
+vmd.miner.desc.5=Config above N+1: idle. Set it in the GUI circuit slot or insert a real circuit.
 vmd.miner.desc.selection=Current selection: %s
 vmd.miner.selection.poor=Poor ore pool
 vmd.miner.selection.mixed=All ores (weighted)
@@ -101,17 +101,17 @@ vmd.miner.selection.invalid=Invalid circuit configuration
 # Void Miner EX tooltip
 vmd.ex.machine_type=Miner
 vmd.ex.eu=Consumes %sEU/t
-vmd.ex.gas.intro=Can be supplied with §b%s L/s§7 of Noble gases to boost §6output
+vmd.ex.gas.intro=Supply §b%s L/s§7 of noble gas to boost §6output
 vmd.ex.gas.neon=Neon
 vmd.ex.gas.krypton=Krypton
 vmd.ex.gas.xenon=Xenon
 vmd.ex.gas.oganesson=Oganesson
-vmd.ex.output=Will output %s Ores per Second depending on the Dimension it is built in
-vmd.ex.output.voltage=Energy hatches above the machine's own voltage tier boost the output by x4 per tier (no boost at or below it); stacks with the gas boosts and batch mode
-vmd.ex.whitelist.item=Put the Ore into the input bus to set the Whitelist/Blacklist (matched by material, any variant)
-vmd.ex.whitelist.toggle=Use a screwdriver to toggle Whitelist/Blacklist
-vmd.ex.blacklist.warn=Blacklist or non Whitelist Ore will be §4VOIDED§r.
-vmd.ex.structure.casing=§63-8x§7 %s (bottom casing slots may be replaced by hatches)
+vmd.ex.output=%s ores/s from the current dimension
+vmd.ex.output.voltage=Highest energy hatch: x4 output per tier above the machine; no boost at or below it. Stacks with gas and batch mode.
+vmd.ex.whitelist.item=Put ore in the input bus to filter by material (any variant).
+vmd.ex.whitelist.toggle=Screwdriver toggles whitelist/blacklist.
+vmd.ex.blacklist.warn=Rejected ores are §4VOIDED§r.
+vmd.ex.structure.casing=§63-8x§7 %s (hatches can replace bottom casings)
 vmd.ex.structure.frame=§615x§7 %s
 vmd.ex.structure.energy_hatch=%s+, Any base casing
 vmd.ex.structure.maintenance_hatch=Any base casing
@@ -121,10 +121,10 @@ vmd.ex.structure.output_bus=Any base casing
 
 # Void Miner EX dimension override (merged from Void-Miner-Tweak-Mod)
 vmd.gui.override.description=Dimension Override: 
-vmd.gui.override.failed=Override not applied. You must visit the target dimension first.
-vmd.gui.override.error=You must visit the dimension at least once to enable its ore drops.
+vmd.gui.override.failed=No ore data for the target dimension; using the current dimension.
+vmd.gui.override.error=No ore data for the target dimension.
 vmd.gui.override.end_asteroids=T0: End Asteroids (same as The End)
-vmd.gui.filter.no_ores=No ores available. Place a dimension block to select a target dimension.
+vmd.gui.filter.no_ores=No ores available. Use a Dimension Display block to select a target.
 
 # Void Miner EX GUI real-time output rate line (%s is the thousand-grouped ores per second)
 vmd.gui.output_rate=Output: %s ores/s

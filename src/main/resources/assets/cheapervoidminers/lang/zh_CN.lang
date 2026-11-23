@@ -12,14 +12,14 @@ gt.blockmachines.surfaceplanetarygassiphon.name=地表行星气体钻机
 
 # 虚空流体钻机 tooltip
 vmd.mbtt.machine_type=虚空流体钻机
-vmd.mbtt.info.1=无需钻杆、也不会耗尽区块流体，直接抽取所选维度的地下流体。
-vmd.mbtt.info.2=在控制器槽位放入维度显示方块以选择星球；留空则使用机器所在维度。
-vmd.mbtt.info.3=必须放入编程电路（配置 1..N）选择该维度地下流体列表的第 N 项（顺序与 NEI 展示一致）；未插入电路时机器不会启动。
-vmd.mbtt.info.4=电路配置超出该维度流体数量时，本周期失败并给出错误提示。
-vmd.mbtt.info.5=输入总线中的钻头按阶级提升产量：铁 x4、钢 x16、钛 x64、硅岩 x256、无尽 x1024（取最高阶级）。每完成一个周期有 0.1% 概率消耗 1 个钻头。
-vmd.mbtt.info.6=每 100 tick 产出 1000mB × 4^(能源仓电压档 - LV + 1) × 16^(机器档 - LV) × 4^(钻头阶级 + 1)；无尽钻机的电压项基数为 16（每档翻 16 倍）。
-vmd.mbtt.info.7=能源仓接受 LV（最低机器电压）起的任意电压档；电压项直接按 GT 电压档线性计算（EV/IV/ZPM 等顺延），取实际可用的最高输入电压档。
-vmd.mbtt.info.8=耗电跟随能源仓电压档，每档按 1 安培收取。
+vmd.mbtt.info.1=无需采矿管道即可抽取地下流体，不耗尽区块储量。
+vmd.mbtt.info.2=控制器放维度显示方块可选维度，留空用当前维度。
+vmd.mbtt.info.3=在输入总线放编程电路，配置 1..N 选该维度流体表第 N 项（见 NEI）。
+vmd.mbtt.info.4=无电路、配置 0 或越界均不启动。
+vmd.mbtt.info.5=取输入总线最高阶钻头：铁 ×4、钢 ×16、钛 ×64、硅岩 ×256、无尽 ×1024。周期启动时有 0.1% 概率消耗 1 个。
+vmd.mbtt.info.6=每 100 tick 产出 1000 mB × 4^(输入电压档 - LV + 1) × 16^(机器阶级) × 4^(钻头阶级 + 1)。铁机为 0 阶，无钻头不加成。无尽钻机电压项底数为 16。
+vmd.mbtt.info.7=接受 LV 及以上能源仓，取最高可用 GT 输入电压档。
+vmd.mbtt.info.8=按输入电压档消耗 1 A，与机器档位无关。
 vmd.mbtt.structure.front_bottom_center=控制器，前下方中心
 vmd.mbtt.structure.center_shaft_frame=框架方块（控制器正上方立柱）
 vmd.mbtt.structure.frame=%s个框架方块（中部十字层）
@@ -60,26 +60,26 @@ GT5U.gui.text.recipe_result.vmd_siphon_no_mining_pipe=输入总线的采矿管�
 
 # 地表行星气体钻机 tooltip
 vmd.siphon.machine_type=地表气体钻机
-vmd.siphon.info.1=原版行星气体钻机的"地表"加强版：任意维度的地表均可搭建，无需环绕气态行星的空间站轨道。
-vmd.siphon.info.2=必须插入编程电路（配置 1..N）选择全局气体表第 N 项（原版 Siphon 全部可抽气体按行星 Tier 升序编号）；未插电路、配置 0 或超出范围时机器不启动。钻井深度（Depth，1-4）即所选气体在其行星内的深度序号，随电路选定自动生效。
+vmd.siphon.info.1=可建在任意维度地表，无需轨道空间站。
+vmd.siphon.info.2=按 NEI 配方所示配置（1..N）在输入总线放编程电路，不按列表行序。无电路、配置 0 或越界均不启动；所选气体决定钻井深度（1–4）。
 vmd.siphon.info.3=产量 = 原版基础产量 × 16^max(0, 机器电压档 − 行星 Tier)；行星 Tier 高于机器电压档的气体不可选。
-vmd.siphon.info.4=EU/t = 钻井深度 × 4^(行星 Tier + 2)，超频规则与原版一致（每级无损超频产量 ×2、耗电 ×4）；EU/t 不随 16^ 产量加成放大。
-vmd.siphon.info.5=输入总线中的钻头按阶级提升产量（与虚空流体钻机同款）：铁 x4、钢 x16、钛 x64、硅岩 x256、无尽 x1024（取最高阶级）。每完成一个周期有 1% 概率消耗 1 个钻头。
+vmd.siphon.info.4=基础 EU/t = 钻井深度 × 4^(行星 Tier + 2)。无损超频每级产量 ×2、耗电 ×4；16^ 产量加成不影响耗电。
+vmd.siphon.info.5=取输入总线最高阶钻头：铁 ×4、钢 ×16、钛 ×64、硅岩 ×256、无尽 ×1024。周期启动时有 1% 概率消耗 1 个。
 vmd.siphon.info.6=采矿管道：输入总线需常备 钻井深度 × 64 根（不消耗）。加热线圈每级 +10% 速度；支持批量模式（与原版一致）。
 vmd.siphon.structure.controller=控制器，主体正面中部第 16 层
 vmd.siphon.structure.siphon_casing=行星虹吸机械方块
 vmd.siphon.structure.frame=钨钢框架
 vmd.siphon.structure.rebolted_casing=强化镀铑钯机械方块
 vmd.siphon.structure.any_siphon_casing=任意行星虹吸机械方块
-vmd.siphon.structure.input_bus=输入总线（编程电路、钻头与钻杆）
+vmd.siphon.structure.input_bus=输入总线（编程电路、钻头与采矿管道）
 vmd.siphon.structure.output_hatch=输出仓（流体输出，必需）
 
 # 木质虚空流体泵 tooltip
-vmd.pump.desc.1=无需电力的木质泵，抽取主世界地下流体。
-vmd.pump.desc.2=每 200 tick 产出 100mB 存入内部输出罐；罐满或流体不兼容时待机，请用管道从非主面抽取。
-vmd.pump.desc.3=必须放入编程电路（配置 1..N）选择主世界地下流体列表的第 N 项（顺序与 NEI 展示一致），否则待机。
-vmd.pump.desc.4=内部流体罐不混装流体；请在罐排空后再更换电路。
-vmd.pump.desc.5=编程电路可直接在 GUI 的电路槽中点选配置（或放入真实编程电路）。
+vmd.pump.desc.1=无需电力，抽取主世界地下流体。
+vmd.pump.desc.2=每 200 tick 向内罐注入 100 mB；罐满或流体不兼容时待机。可从非主面接管抽取。
+vmd.pump.desc.3=配置 1..N 选主世界流体表第 N 项（见 NEI）；无有效配置则待机。
+vmd.pump.desc.4=内罐不混装流体，切换前请排空。
+vmd.pump.desc.5=在 GUI 电路槽点选配置，或放入实体编程电路。
 vmd.pump.desc.selection=当前选择：%s
 vmd.pump.selection.invalid=无效电路配置
 vmd.pump.selection.no_circuit=未插入编程电路（待机）
@@ -88,11 +88,11 @@ vmd.pump.selection.no_circuit=未插入编程电路（待机）
 gt.blockmachines.voidminerwooden.name=木质虚空矿机
 
 # 木质虚空矿机 tooltip
-vmd.miner.desc.1=无需电力的木质矿机，直接从主世界矿物生成表中产出矿石物品，不破坏方块。
-vmd.miner.desc.2=每 100 tick 产出一组（64 个）矿石存入 6 个输出槽之一（恰好占满 1 个输出槽）；6 个输出槽都无法再容纳产出时待机，请手动取出或用传送带抽取。
-vmd.miner.desc.3=电路槽中的编程电路（配置 1..N）选择主世界第 N 条矿脉（产出该矿脉的大矿及归属的贫瘠矿）；配置 N+1 选择全部贫瘠矿（小型矿）。
-vmd.miner.desc.4=配置 0 或无电路时，全部矿脉与贫瘠矿合并为一个加权池（权重 = 生成权重）。
-vmd.miner.desc.5=电路配置超出 N+1 时机器静默待机；编程电路可直接在 GUI 的电路槽中点选配置（或放入真实编程电路）。
+vmd.miner.desc.1=产出主世界矿石，不耗电、不破坏方块。
+vmd.miner.desc.2=每 100 tick 产出 64 个矿石，占 6 个输出槽中的 1 槽。满仓待机，可手取或用传送带。
+vmd.miner.desc.3=配置 1..N 选主世界第 N 条矿脉及其贫瘠矿；N+1 选全部贫瘠矿（小型矿）。
+vmd.miner.desc.4=配置 0 或无电路：按生成权重混合全部矿物。
+vmd.miner.desc.5=配置超出 N+1 时待机。可在 GUI 电路槽点选，或放入实体编程电路。
 vmd.miner.desc.selection=当前选择：%s
 vmd.miner.selection.poor=贫瘠矿池
 vmd.miner.selection.mixed=全部矿物（加权随机）
@@ -106,12 +106,12 @@ vmd.ex.gas.neon=氖气
 vmd.ex.gas.krypton=氪气
 vmd.ex.gas.xenon=氙气
 vmd.ex.gas.oganesson=鿫
-vmd.ex.output=根据所在维度每秒产出 %s 个矿石
-vmd.ex.output.voltage=能源仓电压每高于本机档位一级，产量 ×4（低于或等于本机档位不加成），与气体加成、批量模式叠乘
-vmd.ex.whitelist.item=将矿石放入输入总线以设置白名单/黑名单（按矿物材料匹配，任意石器/大小矿变体均可）
-vmd.ex.whitelist.toggle=使用螺丝刀切换白名单/黑名单
-vmd.ex.blacklist.warn=黑名单或非白名单矿石将被 §c销毁§r。
-vmd.ex.structure.casing=§63-8x§7 %s（底部机壳位可替换为仓体）
+vmd.ex.output=每秒产出 %s 个当前维度的矿石
+vmd.ex.output.voltage=最高能源仓电压每高于本机一级，产量 ×4；低于或等于本机档位不加成。与气体和批量叠乘。
+vmd.ex.whitelist.item=在输入总线放矿石，按矿物材料过滤（不限围岩或大小矿变体）。
+vmd.ex.whitelist.toggle=用螺丝刀切换白名单/黑名单。
+vmd.ex.blacklist.warn=未通过过滤的矿石将被 §c销毁§r。
+vmd.ex.structure.casing=§63-8x§7 %s（底部机壳可换为仓体）
 vmd.ex.structure.frame=§615x§7 %s
 vmd.ex.structure.energy_hatch=任意基础机壳，最低 %s
 vmd.ex.structure.maintenance_hatch=任意基础机壳
@@ -121,10 +121,10 @@ vmd.ex.structure.output_bus=任意基础机壳
 
 # 虚空矿机 EX 维度覆写（合并自 Void-Miner-Tweak-Mod）
 vmd.gui.override.description=维度覆写为: 
-vmd.gui.override.failed=覆写未成功，请先前往该维度一次。
-vmd.gui.override.error=你必须至少去过该维度一次才能获取矿物列表。
+vmd.gui.override.failed=目标维度无矿表，改用机器所在维度。
+vmd.gui.override.error=目标维度无矿表。
 vmd.gui.override.end_asteroids=T0: 末地小行星（与末地掉落相同）
-vmd.gui.filter.no_ores=当前无可用矿物。请放入维度方块以选择目标维度。
+vmd.gui.filter.no_ores=无可用矿物。放入维度显示方块可选目标。
 
 # 虚空矿机 EX GUI 实时产能行（%s 为千分位格式化的每秒矿石数）
 vmd.gui.output_rate=每秒产出：%s 个矿石

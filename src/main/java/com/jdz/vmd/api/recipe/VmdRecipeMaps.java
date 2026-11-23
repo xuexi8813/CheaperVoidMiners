@@ -5,31 +5,20 @@ import gregtech.api.recipe.RecipeMapBackend;
 import gregtech.api.recipe.RecipeMapBuilder;
 
 /**
- * 本模组的 NEI 产出配方表，模式与 GT 虚空采矿机（{@code RecipeMaps.voidMinerRecipes}）一致：
- * 维度显示方块（堆叠数 0）作输入，可产出条目作带权重输出。构造 {@link RecipeMap} 会自动向 GT
- * 注册配方类别并生成 NEI 处理器，无需额外 NEI 插件代码。
- * {@link #register()} 仅为强制类加载——NEI 可能在 postInit 期间构建处理器列表，须早于此。
+ * 仅供 NEI 展示的产出配方表。GT 在构建 {@link RecipeMap} 时注册类别和处理器，
+ * 因此须在 NEI 于 postInit 构建处理器列表前调用 {@link #register()} 触发类加载。
  */
 public final class VmdRecipeMaps {
 
     /**
-     * 物品输出槽容量（NEI 模板槽位数）。{@code RecipeMapBuilder#maxIO} 不限制配方注册的输出数，
-     * 只决定 NEI 页面预建的幻影槽位数；基类标准物品输出网格（{@code UIHelper.getItemOutputPositions}）
-     * 在超过 6 个输出时按 3 列、自 y=6 起向下排布，170x82 的 NEI 背景恰好容纳 3 行（y=6/24/42，
-     * 第 4 行起越出背景下沿），故安全容量为 3 列 × 3 行 = 9——与 GT 5.09.54.x（钉定 275）全部配方表的
-     * 最大物品输出数一致（如电弧炉 {@code maxIO(2, 9, 2, 1)}）。5.09.55 的 VoidMinerFrontend 取 72
-     * 是因其自带更大的 NEI 页面，本项目钉定的 5.09.54.x（275）没有该前端，取 72 会让模板按 3 列预建 24 行槽位、
-     * 从 GUI 顶溢出（本次修复的 bug）。实际每条矿脉配方的物品输出数为 4 种矿脉材料 + 归属贫矿
-     * （各 1 条，主世界仅 Stone 一种石类型），理论上限 8、实测 6；即便超出容量，超出部分仍会经
-     * GTNEIDefaultHandler 的"超出常规数量"路径在背景区内补画（无槽位贴图），NEI 展示不会截断。
+     * NEI 标准背景只容纳 3 列 × 3 行物品槽。GT 5.09.54.x 没有新版的大面板，预建 72 槽会溢出。
+     * {@code maxIO} 只决定模板槽数；超出的实际输出由 NEI 补画。
      */
     public static final int MAX_ITEM_OUTPUTS = 9;
 
     /**
-     * 流体输出上限：GTNH 2.9.0 的 UndergroundFluids.cfg 每维度最多 5 种流体（23 个维度），
-     * 取 12 留出自定义余量；更大的值会让 NEI 默认前端按 32 槽分配网格，流体槽被页面边缘裁切
-     * （该裁切问题已由 {@link VmdFrontend} 的 3 列向上网格布局修复）。实际每条配方的流体输出数
-     * 为该维度流体条目数（≤5 种），3 列 × N 行网格足够容纳。
+     * GTNH 2.9.0 每维度至多 5 种流体，12 槽为自定义配置留余量。
+     * {@link VmdFrontend} 用 3 列向上排布，避免槽位被 NEI 页面裁切。
      */
     public static final int MAX_FLUID_OUTPUTS = 12;
 
@@ -45,15 +34,9 @@ public final class VmdRecipeMaps {
         .build();
 
     /**
-     * 木制虚空采矿机的产出配方：与机器编程电路选择语义对应的条目——每条主世界矿脉一条
-     * （输入附配置 i 的编程电路）。
-     * 贫矿按材料归属并入对应矿脉条目（机器矿脉模式同样产出归属贫矿），归属数据由
-     * {@code MTEVoidMinerWooden#buildOverworldPools} 统一构建，未被归属的贫矿仅保留在机器侧的
-     * 贫矿池与混合奖池中，不单独成 NEI 条目。
-     * 物品输入上限为 2：编程电路作为第二输入；机器 {@code checkRecipe} 自行选择奖池、不走该表的配方匹配，
-     * 输入上限仅决定 NEI 模板槽位数、不约束配方注册（见 {@link #MAX_ITEM_OUTPUTS} 说明），
-     * 故无运行时副作用，minInputs 保持 (1, 0)。
-     * 与 voidFluidDrillerRecipes 相同，不配置 NEI 进度条以避免贴图解析失败刷屏。
+     * 木制虚空采矿机每条主世界矿脉一条 NEI 配方，展示对应电路及归属该矿脉的贫矿。
+     * 未归属的贫矿只在机器奖池中；机器自行选择奖池，电路输入槽只供 NEI 展示。
+     * 不配置 NEI 进度条，避免贴图解析失败。
      */
     public static final RecipeMap<RecipeMapBackend> woodenMinerRecipes = RecipeMapBuilder.of("vmd.recipe.woodenminer")
         .maxIO(2, MAX_ITEM_OUTPUTS, 0, 0)
@@ -65,14 +48,8 @@ public final class VmdRecipeMaps {
         .build();
 
     /**
-     * 地表行星气体钻机的产出配方：全局气体表（{@code PlanetaryGasTableHelper}）每气体一条——
-     * 输入 = 配置 N 的编程电路标记（stackSize=0）+ 该气体原版 Depth × 64 的 Mining Pipes 需求展示
-     * （机器侧常备不消耗，NEI 展示实际所需数量）→ 输出 = 该气体的原版基础产量。
-     * 机器不走该表的配方匹配（checkProcessing 自行按电路选择），仅作 NEI 展示。
-     * 原版 Siphon 的 NEI 为自定义文本处理器（行星/Depth/基础速率/EUt 文本，无物品输入），
-     * 本表以 RecipeMap 形态承载同源信息：电路编号 ↔ 原版行星+Depth 的映射由机器 tooltip 全量列出。
-     * 注册时机在本 mod postInit（晚于 gtnhintergalactic postInit 填充 GT5u 气体清单），见
-     * {@code VmdOutputRecipeLoader#registerSurfaceGasSiphonRecipes}。
+     * 地表行星气体钻机每种气体一条 NEI 配方，展示电路编号、常备采矿管和折算后的周期基础产量。
+     * 机器直接按电路查全局气体表，不用本表匹配配方。
      */
     public static final RecipeMap<RecipeMapBackend> surfaceGasSiphonRecipes = RecipeMapBuilder
         .of("vmd.recipe.surfacegassiphon")

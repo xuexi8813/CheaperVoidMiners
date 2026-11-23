@@ -36,22 +36,14 @@ import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * {@link MTEVoidMinerBaseGui} 的维度覆写 mixin：在终端区域追加覆写状态显示，
- * 并在覆写维度变化时对过滤弹窗做"关闭-丢弃缓存-重开"的实时刷新。
- * 逻辑 1:1 移植自 Void-Miner-Tweak-Mod（reobf.vmtweak），前缀与键名统一改为 vmd 命名空间。
- *
- * <p>
- * 独立版 vmtweak 在场时由 {@code com.jdz.vmd.mixin.VmdMixinPlugin} 让位（GUI 类
- * 只会被一方注入）；两个 @Inject 注入器内的 {@code isCancelled} 检查是第二道防线。
+ * 在虚空矿机终端显示维度覆写，覆写变化时刷新过滤弹窗。逻辑移植自 Void-Miner-Tweak-Mod。
+ * 独立版 vmtweak 存在时由 {@code VmdMixinPlugin} 让位，已取消的注入回调不重复处理。
  */
 @SuppressWarnings("rawtypes")
 @Mixin(value = MTEVoidMinerBaseGui.class, remap = false)
 public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEVoidMinerBase> {
 
-    /**
-     * 本 mixin 自身的日志器。静态字段不参与 @Shadow/@Unique 合并到目标类的成员注入，
-     * 仅存在于 mixin 类内供日志使用。
-     */
+    /** 记录过滤面板构建与缓存清理错误。 */
     @Unique
     private static final Logger LOG = LogManager.getLogger("CheaperVoidMiners");
 
@@ -91,9 +83,7 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
         StringSyncValue warningSyncer = new StringSyncValue(() -> ((IVoidMinerOverride) mb).vmd$getWarning());
         syncManager.syncValue("vmd$warning", warningSyncer);
 
-        // 在既有状态行下方追加覆写状态标签
-        // 同步值为服务端原始数据：""（无覆写）、"!警告lang键"（覆写失败）、或维度缩写（"Ow"、"Ne"、"EA"）。
-        // 客户端 lambda 使用客户端安全 API 完成本地化。
+        // 服务端只同步原始值：空串、带 ! 的警告键或维度缩写；由客户端按本地语言显示。
         list.child(IKey.dynamic(() -> {
             String raw = overrideTextSyncer.getValue();
             if (raw == null || raw.isEmpty()) return "";
@@ -123,13 +113,9 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
             .marginBottom(2)
             .widthRel(1));
 
-        // EX 系列实时产能行：非 EX 机型 vmd$getCurrentOutputPerSecond() 返回 0，同步值恒为空串、行隐藏。
-        // 同步值拆分口径与覆写行一致：服务端传千分位格式化数字（formatNumber 为配置化 locale 的纯文本
-        // 格式化，非本地化语义，双侧可用，且每次调用新建 DecimalFormat，无共享可变状态），
-        // 客户端 lambda 完成模板本地化，保证专服下按客户端语言显示双语。
+        // 服务端只同步格式化的数字，客户端翻译产能模板。非 EX 机型用空串隐藏产能行。
         StringSyncValue outputRateSyncer = new StringSyncValue(() -> {
             long outputPerSecond = ((IVoidMinerOverride) mb).vmd$getCurrentOutputPerSecond();
-            // 0 = 非 EX 机型不支持产能显示；正数产能最大 2^45，不会与 0 冲突
             return outputPerSecond > 0 ? formatNumber(outputPerSecond) : "";
         });
         syncManager.syncValue("vmd$outputRate", outputRateSyncer);
@@ -169,11 +155,8 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
         // 初始化版本号
         vmd$lastSeenVersion = ((IVoidMinerOverride) mb).vmd$getDimChangeVersion();
 
-        // 注册服务端 tick 处理器，用三阶段状态机实时刷新过滤弹窗：
-        // IDLE → 检测到变化 → 关闭面板 → CLOSING
-        // → 等待客户端关闭往返（isPanelOpen 变 false）→ 丢弃缓存 → DISPOSED
-        // → 重开面板 → IDLE
-        // 先等客户端完全关闭面板再丢弃其 syncManager，避免 closeSubPanels() 中 NPE。
+        // 等客户端确认关闭（isPanelOpen 为 false）后再丢弃缓存，避免 closeSubPanels() 发生 NPE。
+        // 丢弃后的下一 tick 重开。
         syncManager.onServerTick(() -> {
             switch (vmd$refreshState) {
                 case 1: // CLOSING - 等待面板经客户端往返后完全关闭
@@ -265,15 +248,10 @@ public abstract class VMDVoidMinerBaseGuiMixin extends MTEMultiBlockBaseGui<MTEV
     }
 
     /**
-     * 强制丢弃服务端与客户端两侧的缓存面板。
-     *
-     * <p>
-     * 反射不可达原因（ModularUI 2.3.92 源码核实）：{@code PanelSyncHandler#deleteCachedPanel()}
-     * 以 {@code openedPanel == null || isPanelOpen()} 提前返回，而服务端 openedPanel 恒为 null
-     * （仅在客户端 openPanel 时赋值），该方法在服务端永远无效；唯一能清空缓存的
-     * {@code disposePanel()} 为 private，且无公开等价入口（readOnServer(SYNC_DISPOSE) 属网络
-     * 包读取接口、需传 null buffer，语义上并非 dispose 的公开 API），因此经反射调用，
-     * 再发送 SYNC_DISPOSE 让客户端同步丢弃其缓存面板。
+     * 丢弃两侧的面板缓存。ModularUI 2.3.92 的 {@code deleteCachedPanel()} 在服务端因
+     * {@code openedPanel} 恒为空而直接返回；{@code readOnServer(SYNC_DISPOSE)} 是网络包入口，
+     * 直接调用需传空缓冲区，不是公开清理 API。无等价入口，故反射调用私有 {@code disposePanel()}，
+     * 再发 {@code SYNC_DISPOSE} 让客户端丢弃缓存。
      */
     @Unique
     private static void vmd$forceDisposePanel(PanelSyncHandler psh) {

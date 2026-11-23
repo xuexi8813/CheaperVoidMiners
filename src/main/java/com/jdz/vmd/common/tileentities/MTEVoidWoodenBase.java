@@ -23,14 +23,8 @@ import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GTUtility;
 
 /**
- * 木制、无电力虚空机器（泵/采矿机）的共享基类，构建在 {@link MTEBasicMachine}（tier 0 / 电流 1）
- * 之上以获得标准机器 GUI 与配方循环；产出由各机器在 {@link #checkRecipe()} 中选择。
- * 产物留在机器内部直到被取出，不自动输出。
- * <p>
- * 槽位约定：编程电路使用 GT5u 标准幽灵电路槽（GUI 右下角点选配置，槽内影子堆叠 stackSize=0），
- * 位于输入槽之前的专用 OTHER 槽位（5.09.54.x 默认布局）；原"第一个输入槽兼电路槽"方案在幽灵模式下
- * 不可行——基类 onPostTick 在每次配方成功后会清空输入槽范围内 stackSize<=0 的堆叠，幽灵电路会被误清，
- * 故电路槽必须独立于输入槽范围，且原首输入槽对 GUI 与自动化一并封闭。
+ * 无电力木制虚空机器的基类。泵和采矿机复用 GT 的 GUI 与生产循环，
+ * 在 {@link #checkRecipe()} 选择产出；产物留在内部，不自动输出。
  */
 public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
 
@@ -60,12 +54,8 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     // ==== 槽位配置 ====
 
     /**
-     * 电路槽 = 输入槽前的专用 OTHER 槽位（getInputSlot() - 1，与 GT5u 5.09.54.x 默认电路槽布局一致），
-     * 本机器的该槽位原本空闲（充电/放电槽数为 0，特殊槽为 3）。
-     * 动机：幽灵电路堆叠 stackSize 恒为 0（GhostCircuitItemStackHandler 与
-     * MetaTileEntity.setInventorySlotContents 均强制归零），而 MTEBasicMachine.onPostTick 在每次
-     * 配方调度成功后会清空 [getInputSlot(), getInputSlot()+mInputSlotCount) 内 stackSize<=0 的堆叠；
-     * 电路槽必须位于输入槽范围之外，幽灵配置才能跨生产周期保留。
+     * 电路使用输入槽前的专用 OTHER 槽。GT 配方调度后会清理输入槽的零数量堆叠，
+     * 独立槽可防止幽灵电路随之清空。
      */
     @Override
     public int getCircuitSlot() {
@@ -259,11 +249,7 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     // ==== GUI（MUI2，与青铜机器同一窗口家族） ====
 
     /**
-     * GT5u 5.09.54.x 的 {@link MTEBasicMachine} 默认返回 false，即右键 {@code openGui} 走 MUI1 旧
-     * GUI 体系（{@code addUIWidgets} 通道）；而本类 GUI 由 MUI2 构建（{@link #buildUI} +
-     * {@link MTEVoidWoodenBaseGui}），MUI1 路径不会调用 MUI2 面板，导致 GUI 打不开。
-     * 5.09.54.x（钉定 275）中 {@code GTGuis.GLOBAL_SWITCH_MUI2} 默认为 true，覆写后 openGui 进入
-     * {@code MetaTileEntityGuiHandler.open} 的 MUI2 分支并调用 {@link #buildUI}。
+     * GT 基类默认走 MUI1，不会调用 {@link #buildUI}。启用 MUI2 让客户端与服务端构建同一套面板。
      */
     @Override
     protected boolean useMui2() {
@@ -304,12 +290,8 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     public abstract int checkRecipe();
 
     /**
-     * 单格库存上限。显式声明（覆写 {@code CommonMetaTileEntity.getInventoryStackLimit}，其实现恒为 64）
-     * 的动机：javac 对 {@code this.getInventoryStackLimit()} 生成 owner 为本类静态类型的符号引用，
-     * 发布重映射不会改写无声明 mod 类的调用点，导致发布 jar 中残留 MCP 名；而整合包运行环境
-     * （GT 类一律 SRG 名，5.09.54.x（钉定 275）的 {@code BaseMetaTileEntity.func_70297_j_} 亦同名覆写）
-     * 解析不到 MCP 名即抛 NoSuchMethodError（crash-2026-11-15_20.44.54）。声明后声明与调用点
-     * 一起随发布重映射改名，跨 5.09.54.x（钉定 275）运行环境均可命中。返回值与上游实现一致取 64。
+     * 单格上限沿用 GT 的 64。javac 生成以本类为 owner 的调用；若仅继承，发布重映射会留下 MCP 名，
+     * 在 SRG 运行环境触发 {@code NoSuchMethodError}。显式覆写使声明和调用点一同重映射。
      */
     @Override
     public int getInventoryStackLimit() {
@@ -338,15 +320,8 @@ public abstract class MTEVoidWoodenBase extends MTEBasicMachine {
     }
 
     /**
-     * 预订本周期产出：写入 {@code mOutputItems[0]}，实际落槽复用基类周期结束的搬运循环——该循环对
-     * 全部输出槽按槽序尝试 {@code addStackToSlot}（同物品可合并的槽优先命中，否则放入遇到的第一个
-     * 空槽），天然满足"同物品可堆叠优先、其次空槽放入"的缓冲语义。不直接写输出槽：在配方调度时直接
-     * 落槽会让产出在周期开始就出现在输出槽中（破坏"周期结束时落产出"的既有语义），并绕过
-     * {@code mOutputItems} 通道上的矿物字典统一化与堆叠数钳制。
-     *
-     * 不变量：每次 {@code checkRecipe} 进入时 {@code mOutputItems[0]} 必为 {@code null}
-     * （周期结束与配方失败两条路径都会清空 mOutputItems）；非 {@code null} 属于不变量破坏，
-     * 返回 {@code false} 让机器待机而不是覆盖丢失产出。
+     * 预订产出，由 GT 在周期结束时落槽。直接写槽会提前产出，并绕过矿物词典统一和堆叠上限。
+     * GT 在周期结束或配方失败时清除预订；若仍有旧产出，宁可待机也不覆盖。
      *
      * @param output 本周期将产出的物品堆叠
      * @return 产出已成功进入 mOutputItems 通道时为 {@code true}

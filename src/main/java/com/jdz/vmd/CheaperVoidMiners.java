@@ -28,11 +28,8 @@ public class CheaperVoidMiners {
     public static CommonProxy proxy;
 
     /**
-     * FML 握手期网络校验（{@code NetworkModHolder} 在 mod 构造期扫描 mod 主类的该注解方法，
-     * 构造 {@code MethodNetworkChecker}，优先于默认 checker）：对端 mod 列表必须包含本 mod。
-     * 默认 checker 只实现"客户端必须装服务器上的 mod"，不校验"服务器缺客户端装的 mod"；
-     * 本 mod 的物品全部为挂在 GregTech 方块 meta 上的 MTE（不注册独立 Block/Item id），
-     * 不会触发 FML 的 id 映射（GameData）拒连，单端缺失也能正常连接，故必须显式双向要求。
+     * FML 默认握手不拒绝只在客户端安装的模组。本模组的 MTE 复用 GT 方块 ID，
+     * 也不会触发 ID 映射拒连，因此显式要求两端安装。
      */
     @NetworkCheckHandler
     public boolean checkModList(Map<String, String> remoteModList, Side side) {
@@ -50,8 +47,7 @@ public class CheaperVoidMiners {
     }
 
     @Mod.EventHandler
-    // 后期数据钩子（贫矿追加）：须在 BartWorks 生成虚空采矿机掉落表（loadComplete）之后运行；
-    // NEI 产出配方不依赖此钩子，已经 GregTechAPI.sAfterGTPostload（GT postInit 末尾）注册。
+    // BartWorks 在 loadComplete 建表；贫矿追加须更晚，不影响 GT-PostLoad 注册的 NEI 配方。
     public void serverStarting(FMLServerStartingEvent event) {
         proxy.serverStarting(event);
     }

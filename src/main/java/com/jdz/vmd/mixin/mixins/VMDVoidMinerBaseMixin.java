@@ -37,14 +37,9 @@ import gtneioreplugin.plugin.item.ItemDimensionDisplay;
 import gtneioreplugin.util.DimensionHelper;
 
 /**
- * {@link MTEVoidMinerBase} 的维度覆写 mixin：控制器槽位放入 GTNEI 维度显示方块后，
- * 虚空矿机改挖目标维度的矿表（含本无矿表的私人/个人维度）。逻辑 1:1 移植自
- * Void-Miner-Tweak-Mod（reobf.vmtweak），前缀与键名统一改为 vmd 命名空间。
- *
- * <p>
- * 与独立版 vmtweak 同时在场时由 {@code com.jdz.vmd.mixin.VmdMixinPlugin} 让位；
- * 各注入器内的 {@code isCancelled} 检查是第二道防线：vmtweak 先注入并 cancel 时，
- * 本 mixin 静默跳过，不会重复执行。
+ * 控制器槽内的 GTNEI 维度显示方块可覆写矿表，即使机器位于没有矿表的私人维度。
+ * 逻辑移植自 Void-Miner-Tweak-Mod。独立版 vmtweak 存在时由 {@code VmdMixinPlugin} 让位，
+ * 已取消的注入回调不重复处理。
  */
 @SuppressWarnings("rawtypes")
 @Mixin(MTEVoidMinerBase.class)
@@ -82,10 +77,7 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
 
     // region 维度覆写的独有状态
 
-    /**
-     * 本 mixin 自身的日志器。静态字段不参与 @Shadow/@Unique 合并到目标类的成员注入，
-     * 仅存在于 mixin 类内供日志使用。
-     */
+    /** 记录读取维度覆写槽的异常。 */
     @Unique
     private static final Logger VMD$LOG = LogManager.getLogger("CheaperVoidMiners");
 
@@ -110,21 +102,9 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     // region calculateDropMap 覆写
 
     /**
-     * 替换原 onFirstTick 中 calculateDropMap 之后的逻辑：原码
-     * {@code int size = dropMap.getOres().length} 在 getOres() 为 null
-     * （私人维度的空 DropMap）时 NPE，此处改为安全重算。
-     *
-     * <p>
-     * 方法最前先做贫矿追加兜底（幂等，时序契约见
-     * {@link VoidOreTableHelper#appendPoorOresToVoidMinerDropMaps}）：客户端连远程服不触发
-     * FMLServerStartingEvent，本调用点是客户端进程的唯一入口。BartWorks 掉表在客户端启动的
-     * FMLLoadCompleteEvent（早于任何 tick）已生成，首个 tick 时追加必然成功，且先于本方法后续
-     * recalculateDropMap 与 GUI 弹窗路径的首次 {@code isDistributionCached} 缓存，客户端过滤弹窗
-     * 因此包含贫矿独立按钮；服务端 serverStarting 先于任何 tick 追加完毕，此处命中幂等标志静默
-     * 跳过，两路径顺序无关。调用放在 isCancelled 检查之前，覆盖让位 vmtweak 的取消路径——追加是
-     * 本 mod 的全局一次性职责，与维度覆写让位无关。本类首次类加载随之提前到运行期（游戏内首个
-     * tick），不落入 initializeMods/loadComplete 时段 RFB 环境的类加载禁区（同
-     * CommonProxy#serverStarting 注释记录的约束核对）。
+     * 首 tick 安全重算矿表，避免私人维度的空矿表触发原版 NPE。
+     * 远程客户端没有 serverStarting，须在此追加贫矿：晚于 BartWorks 建表和 RFB 类加载限制期，
+     * 早于重算矿表和过滤弹窗缓存。追加是幂等的，且必须先于取消检查，不随 vmtweak 让位跳过。
      */
     @Inject(method = "onFirstTick", at = @At("HEAD"), require = 1, remap = false, cancellable = true)
     private void vmd$onFirstTick(IGregTechTileEntity aBaseMetaTileEntity, CallbackInfo ci) {
@@ -293,16 +273,8 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     // region 材料级宽匹配
 
     /**
-     * 上游 {@code contains(List, ItemStack)} 为精确 item+meta 匹配，而虚空矿机产出矿石与
-     * 自然挖取矿石的石器变体 meta 不同（meta = 材料%1000 + 石器*1000 + 大小矿偏移），
-     * 白名单/过滤器条目永不命中，白名单下全部产出被销毁（GTNH #25583 同类现象，上游定性 Not a Bug）。
-     *
-     * <p>
-     * 本注入为材料级宽匹配：同材料的任意石器变体、大小矿均视为同一矿物，经
-     * {@link OreManager#getMaterial(ItemStack)} 解析，GT/BW 双适配器天然兼容。仅在命中时
-     * {@code setReturnValue(true)}，未命中回落原精确匹配，黑/白名单语义只增不减。contains
-     * 是 GUI 过滤弹窗勾选与输入总线两条通道的唯一匹配点，一处注入两通道同时生效；
-     * 材料为单例对象，引用比较安全。
+     * GUI 过滤器与输入总线共用此匹配点。原版 item+meta 精确匹配会漏掉同材料的不同石种、大小矿。
+     * 通过 {@link OreManager#getMaterial(ItemStack)} 匹配 GT/BW 的材料单例；未匹配时仍走原版比较。
      */
     @Inject(method = "contains", at = @At("HEAD"), require = 1, remap = false, cancellable = true)
     private static void vmd$onContains(List<ItemStack> list, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
@@ -343,9 +315,9 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     }
 
     /**
-     * @return 发送给客户端的覆写显示原始数据，不本地化（本地化在客户端控件中完成，
-     *         避免服务端线程加载 I18n 等客户端专属类）："" 表示无覆写；覆写成功返回
-     *         维度缩写（如 "Ow"、"Ne"、"EA"）；覆写失败返回 "!" 前缀的警告 lang 键。
+     * 客户端负责本地化，避免专用服务器加载客户端类。
+     *
+     * @return 无覆写为空串，成功为维度缩写，警告为带 {@code !} 前缀的 lang 键
      */
     @Unique
     @Override
@@ -362,11 +334,9 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     }
 
     /**
-     * @return EX 系列机型返回当前每秒矿石产出（含惰性气体与电压产量加成，未运行时为无气体的
-     *         理论产能），计算委托 {@link MTEVoidMinerEXBase#getCurrentOutputPerSecond(int)}，
-     *         入参为上游私有字段 multiplier（仅 mixin 可读的桥接点）；非 EX 机型返回 0，
-     *         GUI 产能行据此隐藏。instanceof 经 (Object) 中转：mixin 类与目标子类在编译期
-     *         属无关分支，直接转换无法通过编译。
+     * 将 GT 私有倍率桥接给 EX。Mixin 与 EX 在编译期属于不同分支，故经 {@code Object} 中转。
+     *
+     * @return EX 每秒矿石产量；非 EX 返回 0，让客户端隐藏产能行
      */
     @Unique
     @Override
