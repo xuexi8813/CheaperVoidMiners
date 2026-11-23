@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -368,7 +370,39 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
 
     // endregion
 
-    // region 材料级宽匹配
+    // region 产出筛选
+
+    /** Delegates to GT's existing matcher, including its material extension, for non-EX machines. */
+    @Shadow(remap = false)
+    private static boolean contains(List<ItemStack> list, ItemStack stack) {
+        throw new AssertionError();
+    }
+
+    /** Uses the EX key for both selected stacks and input ores without entering GT's wider matcher. */
+    @Redirect(
+        method = "handleOutputs",
+        at = @At(
+            value = "INVOKE",
+            target = "Lbwcrossmod/galacticgreg/MTEVoidMinerBase;contains(Ljava/util/List;Lnet/minecraft/item/ItemStack;)Z"),
+        require = 2,
+        allow = 2,
+        remap = false)
+    private boolean vmd$matchesOutputFilter(List<ItemStack> list, ItemStack stack) {
+        return vmd$isEx() ? ExVoidMinerFilter.matchesOutput(list, stack) : contains(list, stack);
+    }
+
+    /** Includes small/poor ore blocks missing from the item ore dictionary on the EX input path only. */
+    @Redirect(
+        method = "handleOutputs",
+        at = @At(
+            value = "INVOKE",
+            target = "Ljava/util/stream/Stream;filter(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;"),
+        require = 1,
+        allow = 1,
+        remap = false)
+    private Stream<ItemStack> vmd$filterInputOres(Stream<ItemStack> inputs, Predicate<ItemStack> isOre) {
+        return inputs.filter(vmd$isEx() ? isOre.or(ExVoidMinerFilter::isSmallOre) : isOre);
+    }
 
     /** Captures the selection for both GT checks; MUI2 2.3.92 exposes only the slot API. */
     @Inject(method = "handleOutputs", at = @At("HEAD"), require = 1, remap = false)
@@ -406,10 +440,7 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
         vmd$batchSelections = null;
     }
 
-    /**
-     * GUI 过滤器与输入总线共用此匹配点。原版 item+meta 精确匹配会漏掉同材料的不同石种、大小矿。
-     * 通过 {@link OreManager#getMaterial(ItemStack)} 匹配 GT/BW 的材料单例；未匹配时仍走原版比较。
-     */
+    /** 非 EX 路径保留同材料的围岩和大小矿宽匹配；未匹配时仍走 GT 原版比较。 */
     @Inject(method = "contains", at = @At("HEAD"), require = 1, remap = false, cancellable = true)
     private static void vmd$onContains(List<ItemStack> list, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (cir.isCancelled()) return;

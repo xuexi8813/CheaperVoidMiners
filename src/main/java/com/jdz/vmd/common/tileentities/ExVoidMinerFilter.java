@@ -12,13 +12,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
 
 import com.cleanroommc.modularui.utils.item.ItemStackHandler;
+import com.github.bsideup.jabel.Desugar;
 
 import gregtech.api.interfaces.IOreMaterial;
 import gregtech.api.util.GTUtility.ItemId;
+import gregtech.common.ores.OreInfo;
 import gregtech.common.ores.OreManager;
 
 /** Indexes one effective EX ore table. GT's persisted stacks remain the only stored selection. */
@@ -89,12 +93,12 @@ public final class ExVoidMinerFilter {
     private final long revision;
     /** Stable order for the GUI, including separate regular/small/stone variants. */
     private final List<ItemId> rows;
-    /** Material when known, exact GT item identity otherwise; one key per row. */
+    /** Material and ore size when known, exact GT item identity otherwise; one key per row. */
     private final List<Object> rowKeys;
     /** One representative stack per available identity, used for bulk selection. */
     private final Map<Object, ItemId> representatives;
 
-    /** Creates the revision's ordered rows and material groups from GT's actual merged distribution. */
+    /** Creates the revision's ordered rows and material/size groups from GT's actual merged distribution. */
     public ExVoidMinerFilter(long revision, ItemId[] ores) {
         this.revision = revision;
         List<ItemId> ordered = new ArrayList<>();
@@ -204,9 +208,37 @@ public final class ExVoidMinerFilter {
         return changed;
     }
 
-    /** OreManager resolves both regular and small GT/BW ores to their common material singleton. */
-    private static Object selectionKey(ItemStack stack) {
-        IOreMaterial material = OreManager.getMaterial(stack);
-        return material == null ? ItemId.createNoCopy(stack) : material;
+    /** Tests an EX output against GUI selections or input ores, using the same identity as the panel. */
+    public static boolean matchesOutput(List<ItemStack> selections, ItemStack output) {
+        if (selections.isEmpty()) return false;
+        Object key = selectionKey(output);
+        for (ItemStack stack : selections) {
+            if (stack != null && key.equals(selectionKey(stack))) return true;
+        }
+        return false;
     }
+
+    /** Recognizes small/poor ore blocks even when GT's item ore dictionary test does not. */
+    public static boolean isSmallOre(ItemStack stack) {
+        MaterialKey key = materialKey(stack);
+        return key != null && key.small();
+    }
+
+    /** Unresolved stacks match exact item, metadata and NBT, without considering stack size. */
+    private static Object selectionKey(ItemStack stack) {
+        MaterialKey key = materialKey(stack);
+        return key == null ? ItemId.createNoCopy(stack) : key;
+    }
+
+    /** Reads concrete ore identities without retaining the pooled info or its stone type. */
+    private static MaterialKey materialKey(ItemStack stack) {
+        if (Items.feather.getDamage(stack) == OreDictionary.WILDCARD_VALUE) return null;
+        try (OreInfo<?> info = OreManager.getOreInfo(stack)) {
+            return info == null || info.material == null ? null : new MaterialKey(info.material, info.isSmall);
+        }
+    }
+
+    /** Shared identity for a material's regular or small/poor ore, independent of surrounding stone. */
+    @Desugar
+    private record MaterialKey(IOreMaterial material, boolean small) {}
 }
