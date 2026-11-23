@@ -125,6 +125,7 @@ vmd.gui.override.description=Dimension Override:
 vmd.gui.override.failed=No ore data for the target dimension; using the current dimension.
 vmd.gui.override.error=No ore data for the target dimension.
 vmd.gui.override.end_asteroids=T0: End Asteroids (same as The End)
+vmd.gui.filter.loading=Loading ore filter...
 vmd.gui.filter.no_ores=No ores available. Use a Dimension Display block to select a target.
 
 # Void Miner EX GUI real-time output rate line (%s is the thousand-grouped ores per second)

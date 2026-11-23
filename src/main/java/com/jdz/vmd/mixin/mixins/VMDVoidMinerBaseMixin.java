@@ -247,27 +247,41 @@ public abstract class VMDVoidMinerBaseMixin extends MTEEnhancedMultiBlockBase im
     @Unique
     private void vmd$resolveExDropMap(String marker) {
         dimensionDef = DimensionDef.getDefForWorld(getBaseMetaTileEntity().getWorld());
+        dropMap = null;
+        extraDropMap = null;
+        totalWeight = 0;
+
         String target = marker == null ? null : DimensionHelper.ABBR_TO_INTERNAL.get(marker);
-        DropMap base = target == null ? null : VoidMinerUtility.dropMapsByDimName.get(target);
-        DropMap extra = target == null ? null : VoidMinerUtility.extraDropsByDimName.get(target);
-        if (base != null) base.isDistributionCached(extra);
-        boolean validOverride = base != null && base.getOres() != null && base.getTotalWeight() > 0;
-        canVoidMine = validOverride || (dimensionDef != null && dimensionDef.canBeVoidMined());
-        if (!validOverride) {
-            String actual = canVoidMine ? dimensionDef.getDimensionName() : null;
-            base = actual == null ? null : VoidMinerUtility.dropMapsByDimName.get(actual);
-            extra = actual == null ? null : VoidMinerUtility.extraDropsByDimName.get(actual);
-            if (base == null && extra != null) base = new DropMap();
-            if (base != null) base.isDistributionCached(extra);
-        }
-        dropMap = base;
-        extraDropMap = extra;
-        totalWeight = base == null ? 0 : base.getTotalWeight();
+        boolean validOverride = target != null && vmd$tryApplyExDropMap(target);
+        boolean canMineActualDimension = dimensionDef != null && dimensionDef.canBeVoidMined();
+        canVoidMine = validOverride || canMineActualDimension;
+        if (!validOverride && canMineActualDimension) vmd$tryApplyExDropMap(dimensionDef.getDimensionName());
+
         vmd$exMarker = marker;
         vmd$lastDimOverride = validOverride ? marker : "None";
         vmd$warning = marker == null || validOverride ? ""
-            : totalWeight > 0 ? "vmd.gui.override.failed" : "vmd.gui.override.error";
-        vmd$exFilter = new ExVoidMinerFilter(++vmd$exRevision, base == null ? null : base.getOres());
+            : dropMap != null ? "vmd.gui.override.failed" : "vmd.gui.override.error";
+        vmd$exFilter = new ExVoidMinerFilter(++vmd$exRevision, dropMap == null ? null : dropMap.getOres());
+    }
+
+    /** Applies a mineable distribution; an extra-only dimension uses a local base without registering it in GT. */
+    @Unique
+    private boolean vmd$tryApplyExDropMap(String dimensionName) {
+        DropMap base = VoidMinerUtility.dropMapsByDimName.get(dimensionName);
+        DropMap extra = VoidMinerUtility.extraDropsByDimName.get(dimensionName);
+        if (base == null) {
+            if (extra == null) return false;
+            base = new DropMap();
+        }
+        base.isDistributionCached(extra);
+        GTUtility.ItemId[] ores = base.getOres();
+        float weight = base.getTotalWeight();
+        if (ores == null || ores.length == 0 || !(weight > 0)) return false;
+
+        dropMap = base;
+        extraDropMap = extra;
+        totalWeight = weight;
+        return true;
     }
 
     /** Updates on initial use or controller-slot change even when checkProcessing is not running. */

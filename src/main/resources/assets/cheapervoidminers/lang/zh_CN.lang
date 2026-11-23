@@ -125,6 +125,7 @@ vmd.gui.override.description=维度覆写为:
 vmd.gui.override.failed=目标维度无矿表，改用机器所在维度。
 vmd.gui.override.error=目标维度无矿表。
 vmd.gui.override.end_asteroids=T0: 末地小行星（与末地掉落相同）
+vmd.gui.filter.loading=正在加载矿物筛选器……
 vmd.gui.filter.no_ores=无可用矿物。放入维度显示方块可选目标。
 
 # 虚空矿机 EX GUI 实时产能行（%s 为千分位格式化的每秒矿石数）
